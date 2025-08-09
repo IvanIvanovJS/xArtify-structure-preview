@@ -1,26 +1,37 @@
+// app/api/register/route.ts
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcrypt";
 
 export async function POST(req: Request) {
     try {
-        const { email, password } = await req.json();
+        const { name, email, password } = await req.json();
 
-        if (!email || !password) {
-            return NextResponse.json({ error: "Моля, попълнете всички полета" }, { status: 400 });
-        }
+        // 1. Проверка за съществуващ потребител
+        const existingUser = await prisma.user.findUnique({
+            where: { email },
+        });
 
-        const existingUser = await prisma.user.findUnique({ where: { email } });
         if (existingUser) {
-            return NextResponse.json({ error: "Този имейл вече съществува" }, { status: 400 });
+            return NextResponse.json({ message: "Потребител с този имейл вече съществува." }, { status: 409 });
         }
 
+        // 2. Хеширане на паролата
         const hashedPassword = await bcrypt.hash(password, 10);
-        await prisma.user.create({ data: { email, password: hashedPassword } });
 
-        return NextResponse.json({ message: "Регистрацията е успешна" });
+        // 3. Създаване на нов потребител
+        const newUser = await prisma.user.create({
+            data: {
+                name,
+                email,
+                password: hashedPassword,
+                role: "USER", // Задаваме роля по подразбиране
+            },
+        });
+
+        return NextResponse.json({ message: "Потребителят е успешно регистриран." }, { status: 201 });
     } catch (error) {
-        console.error("Грешка при регистрация:", error);
-        return NextResponse.json({ error: "Вътрешна грешка на сървъра" }, { status: 500 });
+        console.error("Error during registration:", error);
+        return NextResponse.json({ message: "Възникна грешка при регистрацията." }, { status: 500 });
     }
 }
