@@ -1,17 +1,10 @@
-"use client";
-
+'use client'
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useState } from "react";
 import Link from "next/link";
-
-// Симулация на useRouter и Link за да работи извън Next.js
-const useRouter = () => ({
-    push: (url) => {
-        window.location.href = url;
-    },
-});
+import { useRouter } from "next/navigation";
 
 // 1. Дефиниране на схемата за валидация
 const formSchema = z.object({
@@ -34,15 +27,25 @@ export default function ForgotPasswordForm() {
         setMessage(null);
         setError(null);
 
-        // Временно, тъй като няма API за възстановяване на парола
-        // Ще покажем съобщение за успех, без да правим заявка към сървъра
-        // В реално приложение тук бихте направили POST заявка към API ендпойнт
-        // за изпращане на имейл за възстановяване на парола.
-
         try {
-            // Имитация на API заявка
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            setMessage("Ако имате акаунт с този имейл, ще получите инструкции за възстановяване на парола.");
+            const res = await fetch('/api/forgot-password', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email: data.email }),
+            });
+
+            const result = await res.json();
+
+            if (!res.ok) {
+                setError(result.message || 'Възникна грешка.');
+                return;
+            }
+
+            setMessage(result.message);
+            form.reset();
+
         } catch (e) {
             setError("Възникна грешка. Моля, опитайте отново.");
         }
@@ -64,17 +67,9 @@ export default function ForgotPasswordForm() {
                 Ще изпратим имейл за смяна на Вашата парола{" "}
             </div>
 
-            {message && (
-                <div className="p-3 text-sm text-green-700 bg-green-100 rounded-md">
-                    {message}
-                </div>
-            )}
 
-            {error && (
-                <div className="p-3 text-sm text-red-700 bg-red-100 rounded-md">
-                    {error}
-                </div>
-            )}
+
+
 
             <form
                 onSubmit={form.handleSubmit(onSubmit)}
@@ -101,8 +96,20 @@ export default function ForgotPasswordForm() {
                         {form.formState.errors.email && (
                             <p className="text-sm text-red-600 mt-1">{form.formState.errors.email.message}</p>
                         )}
+                        {message && (
+                            <div className="text-center text-sm text-green-500 rounded-md">
+                                {message}
+                            </div>
+                        )}
+                        {error && (
+                            <div className="text-center text-sm text-red-500 rounded-md">
+                                {error}
+                            </div>
+                        )}
                     </div>
+
                 </div>
+
                 <div className="flex flex-row gap-5 items-center w-2/3">
                     <Link className="w-full"
                         href={"/login"}>
@@ -124,6 +131,7 @@ export default function ForgotPasswordForm() {
                 </div>
 
             </form>
+
             <div className="h-10"></div>
         </div>
     );
