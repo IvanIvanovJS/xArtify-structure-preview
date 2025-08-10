@@ -49,9 +49,17 @@ model User {
   updatedAt     DateTime  @updatedAt
  
   // Добавяме връзките към другите модели
+  passwordResetTokens  PasswordResetToken[] 
   artistProfile ArtistProfile?
   subscriptions Subscription[]
   enrollments   Enrollment[] // <-- Добавете този ред
+}
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expires   DateTime
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model VerificationToken {

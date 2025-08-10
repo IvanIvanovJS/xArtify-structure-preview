@@ -42,34 +42,44 @@ export default function LoginForm() {
         });
 
         if (res?.error) {
-            setError("Невалиден имейл или парола.");
+            form.setError("password", {
+                type: "manual",
+                message: "Невалиден имейл или парола."
+            });
         } else {
             router.push(callbackUrl);
         }
     };
     const spacer = <div className="h-4"></div>;
     const passwordValue = form.watch("password");
+
     const [showPassword, setShowPassword] = useState(false);
     const togglePasswordVisibility = () => {
         setShowPassword((v) => !v);
     };
 
     return (
-        <div className="flex-col items-center w-full max-w-lg space-y-6 bg-white dark:bg-gray-800 rounded-xl shadow-xl/20 border p-6">
-            {spacer}
-            <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-gray-100 h-16">
-                Вход
-            </h2>
+        <div className="flex-col items-center w-full max-w-md space-y-6 bg-white dark:bg-gray-800 rounded-xl shadow-xl/20 border p-6">
 
-            {error && (
-                <div className="p-3 text-sm text-red-700 bg-red-100 rounded-md">{error}</div>
+            <article className="flex items-center justify-center gap-10 h-20">
+                <h3 className="text-2xl font-bold text-gray-800 underline decoration-1 underline-offset-4 decoration-blue-400">
+                    Вход
+                </h3>
+                <Link href="/register" >
+                    <button className="cursor-pointer text-2xl text-gray-400 hover:text-gray-500 hover:underline decoration-1 underline-offset-4">
+                        Регистрация
+                    </button>
+                </Link>
+            </article>
+
+            {error && (<div className="p-3 text-sm text-red-700 bg-red-100 rounded-md">{error}</div>
             )}
 
             <form
                 onSubmit={form.handleSubmit(onSubmit)}
-                className="flex flex-col items-center space-y-6 w-full gap-6"
+                className="flex flex-col items-center space-y-0 w-full gap-4"
             >
-                <div className="w-2/3 flex flex-col space-y-6 gap-6">
+                <div className="w-2/3 flex flex-col space-y-6 gap-4">
                     {/* Email поле */}
                     <div className="relative z-0 w-full group">
                         <input
@@ -81,7 +91,10 @@ export default function LoginForm() {
                         />
                         <label
                             htmlFor="email"
-                            className="absolute left-4 top-3 text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 px-1 text-base transition-all duration-100 peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-focus:-top-3 peer-invalid:-top-3 peer-invalid:text-[12px] peer-focus:text-[12px]"
+                            className={`absolute left-4 top-3 text-gray-400 dark:text-gray-400 bg-white dark:bg-gray-800 px-1 text-base transition-all duration-100 
+                                peer-placeholder-shown:top-3 peer-placeholder-shown:text-base
+                                peer-focus:-top-3  peer-focus:text-[12px] peer-[&:not(:placeholder-shown)]:-top-3 peer-[&:not(:placeholder-shown)]:text-[12px] 
+                                 `}
                         >
                             Имейл
                         </label>
@@ -106,12 +119,11 @@ export default function LoginForm() {
                         >
                             Парола
                         </label>
-
                         {/* Бутон с икона око */}
                         <button
                             type="button"
                             onClick={togglePasswordVisibility}
-                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+                            className="absolute right-3 top-7 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
                             aria-label={showPassword ? "Скрий паролата" : "Покажи паролата"}
                             tabIndex={-1}
                         >
@@ -121,37 +133,31 @@ export default function LoginForm() {
 
                             ) : (
                                 // Икона отворено око
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    className="h-5 w-5"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                    strokeWidth={2}
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                                    />
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                                    />
-                                </svg>
+                                <img src="/eye-outline.svg" className="h-5 w-5" />
                             )}
                         </button>
+                        <div className="w-full flex justify-end ">
+                            <Link
+                                href="/forgotten-password">
+                                <button
+                                    className="text-sm text-blue-500 hover:underline">Забравена парола?</button>
+                            </Link>
+                        </div>
 
                         {form.formState.errors.password && (
                             <p className="text-sm text-red-600 mt-1">{form.formState.errors.password.message}</p>
                         )}
                     </div>
+
+
+
                 </div>
+
+
 
                 <button
                     type="submit"
-                    className="cursor-pointer w-2/3 px-4 py-2 text-white font-semibold h-12 shadow-xl bg-blue-400 rounded-md hover:bg-blue-700 transition-colors"
+                    className="cursor-pointer w-2/3 px-4 py-2 text-white font-semibold h-12 shadow-xl bg-blue-400 rounded-md hover:bg-blue-500 transition-colors"
                     disabled={form.formState.isSubmitting}
                 >
                     Вход
@@ -164,7 +170,7 @@ export default function LoginForm() {
             </div>
 
             {/* Бутони за социален вход */}
-            <div className="flex flex-col items-center space-y-6 gap-6">
+            <div className="flex flex-col items-center space-y-6 gap-4">
                 <button
                     onClick={() => signIn("google", { callbackUrl: "/" })}
                     className="cursor-pointer gap-2 h-12 flex items-center justify-center w-2/3 py-2 px-4 border-b-3 hover:bg-gray-200 border-gray-300 rounded-full text-sm font-medium transition-colors"
