@@ -36,7 +36,13 @@ export async function POST(req: Request) {
     }
 
     try {
-        const { title, description, imageUrl, price } = await req.json();
+        const { title,
+            dimensions,
+            materials,
+            description,
+            price,
+            images,
+        } = await req.json();
 
         const artistProfile = await prisma.artistProfile.findUnique({
             where: { userId: session.user.id }
@@ -49,9 +55,11 @@ export async function POST(req: Request) {
         const newPainting = await prisma.painting.create({
             data: {
                 title,
+                dimensions,
+                materials,
                 description,
-                imageUrl,
                 price,
+                images,
                 artistId: artistProfile.id,
             },
         });

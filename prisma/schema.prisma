@@ -70,27 +70,29 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
-// Модел за профил на художник
-model ArtistProfile {
-  id            String    @id @default(cuid())
-  userId        String    @unique
-  user          User      @relation(fields: [userId], references: [id])
-  bio           String?   // Автобиография на художника
-  paintings     Painting[]
+model Painting {
+  id           String    @id @default(cuid())
+  title        String
+  description  String?
+  dimensions   String?   // Например: "80x60 cm"
+  materials    String?   // Например: "Маслени бои върху платно"
+  images       String[]  // Масив от URL адреси на изображенията
+  price        Float
+  isSold       Boolean   @default(false)
+  artistId     String
+  artist       ArtistProfile @relation(fields: [artistId], references: [id])
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 }
 
-// Модел за картини
-model Painting {
-  id            String    @id @default(cuid())
-  title         String
-  description   String?
-  imageUrl      String?   // URL към изображението, което ще се съхранява в Cloudinary/S3
-  price         Float
-  isSold        Boolean   @default(false)
-  artistId      String
-  artist        ArtistProfile @relation(fields: [artistId], references: [id])
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+model ArtistProfile {
+  id           String    @id @default(cuid())
+  userId       String    @unique
+  bio          String?
+  user         User      @relation(fields: [userId], references: [id]) // Релация обратно към User
+  paintings    Painting[]
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 }
 
 // Модел за курсове
