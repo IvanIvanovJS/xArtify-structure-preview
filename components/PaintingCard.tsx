@@ -6,8 +6,10 @@ interface Painting {
     id: string;
     title: string;
     description: string;
-    imageUrl: string;
+    dimensions: string;
+    images: string[]; // Променено от imageUrl на images (масив от стрингове)
     price: number;
+    artistId: string;
     artist: {
         user: {
             name: string;
@@ -20,22 +22,38 @@ interface PaintingCardProps {
 }
 
 export default function PaintingCard({ painting }: PaintingCardProps) {
+    // Взимаме първото изображение от масива `images`
+    const primaryImage = painting.images[0] || "/placeholder.jpg";
+
+
     return (
         <div className="bg-white rounded-lg shadow-md overflow-hidden">
-            <div className="relative w-full h-64">
-                <Image
-                    src={painting.imageUrl || "/placeholder.jpg"}
-                    alt={painting.title}
-                    layout="fill"
-                    objectFit="cover"
-                    className="hover:scale-105 transition-transform duration-300"
-                />
-            </div>
+            <Link href={`/paintings/${painting.id}`}>
+                <div className="relative w-full h-64 group">
+
+                    <Image
+
+                        src={primaryImage} // Използваме първата снимка от масива
+                        alt={painting.title}
+                        layout="fill"
+                        objectFit="cover"
+                        className={`object-cover transition-opacity duration-500 group-hover:opacity-0`}
+                    />
+                    {/* Втора снимка */}
+                    <Image
+                        src={painting.images[1]}
+                        alt="Artwork 2"
+                        fill
+                        className="object-cover transition-opacity duration-500 opacity-0 group-hover:opacity-100"
+                    />
+                </div>
+            </Link>
             <div className="p-4">
                 <h3 className="text-xl font-semibold text-gray-800">{painting.title}</h3>
+                <p className="text-sm text-gray-600">{painting.dimensions}</p>
                 <p className="text-sm text-gray-600">
                     от{" "}
-                    <Link href={`/artists/${painting.artist.user.name}`} className="text-blue-500 hover:underline">
+                    <Link href={`/artists/${painting.artistId}`} className="text-blue-500 hover:underline">
                         {painting.artist.user.name}
                     </Link>
                 </p>

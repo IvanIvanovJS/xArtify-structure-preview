@@ -1,6 +1,4 @@
 // app/api/upload/route.ts
-
-import { NextApiRequest, NextApiResponse } from 'next';
 import { v2 as cloudinary } from 'cloudinary';
 import { NextResponse } from 'next/server';
 
@@ -11,10 +9,10 @@ cloudinary.config({
     api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-export async function POST(req: NextApiRequest, res: NextApiResponse) {
+export async function POST(request: Request) {
     try {
-        // Използваме 'formData' за обработка на файла
-        const formData = await req.formData();
+        // Използваме 'request.formData()' за обработка на файла в App Router
+        const formData = await request.formData();
         const file = formData.get('file') as File;
 
         if (!file) {

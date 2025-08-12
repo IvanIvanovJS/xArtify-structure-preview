@@ -47,7 +47,7 @@ model User {
   sessions      Session[]
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
- 
+  
   // Добавяме връзките към другите модели
   passwordResetTokens  PasswordResetToken[] 
   artistProfile ArtistProfile?
@@ -90,6 +90,7 @@ model ArtistProfile {
   userId       String    @unique
   bio          String?
   user         User      @relation(fields: [userId], references: [id]) // Релация обратно към User
+  phoneNumber  String?
   paintings    Painting[]
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt

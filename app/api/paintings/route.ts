@@ -31,9 +31,12 @@ export async function GET() {
 export async function POST(req: Request) {
     const session = await getServerSession(authOptions);
 
-    if (!session || session.user.role !== 'ARTIST') {
-        return NextResponse.json({ message: 'Unauthorized' }, { status: 403 });
+    // Проверяваме дали потребителят е влязъл
+    if (!session || !session.user || !session.user.id) {
+        return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
+
+    const userId = session.user.id;
 
     try {
         const { title,
@@ -44,12 +47,14 @@ export async function POST(req: Request) {
             images,
         } = await req.json();
 
+        // Проверяваме дали съществува профил на артист за текущия потребител
         const artistProfile = await prisma.artistProfile.findUnique({
-            where: { userId: session.user.id }
+            where: { userId },
         });
 
+        // Ако няма профил на артист, връщаме грешка
         if (!artistProfile) {
-            return NextResponse.json({ message: 'Artist profile not found' }, { status: 404 });
+            return NextResponse.json({ message: 'Artist profile not found' }, { status: 403 });
         }
 
         const newPainting = await prisma.painting.create({
