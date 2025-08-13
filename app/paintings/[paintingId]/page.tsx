@@ -8,7 +8,7 @@ import Link from 'next/link';
 const prisma = new PrismaClient();
 
 export default async function PaintingDetailsPage({ params }: { params: { paintingId: string } }) {
-    const { paintingId } = params;
+    const { paintingId } = await params;
     const session = await getServerSession(authOptions);
 
     const painting = await prisma.painting.findUnique({

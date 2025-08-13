@@ -52,7 +52,7 @@ model User {
   passwordResetTokens  PasswordResetToken[] 
   artistProfile ArtistProfile?
   subscriptions Subscription[]
-  enrollments   Enrollment[] // <-- Добавете този ред
+  enrollments   Enrollment[] 
 }
 model PasswordResetToken {
   id        String   @id @default(cuid())
