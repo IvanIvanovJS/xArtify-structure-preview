@@ -15,6 +15,7 @@ async function getPaintings() {
 export default async function PaintingsPage() {
     const paintings = await getPaintings();
 
+
     return (
         <div className="container mx-auto p-4">
             <h1 className="text-3xl font-bold mb-6 text-center">Галерия с Картини</h1>

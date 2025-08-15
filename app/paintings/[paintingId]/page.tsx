@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import Image from 'next/image';
 import Link from 'next/link';
+import { bgnToEur } from '@/lib/currency';
 
 const prisma = new PrismaClient();
 
@@ -81,6 +82,7 @@ export default async function PaintingDetailsPage({ params }: { params: { painti
                             </Link>
                         </p>
                         <p className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-6">{painting.price.toFixed(2)} лв.</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">{bgnToEur(painting.price)} €</p>
 
                         <div className="mb-6">
                             <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-2">Описание</h3>

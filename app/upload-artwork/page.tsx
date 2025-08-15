@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from 'next/navigation';
 import { PrismaClient } from '@prisma/client';
-import CreatePaintingForm from '@/components/CreatePaintingForm'; // Ще създадем този компонент
+import CreatePaintingForm from '@/components/UploadArtwork'; // Ще създадем този компонент
 
 const prisma = new PrismaClient();
 

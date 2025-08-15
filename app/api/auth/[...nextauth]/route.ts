@@ -31,7 +31,10 @@ export const authOptions: NextAuthOptions = {
                     return null;
                 }
 
-                const isValid = await bcrypt.compare(credentials.password, user.password);
+                const isValid = await bcrypt.compare(
+                    credentials.password,
+                    user.password
+                );
                 if (!isValid) {
                     return null;
                 }
@@ -45,28 +48,38 @@ export const authOptions: NextAuthOptions = {
             },
         }),
         GoogleProvider({
-            clientId: process.env.GOOGLE_CLIENT_ID,
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+            clientId: process.env.GOOGLE_CLIENT_ID!,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
         }),
         FacebookProvider({
-            clientId: process.env.FACEBOOK_CLIENT_ID,
-            clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
+            clientId: process.env.FACEBOOK_CLIENT_ID!,
+            clientSecret: process.env.FACEBOOK_CLIENT_SECRET!,
         }),
     ],
     callbacks: {
         async jwt({ token, user }) {
+            // При логин имаме user → зареждаме artistProfile
             if (user) {
+                const artistProfile = await prisma.artistProfile.findUnique({
+                    where: { userId: user.id },
+                    select: { id: true },
+                });
+
                 token.id = user.id;
-                // @ts-ignore - Временно игнорираме TS грешката, за да добавим роля
-                token.role = user.role;
+                token.role = (user as any).role; // TS ще го позволи, защото имаш типове в next-auth.d.ts
+                token.artistProfile = artistProfile
+                    ? { id: artistProfile.id }
+                    : null;
             }
             return token;
         },
         async session({ session, token }) {
-            if (token) {
-                session.user.id = token.id;
-                // @ts-ignore - Временно игнорираме TS грешката, за да добавим роля
-                session.user.role = token.role;
+            if (session.user) {
+                session.user.id = token.id as string;
+                session.user.role = token.role as string;
+                session.user.artistProfile = token.artistProfile as
+                    | { id: string }
+                    | null;
             }
             return session;
         },

@@ -1,11 +1,12 @@
-
+// app/layout.tsx
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import Header from "@/components/Header"; // <-- Уверете се, че импортирате Header
+import Header from "@/components/Header";
 import SessionProvider from "@/components/SessionProvider";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { CartProvider } from "./context/CartContext";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -28,8 +29,11 @@ export default async function RootLayout({
       </head>
       <body className={inter.className}>
         <SessionProvider session={session}>
-          <Header /> {/* <-- Добавете Header компонента тук */}
-          <main className="min-h-[calc(100vh-64px)]">{children}</main> {/* <-- Добавете класове за минимална височина на main */}
+          {/* Обгръщаме всичко с CartProvider */}
+          <CartProvider>
+            <Header />
+            <main className="min-h-[calc(100vh-64px)]">{children}</main>
+          </CartProvider>
         </SessionProvider>
       </body>
     </html>

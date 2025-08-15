@@ -1,4 +1,5 @@
 // app/artists/[artistId]/page.tsx
+import { formatEurFromBgn } from '@/lib/currency';
 import { PrismaClient } from '@prisma/client';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -65,18 +66,30 @@ export default async function ArtistProfilePage({ params }: { params: { artistId
                         {artist.paintings.map((painting) => (
                             <div key={painting.id} className="bg-white rounded-lg shadow-md overflow-hidden">
                                 <Link href={`/paintings/${painting.id}`}>
-                                    <div className="relative w-full h-64">
-                                        <Image
-                                            src={painting.images[0] || "/placeholder.jpg"}
-                                            alt={painting.title}
-                                            layout="fill"
-                                            objectFit="cover"
-                                            className="hover:scale-105 transition-transform duration-300"
-                                        />
-                                    </div>
-                                    <div className="p-4">
-                                        <h3 className="text-xl font-semibold text-gray-800">{painting.title}</h3>
-                                        <p className="mt-2 text-lg font-bold text-gray-900">{painting.price.toFixed(2)} лв.</p>
+                                    <div>
+                                        <div className="relative w-64 h-64 overflow-hidden group">
+                                            {/* Първа снимка */}
+                                            <Image
+                                                src={painting.images[0]}
+                                                alt={painting.title}
+                                                layout="fill"
+                                                objectFit="cover"
+                                                className="object-cover transition-opacity duration-500 group-hover:opacity-0"
+                                            />
+                                            {/* Втора снимка */}
+                                            <Image
+                                                src={painting.images[1]}
+                                                alt={painting.title}
+                                                layout="fill"
+                                                objectFit="cover"
+                                                className="object-cover transition-opacity duration-500 opacity-0 group-hover:opacity-100"
+                                            />
+                                        </div>
+                                        <div className="p-4">
+                                            <h3 className="text-xl font-semibold text-gray-800">{painting.title}</h3>
+                                            <p className="mt-2 text-lg font-bold text-gray-900">{painting.price.toFixed(2)} лв.</p>
+                                            <p className="text-sm text-gray-500 dark:text-gray-400">{formatEurFromBgn(painting.price)} €</p>
+                                        </div>
                                     </div>
                                 </Link>
                             </div>

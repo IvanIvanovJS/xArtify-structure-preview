@@ -3,17 +3,21 @@
 import { useState } from "react";
 import Link from "next/link";
 import { signIn, signOut, useSession } from "next-auth/react";
+import CartIcon from "@/components/CartIcon";
 
 export default function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const { data: session } = useSession();
+
+    // Проверяваме дали потребителят е артист, като търсим artistProfile в сесията
+    const isArtist = session?.user?.artistProfile !== undefined && session?.user?.artistProfile !== null;
 
     return (
         <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md shadow-md dark:bg-gray-900/80">
             <nav className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
                 {/* Лого / Име на сайта */}
                 <Link href="/" className="relative left-20">
-                    <span className=" text-2xl font-bold  text-rose-400 dark:text-gray-100">
+                    <span className="text-2xl font-bold text-rose-400 dark:text-gray-100">
                         Art Platform
                     </span>
                 </Link>
@@ -41,21 +45,38 @@ export default function Header() {
 
                 {/* Навигационни връзки (десктоп) */}
                 <div className="hidden md:flex items-center space-x-6 gap-x-4">
-                    <Link href="/paintings">  <button className="px-4 py-2 text-white bg-rose-400 rounded-[6px] hover:bg-rose-700 transition-colors">
-                        Галерия
-                    </button>
-                    </Link>
-                    <Link href="/courses"> <button className="px-4 py-2 text-white bg-rose-400 rounded-[6px] hover:bg-rose-700 transition-colors">
-                        Курсове
-                    </button>
-                    </Link>
-                    {session ? (
-                        <button
-                            onClick={() => signOut()}
-                            className="px-4 py-2 text-white bg-red-600 rounded-full hover:bg-red-700 transition-colors"
-                        >
-                            Изход
+                    <Link href="/paintings">
+                        <button className="px-4 py-2 text-white bg-rose-400 rounded-[6px] hover:bg-rose-700 transition-colors">
+                            Галерия
                         </button>
+                    </Link>
+                    <Link href="/courses">
+                        <button className="px-4 py-2 text-white bg-rose-400 rounded-[6px] hover:bg-rose-700 transition-colors">
+                            Курсове
+                        </button>
+                    </Link>
+                    {isArtist && (
+                        <Link href="/upload-artwork">
+                            <button className="px-4 py-2 text-white bg-green-500 rounded-[6px] hover:bg-green-600 transition-colors">
+                                Качи картина
+                            </button>
+                        </Link>
+                    )}
+                    {session ? (
+                        <>
+                            <Link href="/my-profile">
+                                <button className="px-4 py-2 text-white bg-blue-500 rounded-[6px] hover:bg-blue-700 transition-colors">
+                                    Моят профил
+                                </button>
+                            </Link>
+                            <button
+                                onClick={() => signOut()}
+                                className="px-4 py-2 text-white bg-red-600 rounded-full hover:bg-red-700 transition-colors"
+                            >
+                                Изход
+                            </button>
+                            <CartIcon />
+                        </>
                     ) : (
                         <>
                             <Link href="/login">
@@ -68,6 +89,7 @@ export default function Header() {
                                     Регистрация
                                 </button>
                             </Link>
+                            <CartIcon />
                         </>
                     )}
                 </div>
@@ -86,13 +108,27 @@ export default function Header() {
                                     Курсове
                                 </button>
                             </Link>
+                            {isArtist && (
+                                <Link href="/upload-artwork">
+                                    <button className="block text-gray-800 dark:text-gray-200 hover:text-blue-600 py-2">
+                                        Качи картина
+                                    </button>
+                                </Link>
+                            )}
                             {session ? (
-                                <button
-                                    onClick={() => signOut()}
-                                    className="w-full text-left text-red-600 hover:text-red-700 py-2"
-                                >
-                                    Изход
-                                </button>
+                                <>
+                                    <Link href="/my-profile">
+                                        <button className="block text-gray-800 dark:text-gray-200 hover:text-blue-600 py-2">
+                                            Моят профил
+                                        </button>
+                                    </Link>
+                                    <button
+                                        onClick={() => signOut()}
+                                        className="w-full text-left text-red-600 hover:text-red-700 py-2"
+                                    >
+                                        Изход
+                                    </button>
+                                </>
                             ) : (
                                 <>
                                     <Link href="/login">
@@ -107,6 +143,9 @@ export default function Header() {
                                     </Link>
                                 </>
                             )}
+                            <div className="w-full flex justify-center mt-4">
+                                <CartIcon />
+                            </div>
                         </div>
                     </div>
                 )}
