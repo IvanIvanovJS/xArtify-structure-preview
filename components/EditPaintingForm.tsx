@@ -63,7 +63,7 @@ export default function EditPaintingForm({ painting }: EditPaintingFormProps) {
             if (response.ok) {
                 const updatedPainting = await response.json();
                 alert('Картината беше успешно обновена!');
-                router.push(`/paintings/${updatedPainting.id}`);
+                router.push(`/gallery/${updatedPainting.id}`);
             } else {
                 const errorData = await response.json();
                 alert(`Грешка при обновяване: ${errorData.message}`);

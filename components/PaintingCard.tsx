@@ -57,21 +57,21 @@ export default function PaintingCard({ painting }: PaintingCardProps) {
     return (
         <div className="relative bg-white rounded-lg shadow-md overflow-hidden">
             <div className="relative w-64 h-64 overflow-hidden group">
-                <Link href={`/paintings/${painting.id}`}>
+                <Link href={`/gallery/${painting.id}`}>
                     {/* Първа снимка */}
                     <Image
                         src={primaryImage}
                         alt={painting.title}
-                        layout="fill"
-                        objectFit="cover"
+                        fill // replaces layout="fill"
+                        style={{ objectFit: "cover" }}
                         className="object-cover transition-opacity duration-500 group-hover:opacity-0"
                     />
                     {/* Втора снимка */}
                     <Image
                         src={secondaryImage}
                         alt="{painting.title}"
-                        layout="fill"
-                        objectFit="cover"
+                        fill // replaces layout="fill"
+                        style={{ objectFit: "cover" }}
                         className="object-cover transition-opacity duration-500 opacity-0 group-hover:opacity-100"
                     />
                 </Link>

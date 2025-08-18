@@ -1,5 +1,5 @@
 // app/artists/[artistId]/page.tsx
-import { formatEurFromBgn } from '@/lib/currency';
+import { bgnToEur } from '@/lib/currency';
 import { PrismaClient } from '@prisma/client';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -46,8 +46,8 @@ export default async function ArtistProfilePage({ params }: { params: { artistId
                     <Image
                         src={artist.user.image || "/placeholder-avatar.jpg"}
                         alt={artist.user.name || "Профилна снимка"}
-                        layout="fill"
-                        objectFit="cover"
+                        fill // replaces layout="fill"
+                        style={{ objectFit: "cover" }}
                     />
                 </div>
                 <div className="text-center md:text-left mt-4 md:mt-0">
@@ -65,30 +65,30 @@ export default async function ArtistProfilePage({ params }: { params: { artistId
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                         {artist.paintings.map((painting) => (
                             <div key={painting.id} className="bg-white rounded-lg shadow-md overflow-hidden">
-                                <Link href={`/paintings/${painting.id}`}>
+                                <Link href={`/gallery/${painting.id}`}>
                                     <div>
                                         <div className="relative w-64 h-64 overflow-hidden group">
                                             {/* Първа снимка */}
                                             <Image
                                                 src={painting.images[0]}
                                                 alt={painting.title}
-                                                layout="fill"
-                                                objectFit="cover"
+                                                fill // replaces layout="fill"
+                                                style={{ objectFit: "cover" }}
                                                 className="object-cover transition-opacity duration-500 group-hover:opacity-0"
                                             />
                                             {/* Втора снимка */}
                                             <Image
                                                 src={painting.images[1]}
                                                 alt={painting.title}
-                                                layout="fill"
-                                                objectFit="cover"
+                                                fill // replaces layout="fill"
+                                                style={{ objectFit: "cover" }}
                                                 className="object-cover transition-opacity duration-500 opacity-0 group-hover:opacity-100"
                                             />
                                         </div>
                                         <div className="p-4">
                                             <h3 className="text-xl font-semibold text-gray-800">{painting.title}</h3>
                                             <p className="mt-2 text-lg font-bold text-gray-900">{painting.price.toFixed(2)} лв.</p>
-                                            <p className="text-sm text-gray-500 dark:text-gray-400">{formatEurFromBgn(painting.price)} €</p>
+                                            <p className="text-sm text-gray-500 dark:text-gray-400">{bgnToEur(painting.price).toFixed(2)} €</p>
                                         </div>
                                     </div>
                                 </Link>

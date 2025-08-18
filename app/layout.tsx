@@ -7,7 +7,7 @@ import SessionProvider from "@/components/SessionProvider";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { CartProvider } from "./context/CartContext";
-
+import SessionGuard from "@/components/SessionGuard"
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -22,19 +22,25 @@ export default async function RootLayout({
 }>) {
   const session = await getServerSession(authOptions);
 
+
   return (
     <html lang="bg">
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       </head>
       <body className={inter.className}>
+
+
         <SessionProvider session={session}>
-          {/* Обгръщаме всичко с CartProvider */}
-          <CartProvider>
-            <Header />
-            <main className="min-h-[calc(100vh-64px)]">{children}</main>
-          </CartProvider>
+          <SessionGuard>
+            {/* Обгръщаме всичко с CartProvider */}
+            <CartProvider>
+              <Header />
+              <main className="min-h-[calc(100vh-64px)]">{children}</main>
+            </CartProvider>
+          </SessionGuard>
         </SessionProvider>
+
       </body>
     </html>
   );

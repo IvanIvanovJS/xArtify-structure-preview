@@ -39,8 +39,8 @@ export default async function AllArtistsPage() {
                                     <Image
                                         src={artist.user.image || "/placeholder-avatar.jpg"}
                                         alt={artist.user.name || "Профилна снимка"}
-                                        layout="fill"
-                                        objectFit="cover"
+                                        fill // replaces layout="fill"
+                                        style={{ objectFit: "cover" }}
                                         className="group-hover:scale-105 transition-transform duration-300"
                                     />
                                 </div>

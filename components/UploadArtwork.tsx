@@ -92,7 +92,7 @@ export default function CreatePaintingForm({ artistId }: CreatePaintingFormProps
             }
 
             const newPainting = await paintingResponse.json();
-            router.push(`/paintings/${newPainting.id}`); // Пренасочване към детайли на картината
+            router.push(`/gallery/${newPainting.id}`); // Пренасочване към детайли на картината
 
         } catch (err: any) {
             setError(err.message);

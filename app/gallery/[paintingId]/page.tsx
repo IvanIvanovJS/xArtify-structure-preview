@@ -38,7 +38,7 @@ export default async function PaintingDetailsPage({ params }: { params: { painti
         );
     }
 
-    // Проверяваме дали потребителят е собственик на картината
+
     const isOwner = session && session.user.id === painting.artist.userId;
 
     return (
@@ -51,8 +51,8 @@ export default async function PaintingDetailsPage({ params }: { params: { painti
                             <Image
                                 src={painting.images[0] || "/placeholder.jpg"}
                                 alt={painting.title}
-                                layout="fill"
-                                objectFit="contain"
+                                fill // replaces layout="fill"
+                                style={{ objectFit: "contain" }}
                             />
                         </div>
                         {/* Миниатюри */}
@@ -63,8 +63,8 @@ export default async function PaintingDetailsPage({ params }: { params: { painti
                                         <Image
                                             src={image}
                                             alt={`Снимка ${index + 1} на ${painting.title}`}
-                                            layout="fill"
-                                            objectFit="cover"
+                                            fill // replaces layout="fill"
+                                            style={{ objectFit: "cover" }}
                                         />
                                     </div>
                                 ))}
@@ -82,7 +82,7 @@ export default async function PaintingDetailsPage({ params }: { params: { painti
                             </Link>
                         </p>
                         <p className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-6">{painting.price.toFixed(2)} лв.</p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">{bgnToEur(painting.price)} €</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">{bgnToEur(painting.price).toFixed(2)} €</p>
 
                         <div className="mb-6">
                             <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-2">Описание</h3>
@@ -99,7 +99,7 @@ export default async function PaintingDetailsPage({ params }: { params: { painti
 
                         {/* Бутон за действие */}
                         {isOwner ? (
-                            <Link href={`/paintings/edit/${painting.id}`}>
+                            <Link href={`/gallery/edit/${painting.id}`}>
                                 <button className="w-full bg-blue-500 text-white py-3 px-6 rounded-md text-lg font-semibold hover:bg-blue-600 transition-colors">
                                     Редактирай картина
                                 </button>

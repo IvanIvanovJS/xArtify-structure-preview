@@ -13,7 +13,7 @@ export default function Header() {
     const isArtist = session?.user?.artistProfile !== undefined && session?.user?.artistProfile !== null;
 
     return (
-        <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md shadow-md dark:bg-gray-900/80">
+        <header className="sticky top-2 h-12 z-50 bg-white/80 backdrop-blur-md shadow-md dark:bg-gray-900/80">
             <nav className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
                 {/* Лого / Име на сайта */}
                 <Link href="/" className="relative left-20">
@@ -45,19 +45,19 @@ export default function Header() {
 
                 {/* Навигационни връзки (десктоп) */}
                 <div className="hidden md:flex items-center space-x-6 gap-x-4">
-                    <Link href="/paintings">
-                        <button className="px-4 py-2 text-white bg-rose-400 rounded-[6px] hover:bg-rose-700 transition-colors">
+                    <Link href="/gallery">
+                        <button className="px-4 py-2 h-10 w-30 text-white bg-rose-400 rounded-[6px] hover:bg-rose-500 transition-colors">
                             Галерия
                         </button>
                     </Link>
                     <Link href="/courses">
-                        <button className="px-4 py-2 text-white bg-rose-400 rounded-[6px] hover:bg-rose-700 transition-colors">
+                        <button className="px-4 py-2 text-white h-10 w-30 bg-rose-400 rounded-[6px] hover:bg-rose-500 transition-colors">
                             Курсове
                         </button>
                     </Link>
                     {isArtist && (
                         <Link href="/upload-artwork">
-                            <button className="px-4 py-2 text-white bg-green-500 rounded-[6px] hover:bg-green-600 transition-colors">
+                            <button className="px-4 py-2 text-white h-10 w-30 bg-rose-400 rounded-[6px] hover:bg-rose-500 transition-colors">
                                 Качи картина
                             </button>
                         </Link>
@@ -65,13 +65,13 @@ export default function Header() {
                     {session ? (
                         <>
                             <Link href="/my-profile">
-                                <button className="px-4 py-2 text-white bg-blue-500 rounded-[6px] hover:bg-blue-700 transition-colors">
+                                <button className="px-4 py-2 text-white h-10 w-30 bg-rose-400 rounded-[6px] hover:bg-rose-500 transition-colors">
                                     Моят профил
                                 </button>
                             </Link>
                             <button
-                                onClick={() => signOut()}
-                                className="px-4 py-2 text-white bg-red-600 rounded-full hover:bg-red-700 transition-colors"
+                                onClick={() => signOut({ callbackUrl: "/login" })}
+                                className="px-4 py-2 text-white bg-red-600 h-10 w-24 rounded-[6px] hover:bg-red-700 transition-colors"
                             >
                                 Изход
                             </button>
@@ -80,12 +80,12 @@ export default function Header() {
                     ) : (
                         <>
                             <Link href="/login">
-                                <button className="px-4 py-2 text-white bg-blue-500 rounded-[6px] hover:bg-blue-700 transition-colors">
+                                <button className="px-4 py-2 text-white h-10 w-24 bg-rose-400 rounded-[6px] hover:bg-rose-500 transition-colors">
                                     Вход
                                 </button>
                             </Link>
                             <Link href="/register">
-                                <button className="px-4 py-2 text-white bg-blue-500 rounded-[6px] hover:bg-blue-700 transition-colors">
+                                <button className="px-4 py-2 text-white h-10 w-24 bg-rose-400 rounded-[6px] hover:bg-rose-500 transition-colors">
                                     Регистрация
                                 </button>
                             </Link>
@@ -98,7 +98,7 @@ export default function Header() {
                 {isMenuOpen && (
                     <div className="absolute top-full left-0 w-full bg-white dark:bg-gray-900 shadow-md md:hidden transition-all duration-300 ease-in-out">
                         <div className="flex flex-col p-4 space-y-2">
-                            <Link href="/paintings">
+                            <Link href="/gallery">
                                 <button className="block text-gray-800 dark:text-gray-200 hover:text-blue-600 py-2">
                                     Галерия
                                 </button>
@@ -123,7 +123,7 @@ export default function Header() {
                                         </button>
                                     </Link>
                                     <button
-                                        onClick={() => signOut()}
+                                        onClick={() => signOut({ callbackUrl: "/login" })}
                                         className="w-full text-left text-red-600 hover:text-red-700 py-2"
                                     >
                                         Изход

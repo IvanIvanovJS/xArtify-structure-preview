@@ -22,6 +22,8 @@ export default function LoginForm() {
     const searchParams = useSearchParams();
     const [error, setError] = useState<string | null>(null);
 
+    const [rememberMe, setRememberMe] = useState(true);
+
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -34,11 +36,13 @@ export default function LoginForm() {
         setError(null);
         const callbackUrl = searchParams.get("callbackUrl") || "/";
 
+        // Предаваме състоянието на отметката на функцията signIn
         const res = await signIn("credentials", {
-            redirect: false, // За да обработим ние сами пренасочването
+            // За да обработим ние сами пренасочването
             email: data.email,
             password: data.password,
             callbackUrl,
+            remember_me: rememberMe, // Добавено!
         });
 
         if (res?.error) {
@@ -49,6 +53,7 @@ export default function LoginForm() {
         } else {
             router.push(callbackUrl);
         }
+
     };
     const spacer = <div className="h-4"></div>;
     const passwordValue = form.watch("password");
@@ -57,6 +62,7 @@ export default function LoginForm() {
     const togglePasswordVisibility = () => {
         setShowPassword((v) => !v);
     };
+
 
     return (
         <div className="flex-col items-center w-full max-w-md space-y-6 bg-white dark:bg-gray-800 rounded-xl shadow-xl/20 border p-6">
@@ -75,9 +81,13 @@ export default function LoginForm() {
             {error && (<div className="p-3 text-sm text-red-700 bg-red-100 rounded-md">{error}</div>
             )}
 
+            {/* Добавяме autocomplete="on" за да подканим браузъра да запази данните */}
             <form
-                onSubmit={form.handleSubmit(onSubmit)}
+                onSubmit={(e) => {
+                    form.handleSubmit(onSubmit)(e)
+                }}
                 className="flex flex-col items-center space-y-0 w-full gap-4"
+                autoComplete="on"
             >
                 <div className="w-2/3 flex flex-col space-y-6 gap-4">
                     {/* Email поле */}
@@ -88,13 +98,15 @@ export default function LoginForm() {
                             className="peer placeholder-transparent block w-full px-4 pt-5 pb-2 h-12 border border-gray-300 rounded-md shadow-sm appearance-none bg-transparent focus:outline-none focus:ring"
                             placeholder=" "
                             {...form.register("email")}
+                            // Добавяме autocomplete="email" за по-добра съвместимост с браузърите
+                            autoComplete="username"
                         />
                         <label
                             htmlFor="email"
                             className={`absolute left-4 top-3 text-gray-400 dark:text-gray-400 bg-white dark:bg-gray-800 px-1 text-base transition-all duration-100 
-                                peer-placeholder-shown:top-3 peer-placeholder-shown:text-base
-                                peer-focus:-top-3  peer-focus:text-[12px] peer-[&:not(:placeholder-shown)]:-top-3 peer-[&:not(:placeholder-shown)]:text-[12px] 
-                                 `}
+                  peer-placeholder-shown:top-3 peer-placeholder-shown:text-base
+                  peer-focus:-top-3  peer-focus:text-[12px] peer-[&:not(:placeholder-shown)]:-top-3 peer-[&:not(:placeholder-shown)]:text-[12px] 
+                  `}
                         >
                             Имейл
                         </label>
@@ -111,6 +123,9 @@ export default function LoginForm() {
                             className="peer block w-full px-4 pt-5 pb-2 h-12 border border-gray-300 rounded-md shadow-sm appearance-none bg-transparent focus:outline-none focus:ring"
                             placeholder=" "
                             {...form.register("password")}
+                            // Добавяме autocomplete="current-password"
+                            autoComplete="current-password"
+                            onBlur={() => setShowPassword(false)}
                         />
                         <label
                             htmlFor="password"
@@ -136,11 +151,25 @@ export default function LoginForm() {
                                 <img src="/eye-outline.svg" className="h-5 w-5" />
                             )}
                         </button>
-                        <div className="w-full flex justify-end ">
+                        <div className="w-full flex justify-center items-center gap-14">
+                            <div className="flex items-center gap-2">
+                                <input
+                                    id="remember-me"
+                                    type="checkbox"
+                                    checked={rememberMe}
+                                    onChange={(e) => setRememberMe(e.target.checked)}
+                                    className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                                />
+                                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-600 dark:text-gray-200">
+                                    Запомни ме
+                                </label>
+                            </div>
+
                             <Link
                                 href="/forgotten-password">
-                                <button
-                                    className="text-sm text-blue-500 hover:underline">Забравена парола?</button>
+                                <span
+                                    className="cursor-pointer text-sm text-blue-500 hover:underline">Забравена парола?
+                                </span>
                             </Link>
                         </div>
 
@@ -149,11 +178,9 @@ export default function LoginForm() {
                         )}
                     </div>
 
-
+                    {/* Отметка за "Запомни ме" */}
 
                 </div>
-
-
 
                 <button
                     type="submit"

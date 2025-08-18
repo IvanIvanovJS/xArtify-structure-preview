@@ -46,7 +46,7 @@ export default function CartPage() {
             {cartIsEmpty ? (
                 <div className="text-center p-8 bg-white dark:bg-gray-800 rounded-lg shadow-md">
                     <p className="text-xl text-gray-600 dark:text-gray-300">
-                        Количката е празна. Разгледайте <Link href="/paintings" className="text-blue-500 hover:underline">нашите картини</Link>!
+                        Количката е празна. Разгледайте <Link href="/gallery" className="text-blue-500 hover:underline">нашите картини</Link>!
                     </p>
                 </div>
             ) : (
@@ -59,8 +59,8 @@ export default function CartPage() {
                                     <Image
                                         src={item.image}
                                         alt={item.title}
-                                        layout="fill"
-                                        objectFit="cover"
+                                        fill // replaces layout="fill"
+                                        style={{ objectFit: "cover" }}
                                         className="rounded-md"
                                     />
                                 </div>
@@ -81,7 +81,7 @@ export default function CartPage() {
                                         {item.price.toFixed(2)} лв.
                                     </p>
                                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                                        {bgnToEur(item.price)} €
+                                        {bgnToEur(item.price).toFixed(2)} €
                                     </p>
                                     <button
                                         onClick={() => removeFromCart(item.id)}
