@@ -17,7 +17,7 @@ interface CartItem {
 // Дефинираме типа на CartContext
 interface CartContextType {
     cartItems: CartItem[];
-    addToCart: (item: Omit<CartItem, 'quantity'>) => void;
+    addToCart: (item: Omit<CartItem, 'quantity'>) => boolean;
     removeFromCart: (itemId: string) => void;
     clearCart: () => void;
     getCartItemCount: () => number;
@@ -30,17 +30,15 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export const CartProvider = ({ children }: { children: ReactNode }) => {
     const [cartItems, setCartItems] = useState<CartItem[]>([]);
 
-    const addToCart = (item: Omit<CartItem, 'quantity'>) => {
-        setCartItems(prevItems => {
-            const existingItem = prevItems.find(i => i.id === item.id);
-            if (existingItem) {
-                return prevItems.map(i =>
-                    i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i
-                );
-            } else {
-                return [...prevItems, { ...item, quantity: 1 }];
-            }
-        });
+    const addToCart = (item: Omit<CartItem, 'quantity'>): boolean => {
+        const exists = cartItems.some(i => i.id === item.id);
+
+        if (exists) {
+            return false; // вече е добавен
+        }
+
+        setCartItems(prevItems => [...prevItems, { ...item, quantity: 1 }]);
+        return true;
     };
 
     const removeFromCart = (itemId: string) => {

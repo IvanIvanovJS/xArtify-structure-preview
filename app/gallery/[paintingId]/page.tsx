@@ -5,7 +5,8 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import Image from 'next/image';
 import Link from 'next/link';
 import { bgnToEur } from '@/lib/currency';
-
+import ImageGallery from '@/components/ImageGallery';
+import AddToCartButton from "@/components/AddToCartButton";
 const prisma = new PrismaClient();
 
 export default async function PaintingDetailsPage({ params }: { params: { paintingId: string } }) {
@@ -18,7 +19,7 @@ export default async function PaintingDetailsPage({ params }: { params: { painti
             artist: {
                 select: {
                     id: true,
-                    userId: true, // Добавяме userId за проверка на собствеността
+                    userId: true,
                     user: {
                         select: {
                             name: true,
@@ -28,6 +29,8 @@ export default async function PaintingDetailsPage({ params }: { params: { painti
             },
         },
     });
+
+
 
     if (!painting) {
         return (
@@ -55,21 +58,7 @@ export default async function PaintingDetailsPage({ params }: { params: { painti
                                 style={{ objectFit: "contain" }}
                             />
                         </div>
-                        {/* Миниатюри */}
-                        {painting.images.length > 1 && (
-                            <div className="flex gap-4 mt-4 overflow-x-auto">
-                                {painting.images.map((image, index) => (
-                                    <div key={index} className="relative w-24 h-24 rounded-lg overflow-hidden cursor-pointer flex-shrink-0">
-                                        <Image
-                                            src={image}
-                                            alt={`Снимка ${index + 1} на ${painting.title}`}
-                                            fill // replaces layout="fill"
-                                            style={{ objectFit: "cover" }}
-                                        />
-                                    </div>
-                                ))}
-                            </div>
-                        )}
+                        <ImageGallery images={painting.images} />
                     </div>
 
                     {/* Детайли и бутони */}
@@ -105,9 +94,14 @@ export default async function PaintingDetailsPage({ params }: { params: { painti
                                 </button>
                             </Link>
                         ) : (
-                            <button className="w-full bg-green-500 text-white py-3 px-6 rounded-md text-lg font-semibold hover:bg-green-600 transition-colors">
-                                Купи
-                            </button>
+                            <AddToCartButton
+                                id={painting.id}
+                                title={painting.title}
+                                price={painting.price}
+                                dimensions={painting.dimensions || ""}
+                                artist={painting.artist.user.name || ""}
+                                image={painting.images[0] || "/placeholder.jpg"}
+                            />
                         )}
                     </div>
                 </div>
