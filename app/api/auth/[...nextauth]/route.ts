@@ -1,13 +1,10 @@
-// app/api/auth/[...nextauth]/route.ts
 import NextAuth, { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { PrismaClient } from "@prisma/client";
-import bcrypt from "bcrypt";
-import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import GoogleProvider from "next-auth/providers/google";
 import FacebookProvider from "next-auth/providers/facebook";
-import { signOut } from "next-auth/react";
-
+import { PrismaAdapter } from "@next-auth/prisma-adapter";
+import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcrypt";
 
 const prisma = new PrismaClient();
 
@@ -22,9 +19,7 @@ export const authOptions: NextAuthOptions = {
                 remember_me: { label: "Remember Me", type: "checkbox" },
             },
             async authorize(credentials) {
-                if (!credentials?.email || !credentials?.password) {
-                    return null;
-                }
+                if (!credentials?.email || !credentials?.password) return null;
 
                 const user = await prisma.user.findUnique({
                     where: { email: credentials.email },
@@ -35,6 +30,7 @@ export const authOptions: NextAuthOptions = {
                 const isValid = await bcrypt.compare(credentials.password, user.password);
                 if (!isValid) return null;
 
+                // 🔑 връщаме remember_me към user-а
                 return {
                     id: user.id,
                     email: user.email,
@@ -54,11 +50,19 @@ export const authOptions: NextAuthOptions = {
         }),
     ],
     callbacks: {
-        async jwt({ token, user }) {
+        async jwt({ token, user, account }) {
             if (user) {
                 token.id = user.id;
                 token.role = (user as any).role;
-                token.remember_me = (user as any).remember_me ?? false;
+
+                // ✅ унифицираме remember_me:
+                // - идва от credentials (user.remember_me)
+                // - или от query параметър при Google/Facebook
+                const rememberParam = (account as any)?.remember_me;
+                const rememberMe =
+                    (user as any).remember_me === true || rememberParam === "true";
+
+                token.remember_me = rememberMe;
 
                 const artistProfile = await prisma.artistProfile.findUnique({
                     where: { userId: user.id },
@@ -66,29 +70,25 @@ export const authOptions: NextAuthOptions = {
                 });
                 token.artistProfile = artistProfile ? { id: artistProfile.id } : null;
 
-
-                token.maxAge = token.remember_me
+                token.maxAge = rememberMe
                     ? 60 * 60 * 24 * 30 // 30 дни
                     : 60 * 60; // 1 час
 
                 token.expires = new Date(Date.now() + (token.maxAge as number) * 1000);
-
             }
 
             return token;
         },
         async session({ session, token }) {
-
             if (session.user) {
                 session.user.id = token.id as string;
                 session.user.role = token.role as string;
                 session.user.artistProfile = token.artistProfile as { id: string } | null;
             }
-
             if (token.maxAge) {
                 session.expires = token.expires as string;
             }
-
+            console.log(session.expires);
 
             return session;
         },

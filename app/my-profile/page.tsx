@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 interface UserData {
     id: string;
@@ -77,20 +78,7 @@ export default function MyProfilePage() {
         }
     };
 
-    const handleBecomeArtist = async () => {
-        try {
-            const response = await fetch("/api/profile/artist", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ bio: "", phoneNumber: "" }),
-            });
-            if (!response.ok) throw new Error("Неуспешно създаване на профил на артист.");
-            alert("Вече сте артист!");
-            fetchProfileData();
-        } catch (err: any) {
-            setErrorMessage(err.message);
-        }
-    };
+
 
     const handleUpdateArtistProfile = async () => {
         try {
@@ -218,12 +206,13 @@ export default function MyProfilePage() {
 
                     {!userData.artistProfile ? (
                         <div className="pt-6 border-t border-gray-200 text-center">
-                            <button
-                                onClick={handleBecomeArtist}
-                                className="w-full px-4 py-2 bg-purple-600 text-white font-semibold rounded-md shadow-md hover:bg-purple-700 focus:outline-none"
-                            >
-                                Стани Артист
-                            </button>
+                            <Link href={"/create-artist-profile"}>
+                                <button
+                                    className="w-full px-4 py-2 bg-purple-600 text-white font-semibold rounded-md shadow-md hover:bg-purple-700 focus:outline-none"
+                                >
+                                    Стани Артист
+                                </button>
+                            </Link>
                         </div>
                     ) : (
                         <div className="space-y-4 pt-6 border-t border-gray-200">

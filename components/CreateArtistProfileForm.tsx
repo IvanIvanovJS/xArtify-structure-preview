@@ -1,15 +1,19 @@
 // components/CreateArtistProfileForm.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import Link from "next/link";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements, PaymentElement, useStripe, useElements } from "@stripe/react-stripe-js";
+import PhoneInput from "react-phone-number-input";
+import "react-phone-number-input/style.css";
+import { isValidPhoneNumber } from "react-phone-number-input";
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY as string);
 
-const CheckoutForm = ({ bio, userId }: { bio: string; userId: string }) => {
+const CheckoutForm = ({ bio, phoneNumber, userId }: { bio: string; phoneNumber: string; userId: string }) => {
     const stripe = useStripe();
     const elements = useElements();
     const router = useRouter();
@@ -39,7 +43,7 @@ const CheckoutForm = ({ bio, userId }: { bio: string; userId: string }) => {
                 const response = await fetch("/api/create-artist-profile", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ bio, userId, paymentIntentId: paymentIntent.id }),
+                    body: JSON.stringify({ bio, phoneNumber, userId, paymentIntentId: paymentIntent.id }),
                 });
 
                 if (response.ok) {
@@ -79,39 +83,41 @@ const CheckoutForm = ({ bio, userId }: { bio: string; userId: string }) => {
 
 export default function CreateArtistProfileForm({ userId }: { userId: string }) {
     const [bio, setBio] = useState("");
-    const [isArtist, setIsArtist] = useState(false);
+    const [phoneNumber, setPhoneNumber] = useState<string | undefined>("");
+    const [isValidPhone, setIsValidPhone] = useState(true);
+    const [agreed, setAgreed] = useState(false);
     const [clientSecret, setClientSecret] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    useEffect(() => {
-        if (!isArtist) return setClientSecret("");
+    const handleStartPayment = async () => {
+        if (!agreed || !phoneNumber || !isValidPhone) return;
 
         setIsSubmitting(true);
-        fetch("/api/create-payment-intent", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ isArtist }),
-        })
-            .then((res) => res.json())
-            .then((data) => setClientSecret(data.clientSecret))
-            .catch((err) => {
-                console.error(err);
-                alert("Възникна грешка при стартиране на плащането.");
-                setIsArtist(false);
-            })
-            .finally(() => setIsSubmitting(false));
-    }, [isArtist]);
+        try {
+            const res = await fetch("/api/create-payment-intent", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ isArtist: true }),
+            });
+            const data = await res.json();
+            setClientSecret(data.clientSecret);
+        } catch (err) {
+            console.error(err);
+            alert("Възникна грешка при стартиране на плащането.");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
-    if (isArtist && clientSecret) {
+    if (clientSecret) {
         const options = {
             clientSecret,
             appearance: { theme: "stripe" } as const,
-            // Wallets автоматично се поддържат от PaymentElement
         };
 
         return (
             <Elements stripe={stripePromise} options={options}>
-                <CheckoutForm bio={bio} userId={userId} />
+                <CheckoutForm bio={bio} phoneNumber={phoneNumber || ""} userId={userId} />
             </Elements>
         );
     }
@@ -131,29 +137,52 @@ export default function CreateArtistProfileForm({ userId }: { userId: string }) 
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
                 />
             </div>
+
+            <div>
+                <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Телефонен номер <span className="text-red-500">*</span>
+                </label>
+                <PhoneInput
+                    international
+                    defaultCountry="BG"
+                    value={phoneNumber}
+                    onChange={(value) => {
+                        setPhoneNumber(value || "");
+                        setIsValidPhone(value ? isValidPhoneNumber(value) : false);
+                    }}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                />
+                {!isValidPhone && phoneNumber && (
+                    <p className="mt-2 text-sm text-red-600">Моля, въведете валиден телефонен номер.</p>
+                )}
+            </div>
+
             <div className="flex items-center">
                 <input
-                    id="isArtist"
-                    name="isArtist"
+                    id="agreed"
+                    name="agreed"
                     type="checkbox"
-                    checked={isArtist}
-                    onChange={(e) => setIsArtist(e.target.checked)}
+                    checked={agreed}
+                    onChange={(e) => setAgreed(e.target.checked)}
                     className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                 />
-                <label htmlFor="isArtist" className="ml-2 block text-sm text-gray-900 dark:text-gray-200">
-                    Абонирай се, за да станеш артист (100 лв./неограничено)
+                <label htmlFor="agreed" className="ml-2 block text-sm text-gray-900 dark:text-gray-200">
+                    Съгласявам се с{" "}
+                    <Link href="/artist-terms" className="text-blue-600 underline hover:text-blue-800">
+                        условията
+                    </Link>{" "}
+                    за ставане на артист
                 </label>
             </div>
+
             <div className="flex justify-end">
                 <button
                     type="button"
-                    disabled={isSubmitting || !isArtist}
+                    disabled={!agreed || isSubmitting || !phoneNumber || !isValidPhone}
+                    onClick={handleStartPayment}
                     className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-blue-300"
-                    onClick={() => {
-                        if (!isArtist || !clientSecret) alert("Моля, маркирайте чекбокса за абонамент.");
-                    }}
                 >
-                    {isSubmitting ? "Изчакване..." : "Продължи"}
+                    {isSubmitting ? "Изчакване..." : "Продължи към плащане"}
                 </button>
             </div>
         </form>

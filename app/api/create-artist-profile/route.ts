@@ -1,8 +1,8 @@
-// app/api/create-artist-profile/route.ts
 import { NextResponse, NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { parsePhoneNumberFromString } from 'libphonenumber-js';
 
 export async function POST(req: NextRequest) {
     const session = await getServerSession(authOptions);
@@ -12,7 +12,18 @@ export async function POST(req: NextRequest) {
     }
 
     try {
-        const { bio, userId } = await req.json();
+        const { bio, phoneNumber, userId } = await req.json();
+
+        if (!phoneNumber) {
+            return NextResponse.json({ message: 'Phone number is required' }, { status: 400 });
+        }
+
+        // Валидация на телефонния номер според избраната държава
+        const parsedNumber = parsePhoneNumberFromString(phoneNumber);
+
+        if (!parsedNumber || !parsedNumber.isValid()) {
+            return NextResponse.json({ message: 'Invalid phone number' }, { status: 400 });
+        }
 
         // Проверяваме дали потребителят вече има профил на артист
         const existingProfile = await prisma.artistProfile.findUnique({
@@ -27,6 +38,7 @@ export async function POST(req: NextRequest) {
         const newArtistProfile = await prisma.artistProfile.create({
             data: {
                 bio,
+                phoneNumber: parsedNumber.number, // Записваме в нормализиран международен формат
                 user: {
                     connect: {
                         id: userId,

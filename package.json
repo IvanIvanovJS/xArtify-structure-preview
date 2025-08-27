@@ -27,6 +27,7 @@
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-hook-form": "^7.62.0",
+    "react-phone-number-input": "^3.4.12",
     "resend": "^6.0.1",
     "stripe": "^18.4.0",
     "zod": "^4.0.16"
@@ -39,6 +40,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/react-phone-number-input": "^3.0.17",
     "@types/stripe": "^8.0.416",
     "autoprefixer": "^10.4.21",
     "eslint": "^9",
