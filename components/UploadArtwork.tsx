@@ -21,7 +21,6 @@ export default function CreatePaintingForm({ artistId }: CreatePaintingFormProps
     const [error, setError] = useState<string | null>(null);
 
     const router = useRouter();
-    const { data: session } = useSession(); // Взимаме сесията на клиента
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
@@ -94,8 +93,12 @@ export default function CreatePaintingForm({ artistId }: CreatePaintingFormProps
             const newPainting = await paintingResponse.json();
             router.push(`/gallery/${newPainting.id}`); // Пренасочване към детайли на картината
 
-        } catch (err: any) {
-            setError(err.message);
+        } catch (err) {
+            if (err instanceof Error) {
+                setError(err.message);
+            } else {
+                setError("Възникна неизвестна грешка.");
+            }
         } finally {
             setLoading(false);
         }

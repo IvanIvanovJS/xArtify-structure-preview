@@ -1,6 +1,14 @@
 // app/courses/page.tsx
 import CourseCard from "@/components/CourseCard";
 
+type Course = {
+    id: string;
+    title: string;
+    description: string;
+    price: number;
+    imageUrl?: string;
+};
+
 // Функция за извличане на курсовете от API-то
 async function getCourses() {
     const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/courses`, {
@@ -20,7 +28,7 @@ export default async function CoursesPage() {
             <h1 className="text-3xl font-bold mb-6 text-center">Каталог с Курсове</h1>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {courses.length > 0 ? (
-                    courses.map((course: any) => (
+                    courses.map((course: Course) => (
                         <CourseCard key={course.id} course={course} />
                     ))
                 ) : (

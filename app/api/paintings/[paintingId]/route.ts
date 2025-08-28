@@ -46,10 +46,10 @@ export async function PUT(req: NextRequest, { params }: { params: { paintingId: 
                 const arrayBuffer = await file.arrayBuffer();
                 const buffer = Buffer.from(arrayBuffer);
 
-                const uploadResult: any = await new Promise((resolve, reject) => {
+                const uploadResult = await new Promise<{ secure_url: string }>((resolve, reject) => {
                     cloudinary.uploader.upload_stream({ resource_type: 'image' }, (error, result) => {
                         if (error) reject(error);
-                        resolve(result);
+                        resolve(result as { secure_url: string });
                     }).end(buffer);
                 });
                 uploadedImageUrls.push(uploadResult.secure_url);

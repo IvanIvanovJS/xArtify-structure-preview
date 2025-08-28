@@ -1,6 +1,20 @@
 // app/paintings/page.tsx
 import PaintingCard from "@/components/PaintingCard";
 
+type Painting = {
+    id: string;
+    title: string;
+    dimensions: string;
+    description: string;
+    images: string[];
+    price: number;
+    artistId: string;
+    artist: {
+        user: {
+            name: string;
+        };
+    };
+}
 // Функция за извличане на картините от API-то
 async function getPaintings() {
     const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/paintings`, {
@@ -21,7 +35,7 @@ export default async function PaintingsPage() {
             <h1 className="text-3xl font-bold mb-6 text-center">Галерия с Картини</h1>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 {paintings.length > 0 ? (
-                    paintings.map((painting: any) => (
+                    paintings.map((painting: Painting) => (
                         <PaintingCard key={painting.id} painting={painting} />
                     ))
                 ) : (

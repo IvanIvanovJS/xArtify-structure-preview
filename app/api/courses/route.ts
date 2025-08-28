@@ -36,9 +36,9 @@ export async function POST(req: Request) {
                 description,
                 price,
                 videoUrls,
-                // materials: {
-                //   connect: materials.map((id: string) => ({ id })) // Пример за свързване на съществуващи материали
-                // }
+                materials: {
+                    connect: materials.map((id: string) => ({ id })) // Пример за свързване на съществуващи материали
+                }
             },
         });
 
