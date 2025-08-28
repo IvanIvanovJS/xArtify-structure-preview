@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 // 1. Дефиниране на схемата за валидация на новата парола
 const formSchema = z.object({
@@ -59,8 +60,12 @@ export default function ResetPasswordForm({ token }: { token: string }) {
             form.reset();
             router.push('/login'); // Пренасочване към вход след успешна смяна
 
-        } catch (e) {
-            setError("Възникна грешка. Моля, опитайте отново.");
+        } catch (error) {
+            if (error instanceof Error) {
+                setError(error.message)
+            } else {
+                setError("Възникна грешка.Моля опитайте отново.");
+            }
         }
     };
 
@@ -107,7 +112,7 @@ export default function ResetPasswordForm({ token }: { token: string }) {
                             tabIndex={-1}
                         >
                             {showPassword ? (
-                                <img src="/hide-password.svg" className="h-5 w-5" />
+                                <Image src="/hide-password.svg" className="h-5 w-5" alt="hide" />
                             ) : (
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />

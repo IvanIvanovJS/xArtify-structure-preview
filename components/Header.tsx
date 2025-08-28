@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { signIn, signOut, useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import CartIcon from "@/components/CartIcon";
 
 export default function Header() {

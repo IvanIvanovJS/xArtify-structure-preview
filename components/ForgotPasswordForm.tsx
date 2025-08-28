@@ -12,7 +12,6 @@ const formSchema = z.object({
 });
 
 export default function ForgotPasswordForm() {
-    const router = useRouter();
     const [message, setMessage] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
 
@@ -46,12 +45,14 @@ export default function ForgotPasswordForm() {
             setMessage(result.message);
             form.reset();
 
-        } catch (e) {
-            setError("Възникна грешка. Моля, опитайте отново.");
+        } catch (err) {
+            if (err instanceof Error) {
+                setError(err.message);
+            } else {
+                setError("Възникна грешка. Моля, опитайте отново.");
+            }
         }
     };
-
-    const emailValue = form.watch("email");
 
     return (
         <div className="flex-col items-center w-full max-w-md space-y-6 bg-white dark:bg-gray-800 rounded-xl shadow-xl/20 border p-6">

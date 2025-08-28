@@ -8,6 +8,7 @@ import * as z from "zod";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 
 // схема за валидация
 const formSchema = z
@@ -70,8 +71,13 @@ export default function RegisterForm() {
             }
 
 
-        } catch (e: any) {
-            setError("Възникна грешка при регистрацията.");
+        } catch (error) {
+            if (error instanceof Error) {
+                setError(error.message)
+            } else {
+                setError("Възникна грешка при регистрацията.");
+            }
+
         }
     };
 
@@ -162,7 +168,7 @@ export default function RegisterForm() {
                             tabIndex={-1}
                         >
                             {showPassword ? (
-                                <img src="/hide-password.svg" className="h-5 w-5" alt="hide" />
+                                <Image src="/hide-password.svg" className="h-5 w-5" alt="hide" />
                             ) : (
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -229,7 +235,7 @@ export default function RegisterForm() {
                     className="cursor-pointer gap-2 h-12 flex items-center justify-center w-2/3 py-2 px-4 border-b-3 hover:bg-gray-200 border-gray-300 rounded-full text-sm font-medium transition-colors"
                     type="button"
                 >
-                    <img src="/google-icon.svg" alt="Google" className="h-8 w-8 mr-5" />
+                    <Image src="/google-icon.svg" alt="Google" className="h-8 w-8 mr-5" />
                     Регистрация с Google
                 </button>
 
@@ -238,7 +244,7 @@ export default function RegisterForm() {
                     className="cursor-pointer gap-2 h-12 flex items-center justify-center w-2/3 py-2 px-4 border-b-3 hover:bg-gray-200 border-gray-300 rounded-full text-sm font-medium transition-colors"
                     type="button"
                 >
-                    <img src="/facebook-icon.svg" alt="Facebook" className="h-8 w-8 mr-2" />
+                    <Image src="/facebook-icon.svg" alt="Facebook" className="h-8 w-8 mr-2" />
                     Регистрация с Facebook
                 </button>
             </div>

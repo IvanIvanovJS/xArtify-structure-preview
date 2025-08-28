@@ -100,7 +100,7 @@ export default function PaintingCard({ painting }: PaintingCardProps) {
             </div>
             {showNotification && (
                 <div className="fixed bottom-4 right-4 bg-green-500 text-white p-4 rounded-md shadow-lg transition-opacity duration-500 z-50">
-                    Вие успешно добавихте "{painting.title}" в количката!
+                    Вие успешно добавихте {painting.title} в количката!
                 </div>
             )}
         </div>

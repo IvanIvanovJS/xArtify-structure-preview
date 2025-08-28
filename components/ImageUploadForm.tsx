@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from 'react';
+import Image from "next/image";
 
 export default function ImageUploadForm() {
     const [file, setFile] = useState<File | null>(null);
@@ -42,8 +43,12 @@ export default function ImageUploadForm() {
             const data = await response.json();
             setImageUrl(data.imageUrl);
 
-        } catch (err: any) {
-            setError(err.message);
+        } catch (err) {
+            if (err instanceof Error) {
+                setError(err.message);
+            } else {
+                setError("Възникна неизвестна грешка.");
+            }
         } finally {
             setLoading(false);
         }
@@ -73,7 +78,7 @@ export default function ImageUploadForm() {
             {imageUrl && (
                 <div className="flex flex-col items-center space-y-4">
                     <p className="text-green-600">Изображението е успешно качено!</p>
-                    <img src={imageUrl} alt="Uploaded" className="max-w-xs max-h-xs rounded-lg shadow-md" />
+                    <Image src={imageUrl} alt="Uploaded" className="max-w-xs max-h-xs rounded-lg shadow-md" />
                     <p className="break-all text-sm text-gray-500">URL: {imageUrl}</p>
                 </div>
             )}

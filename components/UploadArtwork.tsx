@@ -3,7 +3,6 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useSession } from "next-auth/react"; // Ще използваме useSession за клиентска проверка
 
 // Дефинираме props-овете за компонента
 type CreatePaintingFormProps = {
@@ -118,7 +117,7 @@ export default function CreatePaintingForm({ artistId }: CreatePaintingFormProps
                 />
             </div>
             <div>
-                <label htmlFor="dimensions" className="block text-sm font-medium text-gray-700">Размери (напр. "80x60 cm")</label>
+                <label htmlFor="dimensions" className="block text-sm font-medium text-gray-700">Размери (напр. 80x60 cm)</label>
                 <input
                     id="dimensions"
                     type="text"

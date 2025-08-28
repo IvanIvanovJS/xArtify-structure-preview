@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const session = await getServerSession(authOptions);
-  const nonce = (await headers()).get("x-nonce") ?? undefined;
+  // const nonce = (await headers()).get("x-nonce") ?? undefined;
 
   return (
     <html lang="bg">

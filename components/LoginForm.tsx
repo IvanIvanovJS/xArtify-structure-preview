@@ -8,6 +8,8 @@ import { signIn } from "next-auth/react";
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
+
 
 // 1. Дефиниране на схемата за валидация
 const formSchema = z.object({
@@ -144,11 +146,11 @@ export default function LoginForm() {
                         >
                             {showPassword ? (
                                 // Икона закрито око
-                                <img src="/hide-password.svg" className="h-5 w-5" />
+                                <Image src="/hide-password.svg" width={5} height={5} alt="closedEye" className="h-5 w-5" />
 
                             ) : (
                                 // Икона отворено око
-                                <img src="/eye-outline.svg" className="h-5 w-5" />
+                                <Image src="/eye-outline.svg" width={5} height={5} alt="Eye" className="h-5 w-5" />
                             )}
                         </button>
                         <div className="w-full flex justify-center items-center gap-14">
@@ -202,14 +204,14 @@ export default function LoginForm() {
                     onClick={() => signIn("google", { callbackUrl: "/" })}
                     className="cursor-pointer gap-2 h-12 flex items-center justify-center w-2/3 py-2 px-4 border-b-3 hover:bg-gray-200 border-gray-300 rounded-full text-sm font-medium transition-colors"
                 >
-                    <img src="/google-icon.svg" alt="Google" className="h-8 w-8 mr-5" />
+                    <Image src="/google-icon.svg" width={8} height={8} alt="Google" className="h-8 w-8 mr-5" />
                     Вход с Google
                 </button>
                 <button
                     onClick={() => signIn("facebook", { callbackUrl: "/" })}
                     className="cursor-pointer gap-2 h-12 flex items-center justify-center w-2/3 py-2 px-4 border-b-3 hover:bg-gray-200 border-gray-300 rounded-full text-sm font-medium transition-colors"
                 >
-                    <img src="/facebook-icon.svg" alt="Facebook" className="h-8 w-8 mr-2 box-" />
+                    <Image src="/facebook-icon.svg" width={8} height={8} alt="Facebook" className="h-8 w-8 mr-2 box-" />
                     Вход с Facebook
                 </button>
             </div>

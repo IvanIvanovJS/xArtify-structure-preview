@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useCallback, useState, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -28,11 +28,7 @@ export default function MyProfilePage() {
 
     const router = useRouter();
 
-    useEffect(() => {
-        fetchProfileData();
-    }, []);
-
-    const fetchProfileData = async () => {
+    const fetchProfileData = useCallback(async () => {
         try {
             const response = await fetch("/api/profile");
 
@@ -61,7 +57,12 @@ export default function MyProfilePage() {
         } finally {
             setLoading(false);
         }
-    };
+
+    }, []);
+    useEffect(() => {
+        fetchProfileData();
+    }, [fetchProfileData]);
+
 
     const handleUpdateName = async () => {
         try {
@@ -73,8 +74,12 @@ export default function MyProfilePage() {
             if (!response.ok) throw new Error("Неуспешно актуализиране на името.");
             alert("Името е успешно актуализирано!");
             fetchProfileData();
-        } catch (err: any) {
-            setErrorMessage(err.message);
+        } catch (err) {
+            if (err instanceof Error) {
+                setErrorMessage(err.message);
+            } else {
+                setErrorMessage("Възникна неизвестна грешка.");
+            }
         }
     };
 
@@ -90,8 +95,12 @@ export default function MyProfilePage() {
             if (!response.ok) throw new Error("Неуспешно актуализиране на профила на артист.");
             alert("Профилът на артиста е успешно актуализиран!");
             fetchProfileData();
-        } catch (err: any) {
-            setErrorMessage(err.message);
+        } catch (err) {
+            if (err instanceof Error) {
+                setErrorMessage(err.message);
+            } else {
+                setErrorMessage("Възникна неизвестна грешка.");
+            }
         }
     };
 
@@ -117,8 +126,12 @@ export default function MyProfilePage() {
             if (!updateResponse.ok) throw new Error("Неуспешно актуализиране на снимка на потребител.");
             alert("Снимката на профила е успешно актуализирана!");
             fetchProfileData();
-        } catch (err: any) {
-            setErrorMessage(err.message);
+        } catch (err) {
+            if (err instanceof Error) {
+                setErrorMessage(err.message);
+            } else {
+                setErrorMessage("Възникна неизвестна грешка.");
+            }
         }
     };
 
