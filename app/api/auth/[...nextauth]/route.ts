@@ -1,5 +1,6 @@
 import NextAuth, { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import type { Adapter } from "next-auth/adapters";
 import GoogleProvider from "next-auth/providers/google";
 import FacebookProvider from "next-auth/providers/facebook";
 import bcrypt from "bcrypt";
@@ -8,7 +9,7 @@ import { prisma } from "@/lib/prisma";
 export const runtime = "nodejs";
 
 export const authOptions: NextAuthOptions = {
-    adapter: PrismaAdapter(prisma) as any,
+    adapter: PrismaAdapter(prisma) as Adapter,
     providers: [
         CredentialsProvider({
             name: "Credentials",
@@ -35,7 +36,7 @@ export const authOptions: NextAuthOptions = {
                     email: user.email,
                     name: user.name,
                     role: user.role,
-                    remember_me: credentials.remember_me === "true",
+                    remember_me: credentials?.remember_me === "true",
                 };
             },
         }),
@@ -52,14 +53,14 @@ export const authOptions: NextAuthOptions = {
         async jwt({ token, user, account }) {
             if (user) {
                 token.id = user.id;
-                token.role = (user as any).role;
+                token.role = user.role;
 
                 // ✅ унифицираме remember_me:
                 // - идва от credentials (user.remember_me)
                 // - или от query параметър при Google/Facebook
-                const rememberParam = (account as any)?.remember_me;
+                const rememberParam = account?.remember_me;
                 const rememberMe =
-                    (user as any).remember_me === true || rememberParam === "true";
+                    user.remember_me === true || rememberParam === "true";
 
                 token.remember_me = rememberMe;
 

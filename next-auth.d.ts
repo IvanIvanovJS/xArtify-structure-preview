@@ -35,5 +35,6 @@ declare module "next-auth" {
         id: string;
         role: string;
         artistProfile?: ArtistProfile | null;
+        remember_me?: boolean;
     }
 }
