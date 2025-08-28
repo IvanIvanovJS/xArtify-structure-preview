@@ -1,11 +1,10 @@
 // app/api/auth/forgot-password/route.ts
 import { NextResponse } from 'next/server';
-import { PrismaClient } from "@prisma/client";
 import crypto from 'crypto';
 import { Resend } from 'resend';
+import { prisma } from "@/lib/prisma";
+export const runtime = "nodejs";
 
-// Инициализираме Prisma клиента
-const prisma = new PrismaClient();
 
 // Инициализираме Resend с API ключа от .env.local
 const resend = new Resend(process.env.RESEND_API_KEY);

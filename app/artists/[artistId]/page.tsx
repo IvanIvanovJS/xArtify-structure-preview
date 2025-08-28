@@ -1,10 +1,9 @@
 // app/artists/[artistId]/page.tsx
 import { bgnToEur } from '@/lib/currency';
-import { PrismaClient } from '@prisma/client';
 import Image from 'next/image';
 import Link from 'next/link';
-
-const prisma = new PrismaClient();
+import { prisma } from "@/lib/prisma";
+export const runtime = "nodejs";
 
 // Компонент, който ще се изпълнява на сървъра
 export default async function ArtistProfilePage({ params }: { params: { artistId: string } }) {

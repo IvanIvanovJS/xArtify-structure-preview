@@ -2,14 +2,13 @@ import NextAuth, { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import FacebookProvider from "next-auth/providers/facebook";
-import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
-
-const prisma = new PrismaClient();
+import { PrismaAdapter } from "@next-auth/prisma-adapter";
+import { prisma } from "@/lib/prisma";
+export const runtime = "nodejs";
 
 export const authOptions: NextAuthOptions = {
-    adapter: PrismaAdapter(prisma),
+    adapter: PrismaAdapter(prisma) as any,
     providers: [
         CredentialsProvider({
             name: "Credentials",
@@ -88,7 +87,6 @@ export const authOptions: NextAuthOptions = {
             if (token.maxAge) {
                 session.expires = token.expires as string;
             }
-            console.log(session.expires);
 
             return session;
         },

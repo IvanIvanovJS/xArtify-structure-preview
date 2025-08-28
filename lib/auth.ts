@@ -2,10 +2,9 @@
 
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
-
-const prisma = new PrismaClient();
+import { prisma } from "@/lib/prisma";
+export const runtime = "nodejs";
 
 export const authOptions: NextAuthOptions = {
     // Настройваме доставчиците за автентикация
@@ -46,6 +45,7 @@ export const authOptions: NextAuthOptions = {
                     email: user.email,
                     name: user.name,
                     image: user.image,
+                    role: user.role,
                 };
             },
         }),
@@ -77,7 +77,7 @@ export const authOptions: NextAuthOptions = {
                 session.user.id = token.id as string;
                 session.user.name = token.name;
                 session.user.email = token.email;
-                session.user.image = token.image;
+                session.user.image = typeof token.image === "string" ? token.image : null;
             }
             return session;
         },

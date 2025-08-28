@@ -1,10 +1,8 @@
 // app/artists/page.tsx
-import { PrismaClient } from '@prisma/client';
 import Image from 'next/image';
 import Link from 'next/link';
-
-// Създаваме нов екземпляр на PrismaClient
-const prisma = new PrismaClient();
+import { prisma } from "@/lib/prisma";
+export const runtime = "nodejs";
 
 // Компонентът се изпълнява на сървъра
 export default async function AllArtistsPage() {

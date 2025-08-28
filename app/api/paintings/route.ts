@@ -1,8 +1,9 @@
 // app/api/paintings/route.ts
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth'; // Важно за защита на маршрута
 import { authOptions } from '@/app/api/auth/[...nextauth]/route'; // Импортираме authOptions
+import { prisma } from "@/lib/prisma";
+export const runtime = "nodejs";
 
 // GET /api/paintings - Връща всички картини
 export async function GET() {

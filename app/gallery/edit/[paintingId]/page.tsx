@@ -1,11 +1,10 @@
 // app/paintings/edit/[paintingId]/page.tsx
-import { PrismaClient } from '@prisma/client';
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import EditPaintingForm from '@/components/EditPaintingForm';
 import { notFound } from 'next/navigation';
-
-const prisma = new PrismaClient();
+import { prisma } from "@/lib/prisma";
+export const runtime = "nodejs";
 
 export default async function EditPaintingPage({ params }: { params: { paintingId: string } }) {
     const { paintingId } = await params;

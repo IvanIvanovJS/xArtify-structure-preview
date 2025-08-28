@@ -1,5 +1,4 @@
 // app/paintings/[paintingId]/page.tsx
-import { PrismaClient } from '@prisma/client';
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import Image from 'next/image';
@@ -7,7 +6,8 @@ import Link from 'next/link';
 import { bgnToEur } from '@/lib/currency';
 import ImageGallery from '@/components/ImageGallery';
 import AddToCartButton from "@/components/AddToCartButton";
-const prisma = new PrismaClient();
+import { prisma } from "@/lib/prisma";
+export const runtime = "nodejs";
 
 export default async function PaintingDetailsPage({ params }: { params: { paintingId: string } }) {
     const { paintingId } = await params;

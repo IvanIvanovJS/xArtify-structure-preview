@@ -1,10 +1,9 @@
 // app/api/profile/route.ts
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
 import { getServerSession } from "next-auth"; // Ще използваме за да вземем потребителя
 import { authOptions } from "@/lib/auth"; // Ще бъде създадено в бъдеще
-
-const prisma = new PrismaClient();
+import { prisma } from "@/lib/prisma";
+export const runtime = "nodejs";
 
 // GET заявка за получаване на профилни данни
 export async function GET() {

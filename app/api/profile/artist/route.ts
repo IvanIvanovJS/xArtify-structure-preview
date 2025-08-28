@@ -1,10 +1,9 @@
 // app/api/profile/artist/route.ts
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-
-const prisma = new PrismaClient();
+import { prisma } from "@/lib/prisma";
+export const runtime = "nodejs";
 
 // POST заявка за създаване или актуализиране на профил на артист
 export async function POST(req: Request) {

@@ -2,10 +2,9 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from 'next/navigation';
-import { PrismaClient } from '@prisma/client';
 import CreatePaintingForm from '@/components/UploadArtwork'; // Ще създадем този компонент
-
-const prisma = new PrismaClient();
+import { prisma } from "@/lib/prisma";
+export const runtime = "nodejs";
 
 // Server Component за проверка на правата
 export default async function CreatePaintingPage() {
