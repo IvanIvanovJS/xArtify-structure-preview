@@ -17,7 +17,7 @@ cloudinary.config({
 });
 
 // PUT /api/paintings/[paintingId] — update painting (multipart/form-data)
-export async function PUT(req: Request, context: { params: { paintingId: string } }) {
+export async function PUT(req: Request, context: { params: { paintingId: string } }): Promise<NextResponse<{ message: string; }> | NextResponse<{ item: { title: string; dimensions: string | null; materials: string | null; description: string | null; id: string; createdAt: Date; updatedAt: Date; images: string[]; price: number; isSold: boolean; artistId: string; }; }>> {
     const session = await getServerSession(authOptions);
     const { paintingId } = context.params;
 
@@ -89,7 +89,7 @@ export async function PUT(req: Request, context: { params: { paintingId: string 
 }
 
 // DELETE /api/paintings/[paintingId]
-export async function DELETE(_req: Request, context: { params: { paintingId: string } }) {
+export async function DELETE(_req: Request, context: { params: { paintingId: string } }): Promise<NextResponse<{ message: string; }>> {
     const session = await getServerSession(authOptions);
     const { paintingId } = context.params;
 

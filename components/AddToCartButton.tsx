@@ -36,10 +36,10 @@ export default function AddToCartButton({
         });
 
         if (!added) {
-            setNotification(`"${title}" вече е добавена в количката!`);
+            setNotification(`${title} вече е добавена в количката!`);
             setIsError(true);
         } else {
-            setNotification(`Успешно добавихте "${title}" в количката!`);
+            setNotification(`Успешно добавихте ${title} в количката!`);
             setIsError(false);
         }
 
