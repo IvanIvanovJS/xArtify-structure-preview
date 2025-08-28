@@ -1,7 +1,7 @@
 // app/api/paintings/route.ts
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth'; // Важно за защита на маршрута
-import { authOptions } from '@/app/api/auth/[...nextauth]/route'; // Импортираме authOptions
+import { authOptions } from '@/lib/authOptions'; // Импортираме authOptions
 import { prisma } from "@/lib/prisma";
 export const runtime = "nodejs";
 

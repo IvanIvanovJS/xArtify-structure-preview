@@ -2,7 +2,7 @@
 import { NextResponse, NextRequest } from "next/server";
 import Stripe from "stripe";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/authOptions";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
     apiVersion: "2025-07-30.basil",
@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
             currency: "bgn",
             metadata: {
                 userId: session.user.id,
-                email: session.user.email,
+                email: session.user.email as string,
             },
             automatic_payment_methods: {
                 enabled: true, // активира всички автоматично поддържани методи

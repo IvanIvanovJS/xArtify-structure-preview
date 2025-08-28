@@ -5,10 +5,10 @@ import "./globals.css";
 import Header from "@/components/Header";
 import SessionProvider from "@/components/SessionProvider";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/authOptions";
 import { CartProvider } from "./context/CartContext";
 import SessionGuard from "@/components/SessionGuard"
-import { headers } from "next/headers";
+
 
 const inter = Inter({ subsets: ["latin"] });
 

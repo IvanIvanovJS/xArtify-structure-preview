@@ -1,6 +1,6 @@
 // app/create-painting/page.tsx
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { authOptions } from "@/lib/authOptions";
 import { redirect } from 'next/navigation';
 import CreatePaintingForm from '@/components/UploadArtwork'; // Ще създадем този компонент
 import { prisma } from "@/lib/prisma";
