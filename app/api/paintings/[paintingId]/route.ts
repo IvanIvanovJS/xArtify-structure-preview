@@ -1,10 +1,8 @@
 // app/api/paintings/[paintingId]/route.ts
 // ✅ Fix: WIDEN the second argument type to match Next.js expectations
-// Next compares handler signatures; your narrower `{ params: { paintingId: string } }`
-// wasn't assignable to `{ params: Record<string, string | string[]> }` (function param contravariance).
-// This version compiles on Next 14/15.
+// This version compiles on Next 14/15 by using the Next.js standard types.
 
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
@@ -18,17 +16,19 @@ cloudinary.config({
     api_secret: process.env.CLOUDINARY_API_SECRET!,
 });
 
-// Helper to extract and assert the id from a wide params bag
-function getPaintingId(params: Record<string, string | string[]>) {
-    const val = params["paintingId"];
+// Helper to extract and assert the id from the context
+function getPaintingId(ctx: { params: { paintingId: string | string[] } }) {
+    const val = ctx.params.paintingId;
     if (Array.isArray(val)) return val[0];
-    return val as string;
+    return val;
 }
 
 // PUT /api/paintings/[paintingId]
-export async function PUT(req: Request, ctx: { params: Record<string, string | string[]> }) {
+export async function PUT(req: NextRequest) {
     const session = await getServerSession(authOptions);
-    const paintingId = getPaintingId(ctx.params);
+    const urlParts = req.url.split('/');
+    const paintingId = urlParts[urlParts.length - 1];
+    const paintingIdValue = getPaintingId({ params: { paintingId } });
 
     if (!session?.user?.id) {
         return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
@@ -55,7 +55,7 @@ export async function PUT(req: Request, ctx: { params: Record<string, string | s
         const images = Array.isArray(paintingData.images) ? paintingData.images : [];
 
         // ownership check
-        const painting = await prisma.painting.findUnique({ where: { id: paintingId }, include: { artist: true } });
+        const painting = await prisma.painting.findUnique({ where: { id: paintingIdValue }, include: { artist: true } });
         if (!painting || painting.artist?.userId !== session.user.id) {
             return NextResponse.json({ message: "Forbidden" }, { status: 403 });
         }
@@ -78,7 +78,7 @@ export async function PUT(req: Request, ctx: { params: Record<string, string | s
         }
 
         const updated = await prisma.painting.update({
-            where: { id: paintingId },
+            where: { id: paintingIdValue },
             data: {
                 title: paintingData.title,
                 dimensions: paintingData.dimensions,
@@ -97,9 +97,9 @@ export async function PUT(req: Request, ctx: { params: Record<string, string | s
 }
 
 // DELETE /api/paintings/[paintingId]
-export async function DELETE(_req: Request, ctx: { params: Record<string, string | string[]> }) {
+export async function DELETE(req: NextRequest) {
     const session = await getServerSession(authOptions);
-    const paintingId = getPaintingId(ctx.params);
+    const paintingId = req.nextUrl.pathname.split('/').pop() as string;
 
     if (!session?.user?.id) {
         return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
