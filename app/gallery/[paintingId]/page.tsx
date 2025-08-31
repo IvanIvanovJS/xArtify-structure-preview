@@ -9,7 +9,7 @@ import AddToCartButton from "@/components/AddToCartButton";
 import { prisma } from "@/lib/prisma";
 export const runtime = "nodejs";
 
-export default async function PaintingDetailsPage({ params }: { params: { paintingId: string } }) {
+export default async function PaintingDetailsPage({ params }: { params: Promise<{ paintingId: string }> }) {
     const { paintingId } = await params;
     const session = await getServerSession(authOptions);
 

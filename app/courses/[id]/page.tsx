@@ -5,15 +5,13 @@ import { authOptions } from "@/lib/authOptions";
 import VideoPlayer from "@/components/VideoPlayer";
 import { prisma } from "@/lib/prisma";
 
-interface Props {
-    params: { id: string };
-}
 
-export default async function CourseDetailPage({ params }: Props) {
+
+export default async function CourseDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const session = await getServerSession(authOptions);
 
     const course = await prisma.course.findUnique({
-        where: { id: params.id },
+        where: { id: (await params).id },
     });
 
     if (!course) {
@@ -25,7 +23,7 @@ export default async function CourseDetailPage({ params }: Props) {
         ? await prisma.enrollment.findFirst({
             where: {
                 userId: session.user.id,
-                courseId: params.id,
+                courseId: (await params).id,
             },
         })
         : false;

@@ -6,7 +6,7 @@ import { notFound } from 'next/navigation';
 import { prisma } from "@/lib/prisma";
 export const runtime = "nodejs";
 
-export default async function EditPaintingPage({ params }: { params: { paintingId: string } }) {
+export default async function EditPaintingPage({ params }: { params: Promise<{ paintingId: string }> }) {
     const { paintingId } = await params;
     const session = await getServerSession(authOptions);
 
