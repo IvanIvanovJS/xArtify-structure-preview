@@ -5,10 +5,7 @@ import Link from 'next/link';
 import { prisma } from "@/lib/prisma";
 export const runtime = "nodejs";
 
-type Params = { artistId: string };
-
-export default async function ArtistProfilePage(
-    { params }: { params: Promise<Params> }  // ⬅️ точно това иска типът PageProps при теб
+export default async function ArtistProfilePage({ params }: { params: Promise<{ artistId: string }> }  // ⬅️ точно това иска типът PageProps при теб
 ) {
     const { artistId } = await params;
 
