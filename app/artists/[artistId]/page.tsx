@@ -8,11 +8,9 @@ export const runtime = "nodejs";
 type Params = { artistId: string };
 
 export default async function ArtistProfilePage(
-    props: { params: Params } | { params: Promise<Params> }
+    { params }: { params: Promise<Params> }  // ⬅️ точно това иска типът PageProps при теб
 ) {
-    // ако params е Promise -> await; иначе директно
-    const params = "then" in props.params ? await props.params : props.params;
-    const { artistId } = params;
+    const { artistId } = await params;
 
     const artist = await prisma.artistProfile.findUnique({
         where: { id: artistId },
@@ -56,9 +54,9 @@ export default async function ArtistProfilePage(
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-8">
                 <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-200 mb-6">Галерия на {artist.user.name}</h2>
                 {artist.paintings.length > 0 ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                         {artist.paintings.map((painting) => (
-                            <div key={painting.id} className="bg-white rounded-lg shadow-md overflow-hidden">
+                            <div key={painting.id} className="bg-white rounded-lg w-64 shadow-md overflow-hidden">
                                 <Link href={`/gallery/${painting.id}`}>
                                     <div>
                                         <div className="relative w-64 h-64 overflow-hidden group">
