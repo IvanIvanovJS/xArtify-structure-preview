@@ -7,7 +7,7 @@ export const runtime = "nodejs";
 
 // Компонент, който ще се изпълнява на сървъра
 export default async function ArtistProfilePage({ params }: { params: { artistId: string } }) {
-    const { artistId } = await params;
+    const { artistId } = params;
 
     // Извличане на профила на артиста и неговите картини от базата данни
     const artist = await prisma.artistProfile.findUnique({
