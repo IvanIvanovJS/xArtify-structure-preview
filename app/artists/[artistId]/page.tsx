@@ -5,25 +5,20 @@ import Link from 'next/link';
 import { prisma } from "@/lib/prisma";
 export const runtime = "nodejs";
 
-// Компонент, който ще се изпълнява на сървъра
-export default async function ArtistProfilePage({ params }: { params: { artistId: string } }) {
+type Params = { artistId: string };
+
+export default async function ArtistProfilePage(
+    props: { params: Params } | { params: Promise<Params> }
+) {
+    // ако params е Promise -> await; иначе директно
+    const params = "then" in props.params ? await props.params : props.params;
     const { artistId } = params;
 
-    // Извличане на профила на артиста и неговите картини от базата данни
     const artist = await prisma.artistProfile.findUnique({
         where: { id: artistId },
         include: {
-            user: {
-                select: {
-                    name: true,
-                    image: true,
-                },
-            },
-            paintings: {
-                orderBy: {
-                    createdAt: 'desc', // Сортираме картините по дата на създаване
-                },
-            },
+            user: { select: { name: true, image: true } },
+            paintings: { orderBy: { createdAt: "desc" } },
         },
     });
 

@@ -4,7 +4,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 
 // 1. Дефиниране на схемата за валидация
 const formSchema = z.object({
