@@ -1,6 +1,6 @@
 // app/paintings/page.tsx
 import PaintingCard from "@/components/PaintingCard";
-
+import { getBaseUrl } from '@/lib/url';
 type Painting = {
     id: string;
     title: string;
@@ -17,8 +17,10 @@ type Painting = {
 }
 // Функция за извличане на картините от API-то
 async function getPaintings() {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/paintings`, {
+    const base = getBaseUrl();
+    const res = await fetch(`${base}/api/paintings?status=published`, {
         cache: "no-store", // Деактивираме кеширането, за да виждаме винаги актуални данни
+        next: { revalidate: 60 }, // ISR
     });
     if (!res.ok) {
         throw new Error("Failed to fetch paintings");

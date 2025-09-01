@@ -1,6 +1,6 @@
 // app/courses/page.tsx
 import CourseCard from "@/components/CourseCard";
-
+import { getBaseUrl } from '@/lib/url';
 type Course = {
     id: string;
     title: string;
@@ -11,8 +11,10 @@ type Course = {
 
 // Функция за извличане на курсовете от API-то
 async function getCourses() {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/courses`, {
+    const base = getBaseUrl();
+    const res = await fetch(`${base}/api/courses?status=published`, {
         cache: "no-store", // Деактивираме кеширането, за да виждаме винаги актуални данни
+        next: { revalidate: 60 }, // ISR
     });
     if (!res.ok) {
         throw new Error("Failed to fetch courses");
