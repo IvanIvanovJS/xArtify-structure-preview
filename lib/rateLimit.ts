@@ -7,13 +7,13 @@ if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) {
   throw new Error("Missing KV_REST_API_URL or KV_REST_API_TOKEN");
 }
 
-// Use Vercel KV (Upstash) REST creds
+// Използваме Vercel KV (Upstash) REST креденшъли
 const redis = new Redis({
-  url: process.env.KV_REST_API_URL!,
-  token: process.env.KV_REST_API_TOKEN!,
+  url: process.env.KV_REST_API_URL,
+  token: process.env.KV_REST_API_TOKEN,
 });
 
-// 10 requests / minute (sliding window)
+// 10 req/min (sliding window)
 export const limiter10perMin = new Ratelimit({
   redis,
   limiter: Ratelimit.slidingWindow(10, "1 m"),
@@ -21,7 +21,7 @@ export const limiter10perMin = new Ratelimit({
   prefix: "rl:global",
 });
 
-// 120 requests / minute for public GET
+// 120 req/min за публични заявки
 export const limiterPublic = new Ratelimit({
   redis,
   limiter: Ratelimit.slidingWindow(120, "1 m"),
@@ -29,13 +29,10 @@ export const limiterPublic = new Ratelimit({
   prefix: "rl:pub",
 });
 
-// Build a stable key: prefer userId; fallback to IP
-export function rateKey(req: Request, userId?: string | null) {
-  if (userId) return `uid:${userId}`;
-  const ip =
-    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-    (req as any).ip ||
-    (req as any).socket?.remoteAddress ||
-    "unknown";
+// Стабилен ключ за rate limit
+export function rateKey(req: Request, userId?: string | null): string {
+  if (userId && userId.length > 0) return `uid:${userId}`;
+  const fwd = req.headers.get("x-forwarded-for");
+  const ip = (fwd ? fwd.split(",")[0]?.trim() : null) || "unknown";
   return `ip:${ip}`;
 }
