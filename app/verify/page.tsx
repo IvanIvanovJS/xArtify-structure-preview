@@ -2,14 +2,10 @@
 import { prisma } from "@/lib/prisma";
 import { consumeVerificationToken } from "@/lib/verify";
 import { redirect } from "next/navigation";
-import { JSX } from "react";
 
-export default async function VerifyPage({
-    searchParams,
-}: {
-    searchParams: { token?: string };
-}): Promise<JSX.Element> {
-    const token = searchParams?.token;
+
+export default async function VerifyPage({ searchParams }: { searchParams: Promise<{ token?: string }>; }) {
+    const token = (await searchParams)?.token;
     if (!token) {
         return (
             <main className="mx-auto max-w-md px-6 py-12">
