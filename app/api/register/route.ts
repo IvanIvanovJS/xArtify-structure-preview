@@ -1,68 +1,100 @@
-// /app/api/register/route.ts — hardened version
+// app/api/register/route.ts
 import { NextResponse } from "next/server";
-import bcrypt from "bcrypt";
+import { RegisterSchema } from "@/lib/validators";
+import { parseJson, json } from "@/lib/zhttp";
+import { limiter10perMin, rateKey } from "@/lib/rateLimit";
+import argon2 from "argon2";
+import { generateToken, storeVerificationToken } from "@/lib/verify";
+import { sendVerificationEmail } from "@/lib/email";
 import { prisma } from "@/lib/prisma";
-import { z } from "zod";
 
 export const runtime = "nodejs";
 
-// 1) Типизация и валидация със Zod
-const RegisterSchema = z.object({
-    name: z.string().min(2).max(80),
-    email: z.string().email().max(254),
-    password: z
-        .string()
-        .min(8)
-        .max(128)
-        .regex(/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d).+$/, {
-            message: "Паролата трябва да съдържа главна, малка буква и цифра.",
-        }),
-});
+type RegisterPayload = {
+  name: string;
+  email: string;
+  password: string;
+  termsAccepted: boolean;
+  marketingConsent?: boolean;
+};
 
-export type RegisterInput = z.infer<typeof RegisterSchema>;
+type PublicUser = {
+  id: string;
+  email: string | null;
+  name: string | null;
+  createdAt: string;
+  emailVerified: string | null;
+};
 
 export async function POST(req: Request) {
-    try {
-        const json = await req.json().catch(() => null);
-        const parsed = RegisterSchema.safeParse(json);
-        if (!parsed.success) {
-            return NextResponse.json(
-                { message: "Невалидни данни.", issues: parsed.error.issues },
-                { status: 422 }
-            );
-        }
+  // Rate limit (10/min/IP)
+  const key = rateKey(req);
+  const { success, remaining, reset } = await limiter10perMin.limit(`register:${key}`);
+  if (!success) {
+    return new NextResponse("Too Many Requests", {
+      status: 429,
+      headers: {
+        "X-RateLimit-Remaining": String(remaining),
+        "X-RateLimit-Reset": String(reset),
+      },
+    });
+  }
 
-        const { name, email, password } = parsed.data as RegisterInput;
+  // Validate payload
+  const parsed = await parseJson(req, RegisterSchema, { maxBytes: 64 * 1024 });
+  if (!parsed.success) return parsed.res;
+  const data = parsed.data as RegisterPayload;
 
-        // 2) Проверка за съществуващ потребител
-        const existingUser = await prisma.user.findUnique({ where: { email } });
-        if (existingUser) {
-            // Еднакво съобщение за да не издаваме дали имейлът съществува (можеш да го запазиш както е)
-            return NextResponse.json(
-                { message: "Потребител с този имейл вече съществува." },
-                { status: 409 }
-            );
-        }
+  try {
+    // Unique email guard
+    const exists = await prisma.user.findUnique({ where: { email: data.email } });
+    if (exists) return json({ error: "Имейлът вече е регистриран." }, { status: 409 });
 
-        // 3) Хеширане на паролата
-        const hashedPassword = await bcrypt.hash(password, 12);
+    // Hash password
+    const passwordHash = await argon2.hash(data.password, { type: argon2.argon2id });
 
-        // 4) Създаване на потребител
-        const created = await prisma.user.create({
-            data: { name, email, password: hashedPassword, role: "USER" },
-            select: { id: true, name: true, email: true, image: true },
-        });
+    // Create user (emailVerified stays null initially)
+    const created = await prisma.user.create({
+      data: {
+        email: data.email,
+        name: data.name,
+        password: passwordHash,
+        role: "USER",
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        createdAt: true,
+        emailVerified: true,
+      },
+    });
 
-        // 5) Отговор: върни минимално нужните данни (без пароли) + статус 201
-        return NextResponse.json(
-            { message: "Потребителят е успешно регистриран.", user: created },
-            { status: 201 }
-        );
-    } catch (error) {
-        console.error("Error during registration:", error);
-        return NextResponse.json(
-            { message: "Възникна грешка при регистрацията." },
-            { status: 500 }
-        );
+    // Generate and store verification token
+    const token = generateToken();
+    await storeVerificationToken(token, created.id, 60 * 60 * 24);
+
+    // Compute base URL
+    const baseUrl =
+      process.env.APP_BASE_URL ||
+      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
+
+    // Send via Resend
+    if (created.email) {
+      await sendVerificationEmail({ to: created.email, token, baseUrl });
     }
+
+    const user: PublicUser = {
+      id: created.id,
+      email: created.email,
+      name: created.name,
+      createdAt: created.createdAt.toISOString(),
+      emailVerified: created.emailVerified ? created.emailVerified.toISOString() : null,
+    };
+
+    return json({ user }, { status: 201 });
+  } catch (err: unknown) {
+    console.error(err);
+    return json({ error: "Неуспешна регистрация." }, { status: 500 });
+  }
 }
