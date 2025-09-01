@@ -16,10 +16,11 @@ export async function sendVerificationEmail(input: SendVerificationEmailInput): 
   const { to, token, baseUrl } = input;
   const url = new URL("/verify", baseUrl);
   url.searchParams.set("token", token);
+  console.log("test");
 
 
   await resend.emails.send({
-    from: process.env.RESEND_FROM ?? "no-reply@example.com",
+    from: "onboarding@resend.dev",
     to,
     subject: "Потвърдете вашия имейл",
     html: `
