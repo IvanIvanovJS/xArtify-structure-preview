@@ -102,6 +102,8 @@ export async function POST(req: Request): Promise<NextResponse> {
 
     // 6) Пращаме имейла
     if (user.email && baseUrl) {
+      console.log("test");
+
       await sendVerificationEmail({ to: user.email, token, baseUrl });
     }
 

@@ -39,7 +39,7 @@ export async function POST(req: Request) {
         const resetUrl = `${process.env.NEXTAUTH_URL}/reset-password/${resetToken}`;
 
         await resend.emails.send({
-            from: 'onboarding@resend.dev', // Използвайте верифициран имейл
+            from: process.env.RESEND_FROM ?? "no-reply@xartify.com", // Използвайте верифициран имейл
             to: email,
             subject: 'Възстановяване на парола',
             html: `<p>Кликнете <a href="${resetUrl}">тук</a>, за да смените паролата си.</p>`,
