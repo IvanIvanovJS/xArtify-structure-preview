@@ -106,7 +106,7 @@ export async function POST(req: Request): Promise<NextResponse> {
     }
 
 
-    return json({ message: "Успешна регистрация. Проверете имейла си за верификация." }, { status: 200 });
+    return json({ message: "Успешна регистрация.", autoLogin: true }, { status: 200 });
   } catch (err) {
     // Логни детайлно на сървъра, но върни общо съобщение
     console.error("/api/register error:", err);

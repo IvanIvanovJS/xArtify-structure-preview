@@ -1,22 +1,21 @@
-// src/lib/verify.ts
-import 'server-only';
-import { kv } from '@vercel/kv';
-import crypto from 'crypto';
+// lib/verify.ts
+import { randomBytes } from "crypto";
+import { kv } from "@vercel/kv"; // или вашият store
 
-/** Генерира криптографски токен */
-export function generateToken(bytes = 32): string {
-  return crypto.randomBytes(bytes).toString('hex'); // 64 hex chars
+
+export function generateToken(): string {
+  return randomBytes(32).toString("hex");
 }
 
-/** Съхранява токен в KV с TTL (секунди) */
-export async function storeVerificationToken(token: string, userId: string, ttlSeconds = 60 * 60 * 24) {
-  await kv.set(`verify:token:${token}`, userId, { ex: ttlSeconds });
+
+export async function storeVerificationToken(token: string, userId: string, ttlSeconds: number): Promise<void> {
+  await kv.set(`verify:${token}`, userId, { ex: ttlSeconds });
 }
 
-/** Валидира токен: връща userId или null */
+
 export async function consumeVerificationToken(token: string): Promise<string | null> {
-  const key = `verify:token:${token}`;
-  const userId = await kv.get<string>(key);
+  const key = `verify:${token}`;
+  const userId = (await kv.get<string>(key)) ?? null;
   if (!userId) return null;
   await kv.del(key);
   return userId;
