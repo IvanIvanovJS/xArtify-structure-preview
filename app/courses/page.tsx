@@ -11,7 +11,7 @@ type Course = {
 
 // Функция за извличане на курсовете от API-то
 async function getCourses() {
-    const base = getBaseUrl();
+    const base = await getBaseUrl();
     const res = await fetch(`${base}/api/courses?status=published`, {
         cache: "no-store", // Деактивираме кеширането, за да виждаме винаги актуални данни
         next: { revalidate: 60 }, // ISR

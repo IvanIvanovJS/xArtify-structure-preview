@@ -17,7 +17,7 @@ type Painting = {
 }
 // Функция за извличане на картините от API-то
 async function getPaintings() {
-    const base = getBaseUrl();
+    const base = await getBaseUrl();
     const res = await fetch(`${base}/api/paintings?status=published`, {
         cache: "no-store", // Деактивираме кеширането, за да виждаме винаги актуални данни
         next: { revalidate: 60 }, // ISR
