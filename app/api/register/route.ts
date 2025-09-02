@@ -2,115 +2,88 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { hash } from "bcryptjs"; // увери се, че е инсталирано
+import { hash } from "bcryptjs";
 import { generateToken, storeVerificationToken } from "@/lib/verify";
 import { sendVerificationEmail } from "@/lib/email";
 
-
 export const runtime = "nodejs";
 
-
-const RegisterSchema = z
-  .object({
-    name: z.string().trim().min(2, "Името трябва да бъде поне 2 символа."),
-    email: z.string().trim().toLowerCase().email("Невалиден email."),
-    password: z.string().min(6, "Паролата трябва да бъде поне 6 символа."),
-    confirmPassword: z.string(),
-    terms: z.boolean(),
-  })
-  .superRefine((data, ctx) => {
-    if (data.password !== data.confirmPassword) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["confirmPassword"],
-        message: "Паролите не съвпадат.",
-      });
-    }
-    if (!data.terms) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["terms"],
-        message: "Трябва да се съгласите с Общите условия.",
-      });
-    }
-  });
-
-const TOKEN_TTL_SECONDS = 60 * 60 * 24; // 24h
-
+// Валидация на входа
+const RegisterSchema = z.object({
+  name: z.string().trim().min(2, "Името трябва да бъде поне 2 символа."),
+  email: z.string().trim().toLowerCase().email("Невалиден email."),
+  password: z.string().min(6, "Паролата трябва да бъде поне 6 символа."),
+  confirmPassword: z.string(),
+  terms: z.boolean(),
+}).superRefine((data, ctx) => {
+  if (data.password !== data.confirmPassword) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["confirmPassword"], message: "Паролите не съвпадат." });
+  }
+  if (!data.terms) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["terms"], message: "Трябва да приемете Общите условия." });
+  }
+});
 
 function json<T>(payload: T, init?: ResponseInit): NextResponse<T> {
   return NextResponse.json<T>(payload, init);
 }
 
+const TOKEN_TTL_SECONDS = 60 * 60 * 24; // 24ч
 
 export async function POST(req: Request): Promise<NextResponse> {
-  let body: unknown;
+  let bodyUnknown: unknown;
   try {
-    body = await req.json();
+    bodyUnknown = await req.json();
   } catch {
     return json({ message: "Invalid JSON body." }, { status: 400 });
   }
 
-
-  const parsed = RegisterSchema.safeParse(body);
+  const parsed = RegisterSchema.safeParse(bodyUnknown);
   if (!parsed.success) {
-    // Намираме първата field-грешка за по-добро UX
     const first = parsed.error.issues[0];
-    const field = first?.path?.[0];
+    const field = (first?.path?.[0] as string | undefined) ?? undefined;
     const message = first?.message ?? "Невалидни данни.";
     return json({ field, message }, { status: 400 });
   }
 
-
   const { name, email, password } = parsed.data;
 
-
   try {
-    // 1) Дублиран имейл?
+    // Дублиран имейл
     const existing = await prisma.user.findUnique({ where: { email } });
     if (existing) {
       return json({ field: "email", message: "Имейлът вече е зает." }, { status: 400 });
     }
 
-
-    // 2) Хеш на паролата
+    // Хеширане на парола
     const passwordHash = await hash(password, 12);
 
-
-    // 3) Създаване на потребителя (emailVerified = null)
+    // Създаване на потребителя
     const user = await prisma.user.create({
-      data: {
-        name,
-        email,
-        password: passwordHash,
-        emailVerified: null,
-      },
+      data: { name, email, password: passwordHash, emailVerified: null },
       select: { id: true, email: true },
     });
 
-
-    // 4) Verification token
+    // Токен за верификация
     const token = generateToken();
     await storeVerificationToken(token, user.id, TOKEN_TTL_SECONDS);
 
-
-    // 5) Base URL за линка
+    // Base URL
     const baseUrl = process.env.APP_BASE_URL
-      || (process.env.NEXT_PUBLIC_APP_URL ?? null)
+      || process.env.NEXT_PUBLIC_APP_URL
       || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
 
-
-    // 6) Пращаме имейла
-    if (user.email && baseUrl) {
-      console.log("test");
-
-      await sendVerificationEmail({ to: user.email, token, baseUrl });
+    // Изпращане на имейл (логваме грешки, но не ги изливаме към клиента)
+    if (user.email) {
+      try {
+        await sendVerificationEmail({ to: user.email, token, baseUrl });
+      } catch (e) {
+        console.error("sendVerificationEmail failed:", e);
+      }
     }
 
-
-    return json({ message: "Успешна регистрация.", autoLogin: true }, { status: 200 });
+    return json({ message: "Успешна регистрация. Проверете имейла си за верификация." }, { status: 200 });
   } catch (err) {
-    // Логни детайлно на сървъра, но върни общо съобщение
     console.error("/api/register error:", err);
     return json({ message: "Неуспешна регистрация. Опитайте отново." }, { status: 500 });
   }
