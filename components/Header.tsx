@@ -1,155 +1,229 @@
 "use client";
 
-import { useState } from "react";
+import type { FC, ReactElement } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
+import { createPortal } from "react-dom";
+import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
+import { Menu, X, User2, Heart, Search as SearchIcon } from "lucide-react";
 import CartIcon from "@/components/CartIcon";
 
-export default function Header() {
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const { data: session } = useSession();
+interface SessionUser {
+    id?: string;
+    name?: string | null;
+    email?: string | null;
+    image?: string | null;
+    isArtist?: boolean;
+}
 
-    // Проверяваме дали потребителят е артист, като търсим artistProfile в сесията
-    const isArtist = session?.user?.artistProfile !== undefined && session?.user?.artistProfile !== null;
+const Header: FC = (): ReactElement => {
+    const { data: session } = useSession();
+    const pathname = usePathname();
+
+    const isAuthenticated: boolean = Boolean(session?.user);
+    const isArtist: boolean = Boolean((session?.user as SessionUser | undefined)?.isArtist);
+
+    const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
+    const [isProfileOpen, setIsProfileOpen] = useState<boolean>(false);
+    const [mounted, setMounted] = useState<boolean>(false);
+
+    const profileBtnRef = useRef<HTMLButtonElement | null>(null);
+    const profileMenuRef = useRef<HTMLDivElement | null>(null);
+
+    useEffect(() => { setMounted(true); }, []);
+    useEffect(() => {
+        setIsMenuOpen(false);
+        setIsProfileOpen(false);
+    }, [pathname]);
+
+    useEffect(() => {
+        function onDocClick(e: MouseEvent | Event) {
+            const target = e.target as Node | null;
+            if (
+                isProfileOpen &&
+                profileMenuRef.current &&
+                profileBtnRef.current &&
+                target &&
+                !profileMenuRef.current.contains(target) &&
+                !profileBtnRef.current.contains(target)
+            ) {
+                setIsProfileOpen(false);
+            }
+        }
+        function onEsc(ev: KeyboardEvent) {
+            if (ev.key === "Escape") {
+                setIsMenuOpen(false);
+                setIsProfileOpen(false);
+            }
+        }
+        document.addEventListener("click", onDocClick);
+        document.addEventListener("keydown", onEsc);
+        return () => {
+            document.removeEventListener("click", onDocClick);
+            document.removeEventListener("keydown", onEsc);
+        };
+    }, [isProfileOpen]);
+
+    useEffect(() => {
+        const el = document.documentElement;
+        if (isMenuOpen) el.classList.add("overflow-hidden");
+        else el.classList.remove("overflow-hidden");
+        return () => el.classList.remove("overflow-hidden");
+    }, [isMenuOpen]);
+
+    const drawerItems: Array<{ href: string; label: string; show: boolean }> = [
+        { href: "/courses", label: "Курсове", show: true },
+        { href: "/gallery", label: "Галерия", show: true },
+        { href: "/artists", label: "Артисти", show: true },
+        { href: "/create-artist-profile", label: "Стани артист", show: !isArtist },
+        { href: "/upload-artwork", label: "Качване на картина", show: isArtist },
+        { href: "/about", label: "За нас", show: true },
+        { href: "/contacts", label: "Контакти", show: true },
+        { href: "/login", label: "Вход", show: !isAuthenticated },
+    ];
+
+    const subnavItems: Array<{ href: string; label: string; show: boolean }> = [
+        { href: "/courses", label: "Курсове", show: true },
+        { href: "/gallery", label: "Галерия", show: true },
+        { href: "/artists", label: "Артисти", show: true },
+        { href: "/create-artist-profile", label: "Стани артист", show: !isArtist },
+        { href: "/upload-artwork", label: "Качи картина", show: isArtist },
+        { href: "/about", label: "За нас", show: true },
+        { href: "/contacts", label: "Контакти", show: true },
+        { href: "/login", label: "Вход", show: !isAuthenticated },
+    ];
+
+    const handleSignOut = async (): Promise<void> => {
+        await signOut({ callbackUrl: "/login" });
+    };
 
     return (
-        <header className="sticky top-2 h-12 z-50 bg-white/80 backdrop-blur-md shadow-md dark:bg-gray-900/80">
-            <nav className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-                {/* Лого / Име на сайта */}
-                <Link href="/" className="relative left-20">
-                    <span className="text-2xl font-bold text-rose-400 dark:text-gray-100">
-                        Art Platform
-                    </span>
-                </Link>
-
-                {/* Бургер меню бутон (само за мобилни устройства) */}
-                <button
-                    onClick={() => setIsMenuOpen(!isMenuOpen)}
-                    className="md:hidden text-gray-800 dark:text-gray-100 focus:outline-none"
-                >
-                    <svg
-                        className="w-6 h-6"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                        xmlns="http://www.w3.org/2000/svg"
+        <header className="x-header" role="banner">
+            <div className="x-header__bar" aria-label="Основна лента">
+                {/* LEFT: burger (mobile) + desktop logo */}
+                <div className="x-header__burger">
+                    <button
+                        type="button"
+                        className="x-header__burger-btn md:hidden"
+                        aria-label={isMenuOpen ? "Затвори меню" : "Отвори меню"}
+                        aria-expanded={isMenuOpen}
+                        aria-controls="mobile-drawer"
+                        onClick={() => setIsMenuOpen((v) => !v)}
                     >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d={isMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"}
-                        />
-                    </svg>
-                </button>
-
-                {/* Навигационни връзки (десктоп) */}
-                <div className="hidden md:flex items-center space-x-6 gap-x-4">
-                    <Link href="/gallery">
-                        <button className="px-4 py-2 h-10 w-30 text-white bg-rose-400 rounded-[6px] hover:bg-rose-500 transition-colors">
-                            Галерия
-                        </button>
+                        {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
+                    </button>
+                    <Link href="/" className="hidden md:inline-flex items-center" aria-label="Xartify – начало">
+                        <Image src="/xArtify-logo6.svg" alt="Xartify" width={300} height={70} priority />
                     </Link>
-                    <Link href="/courses">
-                        <button className="px-4 py-2 text-white h-10 w-30 bg-rose-400 rounded-[6px] hover:bg-rose-500 transition-colors">
-                            Курсове
-                        </button>
-                    </Link>
-                    {isArtist && (
-                        <Link href="/upload-artwork">
-                            <button className="px-4 py-2 text-white h-10 w-30 bg-rose-400 rounded-[6px] hover:bg-rose-500 transition-colors">
-                                Качи картина
-                            </button>
-                        </Link>
-                    )}
-                    {session ? (
-                        <>
-                            <Link href="/my-profile">
-                                <button className="px-4 py-2 text-white h-10 w-30 bg-rose-400 rounded-[6px] hover:bg-rose-500 transition-colors">
-                                    Моят профил
-                                </button>
-                            </Link>
-                            <button
-                                onClick={() => signOut({ callbackUrl: "/login" })}
-                                className="px-4 py-2 text-white bg-red-600 h-10 w-24 rounded-[6px] hover:bg-red-700 transition-colors"
-                            >
-                                Изход
-                            </button>
-                            <CartIcon />
-                        </>
-                    ) : (
-                        <>
-                            <Link href="/login">
-                                <button className="px-4 py-2 text-white h-10 w-24 bg-rose-400 rounded-[6px] hover:bg-rose-500 transition-colors">
-                                    Вход
-                                </button>
-                            </Link>
-                            <Link href="/register">
-                                <button className="px-4 py-2 text-white h-10 w-24 bg-rose-400 rounded-[6px] hover:bg-rose-500 transition-colors">
-                                    Регистрация
-                                </button>
-                            </Link>
-                            <CartIcon />
-                        </>
-                    )}
                 </div>
 
-                {/* Мобилно меню */}
-                {isMenuOpen && (
-                    <div className="absolute top-full left-0 w-full bg-white dark:bg-gray-900 shadow-md md:hidden transition-all duration-300 ease-in-out">
-                        <div className="flex flex-col p-4 space-y-2">
-                            <Link href="/gallery">
-                                <button className="block text-gray-800 dark:text-gray-200 hover:text-blue-600 py-2">
-                                    Галерия
-                                </button>
-                            </Link>
-                            <Link href="/courses">
-                                <button className="block text-gray-800 dark:text-gray-200 hover:text-blue-600 py-2">
-                                    Курсове
-                                </button>
-                            </Link>
-                            {isArtist && (
-                                <Link href="/upload-artwork">
-                                    <button className="block text-gray-800 dark:text-gray-200 hover:text-blue-600 py-2">
-                                        Качи картина
-                                    </button>
-                                </Link>
-                            )}
-                            {session ? (
-                                <>
-                                    <Link href="/my-profile">
-                                        <button className="block text-gray-800 dark:text-gray-200 hover:text-blue-600 py-2">
-                                            Моят профил
-                                        </button>
-                                    </Link>
-                                    <button
-                                        onClick={() => signOut({ callbackUrl: "/login" })}
-                                        className="w-full text-left text-red-600 hover:text-red-700 py-2"
-                                    >
-                                        Изход
-                                    </button>
-                                </>
+                {/* CENTER: mobile logo / desktop search */}
+                <div className="justify-self-center w-full max-w-xl">
+                    <Link href="/" className="x-header__logo md:hidden" aria-label="Xartify – начало">
+                        <Image src="/xArtify-logo6.svg" alt="Xartify" width={300} height={20} priority />
+                    </Link>
+                    <div className="hidden md:block">
+                        <form className="x-search" action="/search" method="get" role="search">
+                            <input className="x-search__input" type="search" name="q" placeholder="Търсене..." autoComplete="off" aria-label="Поле за търсене" />
+                            <button className="x-search__icon" aria-label="Търси" type="submit">
+                                <SearchIcon size={18} />
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                {/* RIGHT: actions */}
+                <div className="x-header__actions">
+                    <div className="relative">
+                        <button
+                            ref={profileBtnRef}
+                            type="button"
+                            className="x-icon-btn"
+                            aria-label="Профил"
+                            aria-expanded={isProfileOpen}
+                            aria-controls="profile-menu"
+                            onClick={() => setIsProfileOpen((v) => !v)}
+                        >
+                            <User2 size={18} />
+                        </button>
+                        <div id="profile-menu" ref={profileMenuRef} className="x-profile-menu" data-open={isProfileOpen ? "true" : "false"} role="menu">
+                            {isAuthenticated ? (
+                                <div>
+                                    <Link href="/my-profile" className="x-profile-menu__item" role="menuitem">Моят профил</Link>
+                                    <Link href="/my-courses" className="x-profile-menu__item" role="menuitem">Моите курсове</Link>
+                                    {!isArtist && <Link href="/create-artist-profile" className="x-profile-menu__item" role="menuitem">Стани артист</Link>}
+                                    {isArtist && <Link href="/upload-artwork" className="x-profile-menu__item" role="menuitem">Качване на картина</Link>}
+                                    <Link href="/change-password" className="x-profile-menu__item" role="menuitem">Смяна на парола</Link>
+                                    <button onClick={handleSignOut} className="x-profile-menu__item x-profile-menu__item--danger" role="menuitem">Изход</button>
+                                </div>
                             ) : (
-                                <>
-                                    <Link href="/login">
-                                        <button className="block text-gray-800 dark:text-gray-200 hover:text-blue-600 py-2">
-                                            Вход
-                                        </button>
-                                    </Link>
-                                    <Link href="/register">
-                                        <button className="block text-gray-800 dark:text-gray-200 hover:text-blue-600 py-2">
-                                            Регистрация
-                                        </button>
-                                    </Link>
-                                </>
+                                <div>
+                                    <Link href="/login" className="x-profile-menu__item" role="menuitem">Вход</Link>
+                                </div>
                             )}
-                            <div className="w-full flex justify-center mt-4">
-                                <CartIcon />
-                            </div>
                         </div>
                     </div>
-                )}
-            </nav>
+
+                    <Link href="/favorite-artists" aria-label="Любими" className="x-icon-btn">
+                        <Heart size={18} />
+                    </Link>
+
+                    {/* IMPORTANT: do not wrap CartIcon with <Link> (it already links) */}
+                    <div className="x-icon-btn" aria-label="Количка">
+                        <CartIcon />
+                    </div>
+                </div>
+            </div>
+
+            {/* MOBILE search */}
+            <div className="x-header__search md:hidden" role="search">
+                <form className="x-search" action="/search" method="get">
+                    <input className="x-search__input" type="search" name="q" placeholder="Търсене..." autoComplete="off" aria-label="Поле за търсене" />
+                    <button className="x-search__icon" aria-label="Търси" type="submit">
+                        <SearchIcon size={18} />
+                    </button>
+                </form>
+            </div>
+
+            {/* SUBNAV */}
+            <div className="x-subnav " role="navigation" aria-label="Главна навигация">
+                <div className="x-subnav__inner no-scrollbar">
+                    {subnavItems.filter((i) => i.show).map((item) => (
+                        <Link key={item.href} href={item.href} className="x-subnav__link">{item.label}</Link>
+                    ))}
+                </div>
+            </div>
+
+            {/* DRAWER */}
+            {mounted && createPortal(
+                <>
+                    <aside
+                        id="mobile-drawer"
+                        className="x-drawer"
+                        data-open={isMenuOpen ? "true" : "false"}
+                        aria-hidden={!isMenuOpen}
+                    >
+                        <nav className="x-drawer__list" aria-label="Мобилно меню">
+                            {subnavItems.filter(i => i.show).map(item => (
+                                <Link key={item.href} href={item.href} className="x-drawer__item" onClick={() => setIsMenuOpen(false)}>
+                                    {item.label}
+                                </Link>
+                            ))}
+                        </nav>
+                    </aside>
+                    <div
+                        className="x-drawer__backdrop"
+                        data-open={isMenuOpen ? "true" : "false"}
+                        aria-hidden={!isMenuOpen}
+                        onClick={() => setIsMenuOpen(false)}
+                    />
+                </>,
+                document.body
+            )}
         </header>
     );
-}
+};
+
+export default Header;
