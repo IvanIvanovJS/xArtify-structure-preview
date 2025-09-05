@@ -2,13 +2,13 @@
 
 @theme {
   /* базови */
-  --color-background: #ffffff;
+  --color-background: #f2f2f2;
   --color-foreground: #171717;
 
   /* PRIMARY — изисканите ти виолетови */
   --color-primary: #059669;
   /* основен */
-  --color-primary-light: #d7bd2d;
+  --color-primary-light: #4cba8f;
   /* по-светъл */
   --color-primary-foreground: #ffffff;
 

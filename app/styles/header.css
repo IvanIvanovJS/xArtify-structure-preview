@@ -27,7 +27,7 @@
 @layer components {
     .x-header {
         @apply sticky top-0 z-50 backdrop-blur border-b;
-        @apply bg-white/85 border-neutral-200 dark:bg-neutral-950/75 dark:border-neutral-800;
+        @apply bg-[#f2f2f2] border-neutral-200 dark:bg-neutral-950/75 dark:border-neutral-800;
     }
 
     /* mobile 3-col for centered logo; desktop auto|1fr|auto for centered search */
@@ -120,22 +120,22 @@
 
     .x-subnav {
 
-        @apply hidden md:block justify-items-center bg-neutral-900 text-white;
+        @apply hidden md:block justify-items-center mt-6 bg-neutral-700 text-neutral-100;
     }
 
     .x-subnav__inner {
-        @apply mx-auto p-1 max-w-7xl flex gap-10 overflow-x-auto h-11 items-center;
+        @apply mx-auto p-1 max-w-7xl flex gap-12 overflow-x-auto h-14 items-center;
     }
 
     .x-subnav__link {
         /* размер може да си го оставиш както искаш; важните неща са display + padding */
-        @apply inline-flex w-auto items-center whitespace-nowrap rounded-xl py-1 px-3 text-sm transition;
+        @apply inline-flex w-auto items-center whitespace-nowrap rounded-xl py-1 px-4 text-xl font-semibold transition;
     }
 
     /* ринг при hover + keyboard фокус */
     .x-subnav__link:hover,
     .x-subnav__link:focus-visible {
-        @apply ring-2 ring-ring/50 py-1 px-3 outline-none;
+        @apply ring-2 ring-ring/50 outline-none;
     }
 
     .x-drawer {
