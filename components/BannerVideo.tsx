@@ -67,7 +67,7 @@ const BannerVideo: FC<BannerVideoProps> = ({
 
         // Hard-set attributes/properties for iOS/Android quirks
         v.muted = true;
-        (v as any).defaultMuted = true; // TS: defaultMuted exists, but cast keeps strictness elsewhere
+        v.defaultMuted = true; // TS: defaultMuted exists, but cast keeps strictness elsewhere
         v.playsInline = true;
         v.setAttribute("playsinline", "");
         v.setAttribute("muted", "");
