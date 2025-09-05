@@ -235,7 +235,7 @@ export default function RegisterForm() {
                     className="cursor-pointer gap-2 h-12 flex items-center justify-center w-2/3 py-2 px-4 border-b-3 hover:bg-gray-200 border-gray-300 rounded-full text-sm font-medium transition-colors"
                     type="button"
                 >
-                    <Image src="/google-icon.svg" alt="Google" className="h-8 w-8 mr-5" />
+                    <Image src="/google-icon.svg" alt="Google" width={8} height={8} className="h-8 w-8 mr-5" />
                     Регистрация с Google
                 </button>
 
@@ -244,7 +244,7 @@ export default function RegisterForm() {
                     className="cursor-pointer gap-2 h-12 flex items-center justify-center w-2/3 py-2 px-4 border-b-3 hover:bg-gray-200 border-gray-300 rounded-full text-sm font-medium transition-colors"
                     type="button"
                 >
-                    <Image src="/facebook-icon.svg" alt="Facebook" className="h-8 w-8 mr-2" />
+                    <Image src="/facebook-icon.svg" alt="Facebook" width={8} height={8} className="h-8 w-8 mr-2" />
                     Регистрация с Facebook
                 </button>
             </div>

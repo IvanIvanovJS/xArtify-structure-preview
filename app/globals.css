@@ -1,28 +1,40 @@
 @import "tailwindcss";
 
+@theme {
+  /* базови */
+  --color-background: #ffffff;
+  --color-foreground: #171717;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* PRIMARY — изисканите ти виолетови */
+  --color-primary: #059669;
+  /* основен */
+  --color-primary-light: #d7bd2d;
+  /* по-светъл */
+  --color-primary-foreground: #ffffff;
+
+
+  /* помощни */
+  --color-muted: #f6f6f7;
+  --color-muted-foreground: #6b7280;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
 
+/* Dark theme (по подразбиране v4 е media-based: класовете `dark:` се активират при prefers-color-scheme: dark) */
+
+
+
+/* Глобални базови стилове */
 html,
 body {
   max-width: 100vw;
   overflow-x: hidden;
+  height: 100%;
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+  color: var(--color-foreground);
+  background: var(--color-background);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -31,24 +43,4 @@ body {
 *::before,
 *::after {
   box-sizing: border-box;
-}
-
-html,
-body {
-  height: 100%;
-}
-
-body {
-  margin: 0;
-}
-
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
 }

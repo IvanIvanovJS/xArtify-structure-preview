@@ -1,0 +1,80 @@
+.home-hero {
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    background: #000;
+}
+
+/* Mobile-first височина; можеш да промениш числата според дизайна */
+.home-hero--vh {
+    height: 56vh;
+}
+
+@media (min-width: 640px) {
+    .home-hero--vh {
+        height: 64vh;
+    }
+}
+
+@media (min-width: 1024px) {
+    .home-hero--vh {
+        height: 78vh;
+    }
+}
+
+
+.home-hero__media {
+    position: absolute;
+    inset: 0;
+}
+
+.home-hero__video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* лек тъмен градиент за четимост на текста; махни ако не искаш overlay */
+.home-hero__overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.15) 0%, rgba(0, 0, 0, 0.35) 60%, rgba(0, 0, 0, 0.55) 100%);
+}
+
+
+/* Центрирано съдържание върху видеото (по желание) */
+.home-hero__inner {
+    position: relative;
+    z-index: 1;
+    height: 100%;
+    display: grid;
+    place-items: center;
+    padding: 2rem 1rem;
+}
+
+.home-hero__content {
+    max-width: 56rem;
+    text-align: center;
+    color: #fff;
+}
+
+.home-hero__title {
+    font-size: clamp(1.5rem, 3vw + 1rem, 3rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+.home-hero__subtitle {
+    margin-top: .5rem;
+    font-size: clamp(.95rem, 1vw + .75rem, 1.25rem);
+    opacity: .9;
+}
+
+
+/* По желание — utility клас, ако искаш да дадеш aspect ratio вместо VH височина */
+.home-hero--ratio {
+    height: auto;
+    aspect-ratio: 16 / 9;
+}

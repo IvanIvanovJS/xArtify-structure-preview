@@ -4,6 +4,11 @@
 
 @import "tailwindcss";
 
+@theme {
+    --color-primary: #059669;
+    --color-primary-light: #4cba8f;
+    --color-ring: #6EE7B7
+}
 
 :root {
     --header-h: 56px;
@@ -70,8 +75,8 @@
     }
 
     .x-icon-btn {
-        @apply h-10 w-10 rounded-xl border border-neutral-200 dark:border-neutral-800 flex items-center justify-center;
-        @apply hover:bg-neutral-100 dark:hover:bg-neutral-800 transition relative;
+        @apply h-10 w-10 rounded-xl border border-neutral-400 dark:border-neutral-800 flex items-center justify-center;
+        @apply hover:border-ring/50 hover:border-[2px] dark:hover:bg-neutral-800 transition relative;
     }
 
     .x-icon-btn:focus-visible {
@@ -88,7 +93,7 @@
     }
 
     .x-profile-menu__item {
-        @apply block w-full text-left px-4 py-2.5 text-sm hover:bg-neutral-100 dark:hover:bg-neutral-800;
+        @apply block w-full text-left px-4 py-2.5 text-sm hover:bg-ring/20 dark:hover:bg-neutral-800;
     }
 
     .x-profile-menu__item--danger {
@@ -130,7 +135,7 @@
     /* ринг при hover + keyboard фокус */
     .x-subnav__link:hover,
     .x-subnav__link:focus-visible {
-        @apply ring-1 ring-white py-1 px-3 outline-none;
+        @apply ring-2 ring-ring/50 py-1 px-3 outline-none;
     }
 
     .x-drawer {

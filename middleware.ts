@@ -15,7 +15,8 @@ export function middleware(request: NextRequest) {
         // Allow style attributes explicitly (required by some libs / next/image)
         "style-src-attr 'unsafe-inline'",
         // Images (incl. phone input flag icons hosted on GitHub Pages)
-        "img-src 'self' data: blob: https://lh3.googleusercontent.com https://res.cloudinary.com https://placehold.co https://purecatamphetamine.github.io",
+        "img-src 'self' data: blob: https://lh3.googleusercontent.com https://res.cloudinary.com data: blob: https://placehold.co https://purecatamphetamine.github.io",
+        " media-src 'self' https://res.cloudinary.com blob:",
         "font-src 'self' data:",
         "connect-src 'self' https://api.stripe.com https://res.cloudinary.com https://www.google-analytics.com https://www.googletagmanager.com",
         "frame-src https://js.stripe.com",

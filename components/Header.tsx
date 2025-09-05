@@ -115,14 +115,14 @@ const Header: FC = (): ReactElement => {
                         {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
                     </button>
                     <Link href="/" className="hidden md:inline-flex items-center" aria-label="Xartify – начало">
-                        <Image src="/xArtify-logo6.svg" alt="Xartify" width={300} height={70} priority />
+                        <Image src="/xArtify-logo7.png" alt="Xartify" width={300} height={70} priority />
                     </Link>
                 </div>
 
                 {/* CENTER: mobile logo / desktop search */}
                 <div className="justify-self-center w-full max-w-xl">
                     <Link href="/" className="x-header__logo md:hidden" aria-label="Xartify – начало">
-                        <Image src="/xArtify-logo6.svg" alt="Xartify" width={300} height={20} priority />
+                        <Image src="/xArtify-logo7.png" alt="Xartify" width={300} height={20} priority />
                     </Link>
                     <div className="hidden md:block">
                         <form className="x-search" action="/search" method="get" role="search">

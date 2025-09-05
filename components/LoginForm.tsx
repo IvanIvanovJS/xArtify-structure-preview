@@ -67,9 +67,9 @@ export default function LoginForm() {
 
 
     return (
-        <div className="flex-col items-center w-full max-w-md space-y-6 bg-white dark:bg-gray-800 rounded-xl shadow-xl/20 border p-6">
+        <div className="flex-col items-center w-full max-w-md space-y-6  bg-white dark:bg-gray-800 rounded-xl shadow-xl/20 border">
 
-            <article className="flex items-center justify-center gap-10 h-20">
+            <article className="flex items-center justify-center gap-14 py-6">
                 <h3 className="text-2xl font-bold text-gray-800 underline decoration-1 underline-offset-4 decoration-blue-400">
                     Вход
                 </h3>
@@ -91,7 +91,7 @@ export default function LoginForm() {
                 className="flex flex-col items-center space-y-0 w-full gap-4"
                 autoComplete="on"
             >
-                <div className="w-2/3 flex flex-col space-y-6 gap-4">
+                <div className="w-2/3 flex flex-col space-y-6">
                     {/* Email поле */}
                     <div className="relative z-0 w-full group">
                         <input

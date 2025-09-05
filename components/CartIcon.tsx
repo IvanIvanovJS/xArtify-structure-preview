@@ -4,6 +4,7 @@
 import Link from "next/link";
 import { useCart } from "@/app/context/CartContext";
 
+
 export default function CartIcon() {
     const { getCartItemCount } = useCart();
     const itemCount = getCartItemCount();
@@ -27,7 +28,7 @@ export default function CartIcon() {
                 </svg>
 
 
-                <span className="absolute -top-1 -right-3 inline-flex items-center justify-center h-4 w-6 text-xs font-bold leading-none text-white bg-indigo-700 rounded-full">
+                <span className="absolute -top-2 -right-3 inline-flex items-center justify-center h-4 w-6 text-xs font-bold leading-none text-white bg-primary-light rounded-full">
                     {itemCount}
                 </span>
 
