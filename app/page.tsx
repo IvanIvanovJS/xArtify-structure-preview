@@ -3,7 +3,7 @@
 
 import { useSession, signOut } from "next-auth/react"
 import Link from "next/link";
-import BannerVideo from "@/components/BannerVideo";
+import BannerVideo from "@/components/home/BannerVideo";
 
 export default function HomePage() {
   const { data: session, status } = useSession()

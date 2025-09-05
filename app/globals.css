@@ -1,4 +1,6 @@
 @import "tailwindcss";
+@import "./styles/header.css";
+@import "./styles/home.css";
 
 @theme {
   /* базови */
