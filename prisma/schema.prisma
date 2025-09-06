@@ -5,8 +5,8 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url       = env("DATABASE_URL")   // Supabase PgBouncer 6543
-  directUrl = env("DIRECT_URL")     // Direct 5432 (миграции)
+  url       = env("SUPABASE_URL")   
+  directUrl = env("SUPABASE_DB_URL")     
 }
 model Account {
   id                String  @id @default(cuid())
