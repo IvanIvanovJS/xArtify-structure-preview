@@ -1,3 +1,4 @@
+// File: app/components/Header.tsx
 "use client";
 
 import type { FC, ReactElement } from "react";
@@ -33,13 +34,16 @@ const Header: FC = (): ReactElement => {
     const profileMenuRef = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => { setMounted(true); }, []);
+
+    // Close menus when route changes
     useEffect(() => {
         setIsMenuOpen(false);
         setIsProfileOpen(false);
     }, [pathname]);
 
+    // Click/tap outside + ESC to close profile menu (robust for mobile)
     useEffect(() => {
-        function onDocClick(e: MouseEvent | Event) {
+        function onDocPointerDown(e: Event): void {
             const target = e.target as Node | null;
             if (
                 isProfileOpen &&
@@ -52,20 +56,21 @@ const Header: FC = (): ReactElement => {
                 setIsProfileOpen(false);
             }
         }
-        function onEsc(ev: KeyboardEvent) {
+        function onEsc(ev: KeyboardEvent): void {
             if (ev.key === "Escape") {
                 setIsMenuOpen(false);
                 setIsProfileOpen(false);
             }
         }
-        document.addEventListener("click", onDocClick);
+        document.addEventListener("pointerdown", onDocPointerDown);
         document.addEventListener("keydown", onEsc);
         return () => {
-            document.removeEventListener("click", onDocClick);
+            document.removeEventListener("pointerdown", onDocPointerDown);
             document.removeEventListener("keydown", onEsc);
         };
     }, [isProfileOpen]);
 
+    // Prevent body scroll when drawer is open
     useEffect(() => {
         const el = document.documentElement;
         if (isMenuOpen) el.classList.add("overflow-hidden");
@@ -142,13 +147,23 @@ const Header: FC = (): ReactElement => {
                             type="button"
                             className="x-icon-btn"
                             aria-label="Профил"
+                            aria-haspopup="menu"
                             aria-expanded={isProfileOpen}
                             aria-controls="profile-menu"
                             onClick={() => setIsProfileOpen((v) => !v)}
                         >
                             <User2 size={18} />
                         </button>
-                        <div id="profile-menu" ref={profileMenuRef} className="x-profile-menu" data-open={isProfileOpen ? "true" : "false"} role="menu">
+
+                        <div
+                            id="profile-menu"
+                            ref={profileMenuRef}
+                            className="x-profile-menu"
+                            data-open={isProfileOpen ? "true" : "false"}
+                            role="menu"
+                            onClick={(e) => e.stopPropagation()}
+                            onPointerDown={(e) => e.stopPropagation()}
+                        >
                             {isAuthenticated ? (
                                 <div>
                                     <Link href="/my-profile" className="x-profile-menu__item" role="menuitem">Моят профил</Link>
@@ -206,7 +221,7 @@ const Header: FC = (): ReactElement => {
                         aria-hidden={!isMenuOpen}
                     >
                         <nav className="x-drawer__list" aria-label="Мобилно меню">
-                            {subnavItems.filter(i => i.show).map(item => (
+                            {drawerItems.filter(i => i.show).map(item => (
                                 <Link key={item.href} href={item.href} className="x-drawer__item" onClick={() => setIsMenuOpen(false)}>
                                     {item.label}
                                 </Link>
@@ -227,3 +242,5 @@ const Header: FC = (): ReactElement => {
 };
 
 export default Header;
+
+

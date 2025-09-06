@@ -14,7 +14,7 @@ export default function CartIcon() {
             <div className="relative p-2 cursor-pointer">
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5 text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+                    className="h-5 w-5 text-gray-900  dark:text-gray-900 "
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"

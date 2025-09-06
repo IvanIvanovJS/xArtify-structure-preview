@@ -1,49 +1,50 @@
+/* ================================
+   File: app/globals.css
+   Goal: Lock colors regardless of OS theme
+   ================================ */
 @import "tailwindcss";
 @import "./styles/header.css";
 @import "./styles/home.css";
 
+/* 1) Force consistent (light) color rendering in all themes */
+:root {
+  color-scheme: light;
+}
+
+/* 2) Your design tokens (single palette) */
 @theme {
   /* базови */
   --color-background: #f2f2f2;
   --color-foreground: #171717;
 
-  /* PRIMARY — изисканите ти виолетови */
+  /* primary */
   --color-primary: #059669;
-  /* основен */
   --color-primary-light: #4cba8f;
-  /* по-светъл */
   --color-primary-foreground: #ffffff;
-
 
   /* помощни */
   --color-muted: #f6f6f7;
   --color-muted-foreground: #6b7280;
 }
 
-
-/* Dark theme (по подразбиране v4 е media-based: класовете `dark:` се активират при prefers-color-scheme: dark) */
+/* 3) Explicitly neutralize OS dark preference (keep same tokens) */
 @media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: light;
+  }
+
   @theme {
-    /* базови */
     --color-background: #f2f2f2;
     --color-foreground: #171717;
-
-    /* PRIMARY — изисканите ти виолетови */
     --color-primary: #059669;
-    /* основен */
     --color-primary-light: #4cba8f;
-    /* по-светъл */
     --color-primary-foreground: #ffffff;
-
-
-    /* помощни */
     --color-muted: #f6f6f7;
     --color-muted-foreground: #6b7280;
   }
 }
 
-
-/* Глобални базови стилове */
+/* 4) Global base styles */
 html,
 body {
   max-width: 100vw;
