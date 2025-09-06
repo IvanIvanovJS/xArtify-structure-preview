@@ -22,7 +22,25 @@
 
 
 /* Dark theme (по подразбиране v4 е media-based: класовете `dark:` се активират при prefers-color-scheme: dark) */
+@media (prefers-color-scheme: dark) {
+  @theme {
+    /* базови */
+    --color-background: #f2f2f2;
+    --color-foreground: #171717;
 
+    /* PRIMARY — изисканите ти виолетови */
+    --color-primary: #059669;
+    /* основен */
+    --color-primary-light: #4cba8f;
+    /* по-светъл */
+    --color-primary-foreground: #ffffff;
+
+
+    /* помощни */
+    --color-muted: #f6f6f7;
+    --color-muted-foreground: #6b7280;
+  }
+}
 
 
 /* Глобални базови стилове */
