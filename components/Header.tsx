@@ -25,6 +25,7 @@ const Header: FC = (): ReactElement => {
 
     const isAuthenticated: boolean = Boolean(session?.user);
     const isArtist: boolean = Boolean((session?.user as SessionUser | undefined)?.artistProfile);
+    console.log("test");
 
     const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
     const [isProfileOpen, setIsProfileOpen] = useState<boolean>(false);
