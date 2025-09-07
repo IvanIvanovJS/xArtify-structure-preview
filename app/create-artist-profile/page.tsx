@@ -5,6 +5,8 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import CreateArtistProfileForm from "@/components/CreateArtistProfileForm";
 
+export const runtime = "nodejs";
+
 export default async function CreateArtistProfilePage() {
     const session = await getServerSession(authOptions);
 

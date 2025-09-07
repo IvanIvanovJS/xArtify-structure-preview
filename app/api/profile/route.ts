@@ -1,7 +1,7 @@
 // app/api/profile/route.ts
 import { NextResponse } from 'next/server';
-import { getServerSession } from "next-auth"; // Ще използваме за да вземем потребителя
-import { authOptions } from "@/lib/authOptions"; // Ще бъде създадено в бъдеще
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/authOptions";
 import { prisma } from "@/lib/prisma";
 export const runtime = "nodejs";
 

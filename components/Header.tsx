@@ -16,7 +16,7 @@ interface SessionUser {
     name?: string | null;
     email?: string | null;
     image?: string | null;
-    isArtist?: boolean;
+    artistProfile?: object | null;
 }
 
 const Header: FC = (): ReactElement => {
@@ -24,7 +24,7 @@ const Header: FC = (): ReactElement => {
     const pathname = usePathname();
 
     const isAuthenticated: boolean = Boolean(session?.user);
-    const isArtist: boolean = Boolean((session?.user as SessionUser | undefined)?.isArtist);
+    const isArtist: boolean = Boolean((session?.user as SessionUser | undefined)?.artistProfile);
 
     const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
     const [isProfileOpen, setIsProfileOpen] = useState<boolean>(false);

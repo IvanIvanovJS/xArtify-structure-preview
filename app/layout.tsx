@@ -2,8 +2,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import "@/app/styles/header.css";
-import "@/app/styles/home.css"
 import Header from "@/components/Header";
 import SessionProvider from "@/components/SessionProvider";
 import { getServerSession } from "next-auth";
@@ -15,8 +13,8 @@ import SessionGuard from "@/components/SessionGuard"
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Art Platform",
-  description: "Открийте и създайте вашето изкуство.",
+  title: "xArtify - Where Art Knows You",
+  description: "Art for everyone",
 
 };
 
