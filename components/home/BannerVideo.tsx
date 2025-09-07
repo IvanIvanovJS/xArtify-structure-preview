@@ -1,20 +1,29 @@
 "use client";
 
+
 import Link from "next/link";
-import type { FC, KeyboardEventHandler, ReactElement } from "react";
+import type {
+    FC,
+    KeyboardEventHandler,
+    MouseEventHandler,
+    PointerEventHandler,
+    ReactElement,
+} from "react";
 import { useEffect, useRef, useState } from "react";
 
+
 export type BannerVideoProps = {
-    cloudName?: string; // напр. "dqrjc4pwr"
-    publicId?: string; // напр. "xartify/banner-home"
-    posterPublicId?: string; // напр. "banner-home-poster"
-    posterUrl?: string; // пълен URL (ако искаш точно определен)
-    widthHint?: number; // по подразбиране 1920
+    cloudName?: string;
+    publicId?: string;
+    posterPublicId?: string;
+    posterUrl?: string;
+    widthHint?: number;
     className?: string;
-    preload?: "none" | "metadata" | "auto"; // default "metadata"
-    revealOnTap?: boolean; // мобилен „tap-to-reveal“ (по подразбиране true тук)
-    revealPersistMs?: number; // колко да стои цветно след tap
+    preload?: "none" | "metadata" | "auto";
+    revealOnTap?: boolean;
+    revealPersistMs?: number;
 };
+
 
 const buildCldVideoSrc = (
     cloudName: string,
@@ -25,7 +34,6 @@ const buildCldVideoSrc = (
     const f = format === "mp4" ? "f_mp4" : "f_webm";
     return `https://res.cloudinary.com/${cloudName}/video/upload/${f},q_auto,w_${widthHint}/${publicId}.${format}`;
 };
-
 const buildCldImageSrc = (
     cloudName: string,
     posterPublicId: string,
@@ -33,6 +41,7 @@ const buildCldImageSrc = (
 ): string => {
     return `https://res.cloudinary.com/${cloudName}/image/upload/f_auto,q_auto,w_${widthHint}/${posterPublicId}`;
 };
+
 
 const BannerVideo: FC<BannerVideoProps> = ({
     cloudName,
@@ -47,15 +56,17 @@ const BannerVideo: FC<BannerVideoProps> = ({
 }): ReactElement => {
     const useCloudinary: boolean = Boolean(cloudName && publicId);
     const vRef = useRef<HTMLVideoElement | null>(null);
-    const [isActive, setIsActive] = useState<boolean>(false); // мобилен tap→разкриване
+    const [isTapActive, setIsTapActive] = useState<boolean>(false);
+    const [isHover, setIsHover] = useState<boolean>(false);
+
 
     const mp4Src: string = useCloudinary
         ? buildCldVideoSrc(cloudName as string, publicId as string, "mp4", widthHint)
         : "/banner-home.mp4";
-
     const webmSrc: string = useCloudinary
         ? buildCldVideoSrc(cloudName as string, publicId as string, "webm", widthHint)
         : "/banner-home.webm";
+
 
     const posterSrc: string | undefined = (() => {
         if (posterUrl) return posterUrl;
@@ -64,10 +75,12 @@ const BannerVideo: FC<BannerVideoProps> = ({
         return "/banner-home-poster.jpg";
     })();
 
-    // autoplay + loop hardening (iOS/Android)
+
+    // autoplay + loop hardening
     useEffect(() => {
         const v = vRef.current;
         if (!v) return;
+
 
         v.muted = true;
         v.defaultMuted = true;
@@ -77,55 +90,71 @@ const BannerVideo: FC<BannerVideoProps> = ({
         v.autoplay = true;
         v.loop = true;
 
+
         const tryPlay = (): void => {
-            void v.play().catch(() => {
-                /* ignore */
-            });
+            void v.play().catch(() => { });
         };
         const onCanPlay = (): void => tryPlay();
 
+
         v.addEventListener("canplay", onCanPlay, { once: true });
         tryPlay();
+
 
         return () => {
             v.removeEventListener("canplay", onCanPlay);
         };
     }, []);
 
-    // мобилен „tap-to-reveal“ auto-hide
-    useEffect(() => {
-        if (!isActive || !revealPersistMs) return;
-        const t = window.setTimeout(() => setIsActive(false), revealPersistMs);
-        return () => window.clearTimeout(t);
-    }, [isActive, revealPersistMs]);
 
-    const activate = (): void => {
+    // mobile tap reveal timeout
+    useEffect(() => {
+        if (!isTapActive || !revealPersistMs) return;
+        const t = window.setTimeout(() => setIsTapActive(false), revealPersistMs);
+        return () => window.clearTimeout(t);
+    }, [isTapActive, revealPersistMs]);
+
+
+    const activateTap = (): void => {
         if (!revealOnTap) return;
-        setIsActive(true);
+        setIsTapActive(true);
+    };
+    // Capture on the whole section to overcome iOS/Safari video event quirks
+    const onPointerDownCapture: PointerEventHandler<HTMLElement> = () => {
+        activateTap();
     };
 
-    const handlePointerDown = (): void => { activate(); };
 
-    const handleKeyDown: KeyboardEventHandler<HTMLDivElement> = (e) => {
+    const onMouseEnter: MouseEventHandler<HTMLElement> = () => setIsHover(true);
+    const onMouseLeave: MouseEventHandler<HTMLElement> = () => setIsHover(false);
+
+
+    const onMediaKeyDown: KeyboardEventHandler<HTMLDivElement> = (e) => {
         if (e.key === "Enter" || e.key === " ") {
             e.preventDefault();
-            activate();
+            activateTap();
         }
     };
+
+
+    const isActive: boolean = isTapActive || isHover;
+
 
     return (
         <section
             className={`home-hero home-hero--vh ${className ?? ""}`.trim()}
             aria-label="Лендинг банер видео"
+            onPointerDownCapture={onPointerDownCapture}
+            onMouseEnter={onMouseEnter}
+            onMouseLeave={onMouseLeave}
         >
-            {/* ВАЖНО: .vid-mono е върху медия контейнера, за да работят sibling селекторите към CTA */}
+            {/* .vid-mono върху медия контейнера; класът .is-active се управлява от секцията */}
             <div
                 className={`home-hero__media vid-mono${isActive ? " is-active" : ""}`}
                 tabIndex={0}
                 role="button"
                 aria-label="Покажи цветовете"
-                onPointerDown={handlePointerDown}
-                onKeyDown={handleKeyDown}
+                onKeyDown={onMediaKeyDown}
             >
                 <video
                     ref={vRef}
@@ -144,9 +173,9 @@ const BannerVideo: FC<BannerVideoProps> = ({
                     <source src={mp4Src} type="video/mp4" />
                 </video>
 
+
                 <div className="home-hero__overlay" aria-hidden="true" />
             </div>
-
             <div className="home-hero__inner">
                 <div className="home-hero__content">
                     <h1 className="home-hero__title">Изкуството е за всеки!</h1>
@@ -161,5 +190,6 @@ const BannerVideo: FC<BannerVideoProps> = ({
         </section>
     );
 };
+
 
 export default BannerVideo;

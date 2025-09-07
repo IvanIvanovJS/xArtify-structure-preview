@@ -1,3 +1,5 @@
+/* VIDEO: grayscale по подразбиране; цвят при hover/focus/.is-active */
+/* Не задавай position тук, за да няма нов stacking context и да не чупим събитията */
 .vid-mono video {
     filter: grayscale(1) !important;
     transition: filter .2s ease;
@@ -8,6 +10,7 @@
     -webkit-backface-visibility: hidden;
 }
 
+
 @media (hover: hover) {
 
     .vid-mono:hover video,
@@ -16,10 +19,12 @@
     }
 }
 
-/* За мобилен „tap-to-reveal“ – когато контейнерът получи .is-active */
+
+/* Мобилен tap-to-reveal – активира се чрез React логиката */
 .vid-mono.is-active video {
     filter: none !important;
 }
+
 
 @media (prefers-reduced-motion: reduce) {
     .vid-mono video {
@@ -27,7 +32,8 @@
     }
 }
 
-/* (по желание) неонов фокус на медия контейнера */
+
+/* (по желание) визуален фокус */
 .vid-mono:focus-within {
     outline: none;
     box-shadow: 0 0 0 2px #00d1ff, 0 0 0 4px rgba(0, 0, 0, .85), 0 0 14px rgba(0, 209, 255, .65);
