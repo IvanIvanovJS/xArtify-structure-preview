@@ -16,7 +16,7 @@ interface SessionUser {
     name?: string | null;
     email?: string | null;
     image?: string | null;
-    artistProfile?: object | null;
+    artistProfile?: object | undefined;
 }
 
 const Header: FC = (): ReactElement => {
