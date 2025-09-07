@@ -5,6 +5,8 @@
 @import "tailwindcss";
 @import "./styles/header.css";
 @import "./styles/home.css";
+@import "./styles/mono.css";
+
 
 /* 1) Force consistent (light) color rendering in all themes */
 :root {
