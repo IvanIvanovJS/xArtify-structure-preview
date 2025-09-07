@@ -19,11 +19,24 @@
     }
 }
 
+@media (min-width: 768px) {
+    .vid-mono.is-active video {
+        filter: none !important;
+    }
+
+}
+
+
 
 /* Мобилен tap-to-reveal – активира се чрез React логиката */
-.vid-mono.is-active video {
+
+
+.vid-mono.is-tap video {
     filter: none !important;
 }
+
+
+
 
 
 @media (prefers-reduced-motion: reduce) {

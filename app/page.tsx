@@ -18,8 +18,8 @@ export default function HomePage() {
         cloudName={cloudName}
         publicId="xartify/banner-home"
         posterPublicId="banner-home-poster"
-        revealOnTap // <- включи, ако искаш мобилен „tap-to-reveal“
-        revealPersistMs={1500}
+        revealOnTap// <- включи, ако искаш мобилен „tap-to-reveal“
+
       />
       {session ? (
         <>

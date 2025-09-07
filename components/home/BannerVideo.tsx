@@ -1,16 +1,13 @@
 "use client";
 
-
 import Link from "next/link";
 import type {
     FC,
     KeyboardEventHandler,
-    MouseEventHandler,
     PointerEventHandler,
     ReactElement,
 } from "react";
 import { useEffect, useRef, useState } from "react";
-
 
 export type BannerVideoProps = {
     cloudName?: string;
@@ -21,9 +18,9 @@ export type BannerVideoProps = {
     className?: string;
     preload?: "none" | "metadata" | "auto";
     revealOnTap?: boolean;
+    /** Колко дълго след tap да стои цветно (само мобилен режим) */
     revealPersistMs?: number;
 };
-
 
 const buildCldVideoSrc = (
     cloudName: string,
@@ -34,6 +31,7 @@ const buildCldVideoSrc = (
     const f = format === "mp4" ? "f_mp4" : "f_webm";
     return `https://res.cloudinary.com/${cloudName}/video/upload/${f},q_auto,w_${widthHint}/${publicId}.${format}`;
 };
+
 const buildCldImageSrc = (
     cloudName: string,
     posterPublicId: string,
@@ -41,7 +39,6 @@ const buildCldImageSrc = (
 ): string => {
     return `https://res.cloudinary.com/${cloudName}/image/upload/f_auto,q_auto,w_${widthHint}/${posterPublicId}`;
 };
-
 
 const BannerVideo: FC<BannerVideoProps> = ({
     cloudName,
@@ -52,13 +49,15 @@ const BannerVideo: FC<BannerVideoProps> = ({
     className,
     preload = "metadata",
     revealOnTap = true,
-    revealPersistMs = 3500,
+    revealPersistMs = 5000,
 }): ReactElement => {
     const useCloudinary: boolean = Boolean(cloudName && publicId);
     const vRef = useRef<HTMLVideoElement | null>(null);
-    const [isTapActive, setIsTapActive] = useState<boolean>(false);
-    const [isHover, setIsHover] = useState<boolean>(false);
 
+    // Desktop hover (mouse) vs. mobile tap (touch/pen)
+    const [isHover, setIsHover] = useState<boolean>(false); // само за mouse
+    const [isTapActive, setIsTapActive] = useState<boolean>(false); // само за touch/pen
+    const hideTimerRef = useRef<number | null>(null);
 
     const mp4Src: string = useCloudinary
         ? buildCldVideoSrc(cloudName as string, publicId as string, "mp4", widthHint)
@@ -67,7 +66,6 @@ const BannerVideo: FC<BannerVideoProps> = ({
         ? buildCldVideoSrc(cloudName as string, publicId as string, "webm", widthHint)
         : "/banner-home.webm";
 
-
     const posterSrc: string | undefined = (() => {
         if (posterUrl) return posterUrl;
         if (useCloudinary && posterPublicId)
@@ -75,12 +73,10 @@ const BannerVideo: FC<BannerVideoProps> = ({
         return "/banner-home-poster.jpg";
     })();
 
-
     // autoplay + loop hardening
     useEffect(() => {
         const v = vRef.current;
         if (!v) return;
-
 
         v.muted = true;
         v.defaultMuted = true;
@@ -90,67 +86,64 @@ const BannerVideo: FC<BannerVideoProps> = ({
         v.autoplay = true;
         v.loop = true;
 
-
-        const tryPlay = (): void => {
-            void v.play().catch(() => { });
-        };
+        const tryPlay = (): void => { void v.play().catch(() => { }); };
         const onCanPlay = (): void => tryPlay();
-
 
         v.addEventListener("canplay", onCanPlay, { once: true });
         tryPlay();
 
-
-        return () => {
-            v.removeEventListener("canplay", onCanPlay);
-        };
+        return () => { v.removeEventListener("canplay", onCanPlay); };
     }, []);
 
+    // Cleanup таймера при unmount
+    useEffect(() => () => { if (hideTimerRef.current !== null) window.clearTimeout(hideTimerRef.current); }, []);
 
-    // mobile tap reveal timeout
-    useEffect(() => {
-        if (!isTapActive || !revealPersistMs) return;
-        const t = window.setTimeout(() => setIsTapActive(false), revealPersistMs);
-        return () => window.clearTimeout(t);
-    }, [isTapActive, revealPersistMs]);
+    // --- MINIMAL CHANGES ---
+    // 1) Hover да се сетва САМО ако pointerType е mouse
+    const onPointerEnter: PointerEventHandler<HTMLElement> = (e) => {
+        if (e.pointerType === "mouse") setIsHover(true);
+    };
+    const onPointerLeave: PointerEventHandler<HTMLElement> = (e) => {
+        if (e.pointerType === "mouse") setIsHover(false);
+    };
 
-
+    // 2) Tap reveal (touch/pen) + таймер с revealPersistMs
     const activateTap = (): void => {
         if (!revealOnTap) return;
         setIsTapActive(true);
+        if (hideTimerRef.current !== null) window.clearTimeout(hideTimerRef.current);
+        hideTimerRef.current = window.setTimeout(() => {
+            setIsTapActive(false);
+            hideTimerRef.current = null;
+        }, revealPersistMs);
     };
-    // Capture on the whole section to overcome iOS/Safari video event quirks
-    const onPointerDownCapture: PointerEventHandler<HTMLElement> = () => {
-        activateTap();
+
+    const onPointerDownCapture: PointerEventHandler<HTMLElement> = (e) => {
+        if (e.pointerType === "touch" || e.pointerType === "pen") activateTap();
     };
-
-
-    const onMouseEnter: MouseEventHandler<HTMLElement> = () => setIsHover(true);
-    const onMouseLeave: MouseEventHandler<HTMLElement> = () => setIsHover(false);
-
 
     const onMediaKeyDown: KeyboardEventHandler<HTMLDivElement> = (e) => {
         if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            activateTap();
+            // Само на устройства без hover (мобилни)
+            const isHoverNone = typeof window !== "undefined" && window.matchMedia && window.matchMedia("(hover: none)").matches;
+            if (isHoverNone) { e.preventDefault(); activateTap(); }
         }
     };
 
-
-    const isActive: boolean = isTapActive || isHover;
-
+    // Комбинирано активно състояние: hover (desktop) ИЛИ tap (mobile)
+    const isActive: boolean = isHover || isTapActive;
 
     return (
         <section
             className={`home-hero home-hero--vh ${className ?? ""}`.trim()}
             aria-label="Лендинг банер видео"
             onPointerDownCapture={onPointerDownCapture}
-            onMouseEnter={onMouseEnter}
-            onMouseLeave={onMouseLeave}
+            onPointerEnter={onPointerEnter}
+            onPointerLeave={onPointerLeave}
         >
-            {/* .vid-mono върху медия контейнера; класът .is-active се управлява от секцията */}
+            {/* .vid-mono върху медия контейнера; .is-active за hover/tap; .is-tap само за мобилен tap (ако ти потрябва в CSS) */}
             <div
-                className={`home-hero__media vid-mono${isActive ? " is-active" : ""}`}
+                className={`home-hero__media vid-mono${isActive ? " is-active" : ""}${isTapActive ? " is-tap" : ""}`}
                 tabIndex={0}
                 role="button"
                 aria-label="Покажи цветовете"
@@ -172,24 +165,18 @@ const BannerVideo: FC<BannerVideoProps> = ({
                     <source src={webmSrc} type="video/webm" />
                     <source src={mp4Src} type="video/mp4" />
                 </video>
-
-
                 <div className="home-hero__overlay" aria-hidden="true" />
             </div>
+
             <div className="home-hero__inner">
                 <div className="home-hero__content">
                     <h1 className="home-hero__title">Изкуството е за всеки!</h1>
-                    <p className="home-hero__subtitle">
-                        Привестваме всички любители и професионалисти да се запознаят с нашата обучителна програма.
-                    </p>
-                    <Link href="/courses" className="home-hero__cta">
-                        ЗАПИШИ СЕ СЕГА
-                    </Link>
+                    <p className="home-hero__subtitle">Привестваме всички любители и професионалисти да се запознаят с нашата обучителна програма.</p>
+                    <Link href="/courses" className="home-hero__cta">ЗАПИШИ СЕ СЕГА</Link>
                 </div>
             </div>
         </section>
     );
 };
-
 
 export default BannerVideo;
