@@ -18,6 +18,8 @@ export default function HomePage() {
         cloudName={cloudName}
         publicId="xartify/banner-home"
         posterPublicId="banner-home-poster"
+        revealOnTap// <- включи, ако искаш мобилен „tap-to-reveal“
+
       />
       {session ? (
         <>
@@ -32,7 +34,7 @@ export default function HomePage() {
         </>
       ) : (
         <>
-          <h1 className="text-2xl font-bold">Добре дошъл в Art Platform</h1>
+          <h1 className="text-2xl font-bold">Добре дошъл в xArtify</h1>
           <p>Моля, влез в акаунта си или се регистрирай.</p>
           <div className="flex justify-center gap-4">
             <Link href="/login" className="bg-primary-light text-gray-100 text-xl hover:bg-black  px-4 py-2 rounded">Вход</Link>

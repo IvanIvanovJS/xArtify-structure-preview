@@ -1,3 +1,4 @@
+/* Банер секция – слоеве и подравняване */
 .home-hero {
     position: relative;
     overflow: hidden;
@@ -5,7 +6,6 @@
     background: #000;
 }
 
-/* Mobile-first височина; можеш да промениш числата според дизайна */
 .home-hero--vh {
     height: 56vh;
 }
@@ -23,9 +23,12 @@
 }
 
 
+/* Медията е под текста */
 .home-hero__media {
     position: absolute;
     inset: 0;
+    z-index: 1;
+    touch-action: manipulation;
 }
 
 .home-hero__video {
@@ -33,48 +36,104 @@
     height: 100%;
     object-fit: cover;
     display: block;
+    pointer-events: none;
 }
 
-/* лек тъмен градиент за четимост на текста; махни ако не искаш overlay */
+
+/* Overlay над видеото, но под текста; без да прихваща кликове */
 .home-hero__overlay {
     position: absolute;
     inset: 0;
+    z-index: 2;
     pointer-events: none;
-    background: linear-gradient(180deg, rgba(0, 0, 0, 0.15) 0%, rgba(0, 0, 0, 0.35) 60%, rgba(0, 0, 0, 0.55) 100%);
+    background: linear-gradient(180deg, rgba(0, 0, 0, .18) 0%, rgba(0, 0, 0, .38) 60%, rgba(0, 0, 0, .6) 100%);
 }
 
 
-/* Центрирано съдържание върху видеото (по желание) */
+/* Текстовият слой е най-отгоре */
 .home-hero__inner {
     position: relative;
-    z-index: 1;
+    z-index: 3;
     height: 100%;
     display: grid;
     place-items: center;
     padding: 2rem 1rem;
 }
 
+
 .home-hero__content {
-    max-width: 56rem;
+    max-width: 60rem;
     text-align: center;
     color: #fff;
 }
 
 .home-hero__title {
-    font-size: clamp(1.5rem, 3vw + 1rem, 3rem);
-    font-weight: 700;
+    font-size: clamp(1.6rem, 3vw + 1rem, 3rem);
+    font-weight: 800;
     letter-spacing: -0.02em;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, .4);
 }
 
 .home-hero__subtitle {
     margin-top: .5rem;
     font-size: clamp(.95rem, 1vw + .75rem, 1.25rem);
-    opacity: .9;
+    opacity: .92;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, .35);
 }
 
 
-/* По желание — utility клас, ако искаш да дадеш aspect ratio вместо VH височина */
-.home-hero--ratio {
-    height: auto;
-    aspect-ratio: 16 / 9;
+/* CTA бутон – по подразбиране тъмно-сив (grayscale) */
+.home-hero__cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+    padding: .65rem 1.2rem;
+    border-radius: .9rem;
+    background: #2b2b2b;
+    color: #fff;
+    font-weight: 700;
+    line-height: 1;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, .06) inset, 0 10px 18px rgba(0, 0, 0, .28);
+    transition: transform .15s ease, box-shadow .15s ease, background-color .15s ease, color .15s ease;
+    text-decoration: none;
+}
+
+.home-hero__cta:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, .06) inset, 0 14px 22px rgba(0, 0, 0, .35);
+}
+
+.home-hero__cta:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px #00d1ff, 0 0 0 4px rgba(0, 0, 0, .85), 0 0 14px rgba(0, 209, 255, .65);
+}
+
+
+/* Когато видеото е цветно → CTA става синo */
+
+.home-hero__media.vid-mono:hover~.home-hero__inner .home-hero__cta,
+.home-hero__media.vid-mono:focus-within~.home-hero__inner .home-hero__cta {
+    background: #00d1ff;
+    color: #0b0b0b;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, .06) inset, 0 12px 24px rgba(0, 0, 0, .28), 0 0 18px rgba(0, 209, 255, .35);
+}
+
+.home-hero__media.vid-mono.is-active~.home-hero__inner .home-hero__cta {
+    background: #00d1ff;
+    color: #0b0b0b;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, .06) inset, 0 12px 24px rgba(0, 0, 0, .28), 0 0 18px rgba(0, 209, 255, .35);
+}
+
+.home-hero__media.vid-mono.is-tap~.home-hero__inner .home-hero__cta {
+    background: #00d1ff;
+    color: #0b0b0b;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, .06) inset, 0 12px 24px rgba(0, 0, 0, .28), 0 0 18px rgba(0, 209, 255, .35);
+}
+
+
+.home-hero__media.vid-mono.is-active~.home-hero__inner .home-hero__cta:hover,
+.home-hero__media.vid-mono:hover~.home-hero__inner .home-hero__cta:hover,
+.home-hero__media.vid-mono:focus-within~.home-hero__inner .home-hero__cta:hover {
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, .06) inset, 0 16px 28px rgba(0, 0, 0, .35), 0 0 22px rgba(0, 209, 255, .5);
 }
