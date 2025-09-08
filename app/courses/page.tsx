@@ -14,7 +14,7 @@ async function getCourses() {
     const base = await getBaseUrl();
     const res = await fetch(`${base}/api/courses?status=published`, {
         cache: "no-store", // Деактивираме кеширането, за да виждаме винаги актуални данни
-        next: { revalidate: 60 }, // ISR
+
     });
     if (!res.ok) {
         throw new Error("Failed to fetch courses");

@@ -88,20 +88,22 @@
     align-items: center;
     justify-content: center;
     gap: .5rem;
-    padding: .9rem 1.8rem;
+    padding: 1.2rem 2.4rem;
     border-radius: 1.8rem;
     background: #2b2b2b;
     color: #fff;
     font-weight: 700;
+    font-size: 20px;
     line-height: 1;
-    box-shadow: 0 0 0 2px rgba(255, 255, 255, .06) inset, 0 10px 18px rgba(0, 0, 0, .28);
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, .06) inset, 0 10px 18px rgba(0, 0, 0, .28), 0 0 24px rgba(0, 0, 0, .70);
     transition: transform .15s ease, box-shadow .15s ease, background-color .15s ease, color .15s ease;
     text-decoration: none;
+    margin-top: 64px;
 }
 
 .home-hero__cta:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 0 0 2px rgba(255, 255, 255, .06) inset, 0 14px 22px rgba(0, 0, 0, .35);
+
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, .06) inset, 0 12px 24px rgba(0, 0, 0, .35), 0 0 18px rgba(0, 209, 255, .5);
 }
 
 .home-hero__cta:focus-visible {
@@ -128,14 +130,14 @@
 .home-hero__media.vid-mono.is-tap~.home-hero__inner .home-hero__cta {
     background: #16ffe4;
     color: #464646;
-    box-shadow: 0 0 0 2px rgba(255, 255, 255, .06) inset, 0 12px 24px rgba(0, 0, 0, .28), 0 0 18px rgba(250, 238, 200, .35);
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, .06) inset, 0 12px 24px rgba(0, 0, 0, .28), 0 0 24px rgba(0, 209, 255, .80);
 }
 
 
 .home-hero__media.vid-mono.is-active~.home-hero__inner .home-hero__cta:hover,
 .home-hero__media.vid-mono:hover~.home-hero__inner .home-hero__cta:hover,
 .home-hero__media.vid-mono:focus-within~.home-hero__inner .home-hero__cta:hover {
-    box-shadow: 0 0 0 2px rgba(255, 255, 255, .06) inset, 0 16px 28px rgba(0, 0, 0, .35), 0 0 22px rgba(0, 209, 255, .5);
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, .06) inset, 0 12px 24px rgba(0, 0, 0, .35), 0 0 18px;
 }
 
 /* Само за устройства без hover (мобилни) */
@@ -161,13 +163,13 @@
         border-radius: 50%;
         background: radial-gradient(circle at 50% 50%, rgb(22, 255, 228, .55) 0 30%, rgb(22, 255, 228) 41% 100%);
         box-shadow: 0 0 0 8px rgba(22, 255, 228, .20), 0 6px 14px rgba(0, 0, 0, .35);
-
+        pointer-events: auto;
     }
 
     .hero-nudge-bubble {
         font-size: 13px;
         font-weight: 500;
-
+        pointer-events: none;
         background: linear-gradient(to right,
                 rgb(1, 129, 118),
                 /* darkest teal */
