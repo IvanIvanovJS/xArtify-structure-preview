@@ -88,8 +88,8 @@
     align-items: center;
     justify-content: center;
     gap: .5rem;
-    padding: .65rem 1.2rem;
-    border-radius: .9rem;
+    padding: .9rem 1.8rem;
+    border-radius: 1.8rem;
     background: #2b2b2b;
     color: #fff;
     font-weight: 700;
@@ -115,20 +115,20 @@
 .home-hero__media.vid-mono:hover~.home-hero__inner .home-hero__cta,
 .home-hero__media.vid-mono:focus-within~.home-hero__inner .home-hero__cta {
     background: #00d1ff;
-    color: #0b0b0b;
-    box-shadow: 0 0 0 2px rgba(255, 255, 255, .06) inset, 0 12px 24px rgba(0, 0, 0, .28), 0 0 18px rgba(0, 209, 255, .35);
+    color: #464646;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, .06) inset, 0 12px 24px rgba(0, 0, 0, .28), 0 0 18px rgba(250, 238, 200, .35);
 }
 
 .home-hero__media.vid-mono.is-active~.home-hero__inner .home-hero__cta {
-    background: #00d1ff;
-    color: #0b0b0b;
-    box-shadow: 0 0 0 2px rgba(255, 255, 255, .06) inset, 0 12px 24px rgba(0, 0, 0, .28), 0 0 18px rgba(0, 209, 255, .35);
+    background: #2b2b2b;
+    color: #ffffff;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, .06) inset, 0 12px 24px rgba(0, 0, 0, .28), 0 0 18px rgba(250, 238, 200, .35);
 }
 
 .home-hero__media.vid-mono.is-tap~.home-hero__inner .home-hero__cta {
-    background: #00d1ff;
-    color: #0b0b0b;
-    box-shadow: 0 0 0 2px rgba(255, 255, 255, .06) inset, 0 12px 24px rgba(0, 0, 0, .28), 0 0 18px rgba(0, 209, 255, .35);
+    background: #16ffe4;
+    color: #464646;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, .06) inset, 0 12px 24px rgba(0, 0, 0, .28), 0 0 18px rgba(250, 238, 200, .35);
 }
 
 
@@ -136,4 +136,56 @@
 .home-hero__media.vid-mono:hover~.home-hero__inner .home-hero__cta:hover,
 .home-hero__media.vid-mono:focus-within~.home-hero__inner .home-hero__cta:hover {
     box-shadow: 0 0 0 2px rgba(255, 255, 255, .06) inset, 0 16px 28px rgba(0, 0, 0, .35), 0 0 22px rgba(0, 209, 255, .5);
+}
+
+/* Само за устройства без hover (мобилни) */
+@media (hover: none) {
+    .hero-nudge-btn {
+        position: absolute;
+        right: 12px;
+        bottom: 12px;
+        z-index: 4;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: none;
+        background: transparent;
+        padding: 6px;
+        border-radius: 9999px;
+        touch-action: manipulation;
+    }
+
+    .hero-nudge-dot {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 50% 50%, rgb(22, 255, 228, .55) 0 30%, rgb(22, 255, 228) 41% 100%);
+        box-shadow: 0 0 0 8px rgba(22, 255, 228, .20), 0 6px 14px rgba(0, 0, 0, .35);
+
+    }
+
+    .hero-nudge-bubble {
+        font-size: 12px;
+        font-weight: 800;
+
+        background: linear-gradient(to right,
+                rgb(1, 129, 118),
+                /* darkest teal */
+                rgb(1, 155, 140),
+                /* dark teal */
+                rgb(22, 200, 180),
+                /* muted version */
+                rgb(22, 255, 228),
+                /* main color */
+                rgb(120, 255, 240),
+                /* bright aqua */
+                rgb(200, 255, 250)
+                /* lightest shade */
+            );
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        border-radius: 9999px;
+        margin-right: 8px;
+        box-shadow: 0 6px 16px rgba(0, 0, 0, .25);
+    }
 }

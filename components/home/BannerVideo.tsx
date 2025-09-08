@@ -20,6 +20,8 @@ export type BannerVideoProps = {
     revealOnTap?: boolean;
     /** Колко дълго след tap да стои цветно (само мобилен режим) */
     revealPersistMs?: number;
+    /** След колко време видимост да се появи подсказката (ms) – по подразбиране 5000 */
+    nudgeDelayMs?: number;
 };
 
 const buildCldVideoSrc = (
@@ -50,14 +52,19 @@ const BannerVideo: FC<BannerVideoProps> = ({
     preload = "metadata",
     revealOnTap = true,
     revealPersistMs = 5000,
+    nudgeDelayMs = 5000,
 }): ReactElement => {
     const useCloudinary: boolean = Boolean(cloudName && publicId);
     const vRef = useRef<HTMLVideoElement | null>(null);
+    const sectionRef = useRef<HTMLElement | null>(null);
 
     // Desktop hover (mouse) vs. mobile tap (touch/pen)
     const [isHover, setIsHover] = useState<boolean>(false); // само за mouse
     const [isTapActive, setIsTapActive] = useState<boolean>(false); // само за touch/pen
+    const [showNudge, setShowNudge] = useState<boolean>(false); // подсказка след 5s
+
     const hideTimerRef = useRef<number | null>(null);
+    const nudgeTimerRef = useRef<number | null>(null);
 
     const mp4Src: string = useCloudinary
         ? buildCldVideoSrc(cloudName as string, publicId as string, "mp4", widthHint)
@@ -95,11 +102,13 @@ const BannerVideo: FC<BannerVideoProps> = ({
         return () => { v.removeEventListener("canplay", onCanPlay); };
     }, []);
 
-    // Cleanup таймера при unmount
-    useEffect(() => () => { if (hideTimerRef.current !== null) window.clearTimeout(hideTimerRef.current); }, []);
+    // Cleanup таймери при unmount
+    useEffect(() => () => {
+        if (hideTimerRef.current !== null) window.clearTimeout(hideTimerRef.current);
+        if (nudgeTimerRef.current !== null) window.clearTimeout(nudgeTimerRef.current);
+    }, []);
 
-    // --- MINIMAL CHANGES ---
-    // 1) Hover да се сетва САМО ако pointerType е mouse
+    // 1) Hover да се сетва САМО ако pointerType е mouse (да не чупим мобилния tap)
     const onPointerEnter: PointerEventHandler<HTMLElement> = (e) => {
         if (e.pointerType === "mouse") setIsHover(true);
     };
@@ -124,24 +133,57 @@ const BannerVideo: FC<BannerVideoProps> = ({
 
     const onMediaKeyDown: KeyboardEventHandler<HTMLDivElement> = (e) => {
         if (e.key === "Enter" || e.key === " ") {
-            // Само на устройства без hover (мобилни)
             const isHoverNone = typeof window !== "undefined" && window.matchMedia && window.matchMedia("(hover: none)").matches;
             if (isHoverNone) { e.preventDefault(); activateTap(); }
         }
     };
 
-    // Комбинирано активно състояние: hover (desktop) ИЛИ tap (mobile)
+    // 3) Показване на подсказката (мишена + „нарисувай ме“) след като секцията е видима >= nudgeDelayMs
+    useEffect(() => {
+        const el = sectionRef.current;
+        if (!el) return;
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                const entry = entries[0];
+                const isVisible = entry.isIntersecting && entry.intersectionRatio > 0.5;
+                if (isVisible) {
+                    if (nudgeTimerRef.current !== null) window.clearTimeout(nudgeTimerRef.current);
+                    nudgeTimerRef.current = window.setTimeout(() => {
+                        const isHoverNone = typeof window !== "undefined" && window.matchMedia && window.matchMedia("(hover: none)").matches;
+                        if (isHoverNone) setShowNudge(true);
+                    }, nudgeDelayMs);
+                } else {
+                    if (nudgeTimerRef.current !== null) window.clearTimeout(nudgeTimerRef.current);
+                    setShowNudge(false);
+                }
+            },
+            { threshold: [0, 0.5, 1] }
+        );
+
+        observer.observe(el);
+        return () => observer.disconnect();
+    }, [nudgeDelayMs]);
+
+    const onNudgePress: PointerEventHandler<HTMLButtonElement> = (e) => {
+        e.preventDefault();
+        if (e.pointerType === "touch" || e.pointerType === "pen") {
+            setShowNudge(false);
+            activateTap();
+        }
+    };
+
     const isActive: boolean = isHover || isTapActive;
 
     return (
         <section
+            ref={sectionRef}
             className={`home-hero home-hero--vh ${className ?? ""}`.trim()}
             aria-label="Лендинг банер видео"
             onPointerDownCapture={onPointerDownCapture}
             onPointerEnter={onPointerEnter}
             onPointerLeave={onPointerLeave}
         >
-            {/* .vid-mono върху медия контейнера; .is-active за hover/tap; .is-tap само за мобилен tap (ако ти потрябва в CSS) */}
             <div
                 className={`home-hero__media vid-mono${isActive ? " is-active" : ""}${isTapActive ? " is-tap" : ""}`}
                 tabIndex={0}
@@ -149,6 +191,7 @@ const BannerVideo: FC<BannerVideoProps> = ({
                 aria-label="Покажи цветовете"
                 onKeyDown={onMediaKeyDown}
             >
+                {/* Долният слой: grayscale база (чрез CSS) */}
                 <video
                     ref={vRef}
                     className="home-hero__video"
@@ -165,6 +208,9 @@ const BannerVideo: FC<BannerVideoProps> = ({
                     <source src={webmSrc} type="video/webm" />
                     <source src={mp4Src} type="video/mp4" />
                 </video>
+                {/* Горният слой: цветна маска (ако я ползваш) */}
+                {/* <video className="home-hero__video gs-mask" ...> ... </video> */}
+
                 <div className="home-hero__overlay" aria-hidden="true" />
             </div>
 
@@ -172,7 +218,20 @@ const BannerVideo: FC<BannerVideoProps> = ({
                 <div className="home-hero__content">
                     <h1 className="home-hero__title">Изкуството е за всеки!</h1>
                     <p className="home-hero__subtitle">Привестваме всички любители и професионалисти да се запознаят с нашата обучителна програма.</p>
-                    <Link href="/courses" className="home-hero__cta">ЗАПИШИ СЕ СЕГА</Link>
+                    <Link href="/courses" className="home-hero__cta mt-16">ЗАПИШИ СЕ СЕГА</Link>
+
+                    {/* Подсказка: кръгче + балонче в долния десен ъгъл (само мобилни – показва се чрез showNudge) */}
+                    {showNudge && !isTapActive && (
+                        <button
+                            type="button"
+                            className="hero-nudge-btn"
+                            aria-label="Покажи цветовете"
+                            onPointerDown={onNudgePress}
+                        >
+                            <span className="hero-nudge-bubble" aria-hidden="true">{"Нарисувай ме =>"}</span>
+                            <span className="hero-nudge-dot" aria-hidden="true" />
+                        </button>
+                    )}
                 </div>
             </div>
         </section>
