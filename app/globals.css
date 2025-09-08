@@ -16,8 +16,8 @@
 /* 2) Your design tokens (single palette) */
 @theme {
   /* базови */
-  --color-background: #f2f2f2;
-  --color-foreground: #171717;
+  --color-background: #2b2b2b;
+  --color-foreground: #2b2b2b;
 
   /* primary */
   --color-primary: #059669;
@@ -36,10 +36,10 @@
   }
 
   @theme {
-    --color-background: #f2f2f2;
-    --color-foreground: #171717;
-    --color-primary: #059669;
-    --color-primary-light: #4cba8f;
+    --color-background: #464646;
+    --color-foreground: white;
+    --color-primary: #2b2b2b;
+    --color-primary-light: #16ffe4;
     --color-primary-foreground: #ffffff;
     --color-muted: #f6f6f7;
     --color-muted-foreground: #6b7280;

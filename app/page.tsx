@@ -37,9 +37,9 @@ export default function HomePage() {
           <h1 className="text-2xl font-bold">Добре дошъл в xArtify</h1>
           <p>Моля, влез в акаунта си или се регистрирай.</p>
           <div className="flex justify-center gap-4">
-            <Link href="/login" className="bg-primary-light text-gray-100 text-xl hover:bg-black  px-4 py-2 rounded">Вход</Link>
+            <Link href="/login" className="bg-primary text-gray-100 text-xl hover:bg-primary-light hover:text-black active:bg-primary-light active:text-black px-5 py-2 rounded-full">Вход</Link>
 
-            <a href="/register" className="bg-primary-light text-gray-100 text-xl hover:bg-black  px-4 py-2 rounded">Регистрация</a>
+            <a href="/register" className="bg-primary text-gray-100 text-xl hover:bg-primary-light hover:text-black active:bg-primary-light active:text-black px-5 py-2 rounded-full">Регистрация</a>
           </div>
 
         </>
