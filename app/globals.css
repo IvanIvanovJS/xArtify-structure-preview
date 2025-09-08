@@ -75,49 +75,6 @@ body {
    - ::after  → близки по-едри/ярки звезди (по-редки) → stars-near.svg
    ================================ */
 
-@keyframes star-twinkle-a {
-
-  0%,
-  100% {
-    opacity: 0.75;
-  }
-
-  50% {
-    opacity: 1;
-  }
-}
-
-@keyframes star-twinkle-b {
-
-  0%,
-  100% {
-    opacity: 0.55;
-  }
-
-  50% {
-    opacity: 0.95;
-  }
-}
-
-@keyframes star-drift-slow {
-  0% {
-    transform: translate3d(0, 0, 0);
-  }
-
-  100% {
-    transform: translate3d(-2%, -2%, 0);
-  }
-}
-
-@keyframes star-drift-fast {
-  0% {
-    transform: translate3d(0, 0, 0);
-  }
-
-  100% {
-    transform: translate3d(-4%, -6%, 0);
-  }
-}
 
 /* === PATCH 1: Z-слой на звездното небе === */
 .bg-stars {
@@ -235,9 +192,6 @@ body {
   /* дребни, гъсти */
   opacity: 0.9;
   mix-blend-mode: screen;
-  animation:
-    star-drift-slow 120s linear infinite,
-    star-twinkle-a 6.5s ease-in-out infinite;
   transform: translate3d(0, 0, 0);
   filter: drop-shadow(0 0 1px rgba(22, 255, 228, 1));
 }
@@ -256,9 +210,6 @@ body {
   /* по-едри, по-редки */
   opacity: 0.85;
   mix-blend-mode: screen;
-  animation:
-    star-drift-fast 90s linear infinite,
-    star-twinkle-b 8.5s ease-in-out infinite;
   transform: translate3d(0, 0, 0);
   filter:
     drop-shadow(0 0 4px rgba(22, 255, 228, 0.7)) drop-shadow(0 0 6px rgba(22, 255, 228, 1));
