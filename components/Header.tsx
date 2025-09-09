@@ -15,54 +15,69 @@ import {
     LogOut,
 } from "lucide-react";
 
-function getScrollRoot(): Window | HTMLElement {
-    const main = document.querySelector("main");
-    if (main instanceof HTMLElement) {
-        const oy = window.getComputedStyle(main).overflowY;
-        if (oy === "auto" || oy === "scroll") return main;
+// заменя useInstantHideOnScroll в Header.tsx
+function getScrollRootSafe(): Window | HTMLElement {
+    const main = document.querySelector("main") as HTMLElement | null;
+    if (main) {
+        const oy = getComputedStyle(main).overflowY;
+        const canScroll = main.scrollHeight > main.clientHeight;
+        if (canScroll && (oy === "auto" || oy === "scroll")) return main;
     }
     return window;
 }
 
-function readScrollTop(target: Window | HTMLElement): number {
-    return target instanceof Window
-        ? (target.scrollY || window.pageYOffset)
-        : target.scrollTop;
+function getScrollTopWin(): number {
+    return window.scrollY || window.pageYOffset || 0;
+}
+function getScrollTopEl(el: HTMLElement | null): number {
+    return el ? el.scrollTop : 0;
 }
 
 function useInstantHideOnScroll(): { hidden: boolean } {
     const [hidden, setHidden] = useState<boolean>(false);
     const lastY = useRef<number>(0);
-    const scrollerRef = useRef<Window | HTMLElement | null>(null);
-    const ticking = useRef<boolean>(false);
+    const mainRef = useRef<HTMLElement | null>(null);
+    const rafId = useRef<number | null>(null);
 
     useEffect(() => {
-        scrollerRef.current = getScrollRoot();
+        // guard за SSR
+        if (typeof window === "undefined" || typeof document === "undefined") return;
+
+        const maybeMain = getScrollRootSafe();
+        mainRef.current = maybeMain instanceof Window ? null : (maybeMain as HTMLElement);
+
+        const readY = (): number =>
+            Math.max(getScrollTopWin(), getScrollTopEl(mainRef.current));
 
         const update = (): void => {
-            ticking.current = false;
-            const y = readScrollTop(scrollerRef.current ?? window);
+            rafId.current = null;
+            const y = readY();
             if (y <= 0) { setHidden(false); lastY.current = 0; return; }
-            setHidden(y > lastY.current);     // надолу → скрий; нагоре → покажи
+            setHidden(y > lastY.current);      // надолу → скрий; нагоре → покажи
             lastY.current = y;
         };
 
         const onScroll = (): void => {
-            if (!ticking.current) { ticking.current = true; requestAnimationFrame(update); }
+            if (rafId.current == null) rafId.current = window.requestAnimationFrame(update);
         };
 
-        const el = scrollerRef.current ?? window;
-        (el as Window).addEventListener?.("scroll", onScroll, { passive: true });
-        (el as HTMLElement).addEventListener?.("scroll", onScroll, { passive: true } as AddEventListenerOptions);
+        // слушаме ВИНАГИ window + ПО ЖЕЛАНИЕ main (ако реално скролва)
+        window.addEventListener("scroll", onScroll, { passive: true });
+        if (mainRef.current) mainRef.current.addEventListener("scroll", onScroll, { passive: true });
+
+        // първоначален sync
+        update();
 
         return () => {
-            (el as Window).removeEventListener?.("scroll", onScroll);
-            (el as HTMLElement).removeEventListener?.("scroll", onScroll);
+            window.removeEventListener("scroll", onScroll);
+            if (mainRef.current) mainRef.current.removeEventListener("scroll", onScroll);
+            if (rafId.current != null) { window.cancelAnimationFrame(rafId.current); rafId.current = null; }
         };
     }, []);
 
     return { hidden };
 }
+
 
 export default function Header(): JSX.Element {
     const pathname = usePathname();
@@ -100,6 +115,10 @@ export default function Header(): JSX.Element {
     );
 
 
+
+    function getScrollRootSafe() {
+        throw new Error("Function not implemented.");
+    }
 
     return (
         <>
@@ -160,24 +179,13 @@ export default function Header(): JSX.Element {
                                 setSearchOpen(false);
                                 setDrawerOpen(false);
 
-                                const scroller = getScrollRoot();
+
                                 // изключваме плавния скрол, за да няма „подскачане“
                                 const html = document.documentElement as HTMLElement;
                                 const prev = html.style.scrollBehavior;
                                 html.style.scrollBehavior = "auto";
 
-                                if (isHome) {
-                                    // НА началната: скрол до 0 на реалния контейнер
-                                    if (scroller instanceof Window) {
-                                        scroller.scrollTo({ top: 0, left: 0 });
-                                    } else {
-                                        (scroller as HTMLElement).scrollTop = 0;
-                                    }
-                                } else {
-                                    // ДРУГА страница: твърда навигация към "/" (top по дефиниция)
-                                    if ("scrollRestoration" in history) { history.scrollRestoration = "manual"; }
-                                    window.location.assign("/");
-                                }
+
 
                                 // връщаме предишното поведение
                                 html.style.scrollBehavior = prev;
@@ -218,7 +226,7 @@ export default function Header(): JSX.Element {
                     id="header-search-popover"
                     aria-hidden={!searchOpen}
                     className={[
-
+                        "x-search-popover", // ← добави това!
                         searchOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none",
                     ].join(" ")}
                 >
@@ -282,7 +290,7 @@ export default function Header(): JSX.Element {
                         {/* Цитат – отместен под бара */}
                         <div className="pt-8 md:pt-10">
                             <p className="home-quote " aria-label="Всяко гениално изкуство е започнало на празно платно">
-                                {`ВСЯКО ГЕНИАЛНО${`\n`}ИЗКУСТВО Е${`\n`}ЗАПОЧНАЛО НА${`\n`}ПРАЗНО ПЛАТНО!`}
+                                {`ВСЯКО ГЕНИАЛНО${`\n`}ИЗКУСТВО${`\n`}ЗАПОЧВА НА${`\n`}ПРАЗНО ПЛАТНО!`}
                             </p>
                         </div>
 

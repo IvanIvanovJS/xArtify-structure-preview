@@ -217,9 +217,3 @@ body {
   box-shadow: 0 0 16px rgba(22, 255, 228, 0.18), 0 0 6px rgba(22, 255, 228, 0.12) inset;
   pointer-events: none;
 }
-
-/* ============ Cleanup от предишния вариант ============ */
-/* ако имаш останали елементи .shooting-star в JSX, скриваме ги безопасно */
-.shooting-star {
-  display: none !important;
-}

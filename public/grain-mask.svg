@@ -10,12 +10,12 @@
       <!-- Threshold към точки (висок контраст) -->
       <feComponentTransfer in="g" result="th">
         <!-- колкото по-малко първи 1ци → по-рядко; с тези стойности е гъсто/ситно -->
-        <feFuncR type="table" tableValues="0 0 0 0 0 1 1 1 1 1"/>
-        <feFuncG type="table" tableValues="0 0 0 0 0 1 1 1 1 1"/>
-        <feFuncB type="table" tableValues="0 0 0 0 0 1 1 1 1 1"/>
+        <feFuncR type="table" tableValues="0 0 0 0 1 1 1 1 1 1"/>
+        <feFuncG type="table" tableValues="0 0 0 0 1 1 1 1 1 1"/>
+        <feFuncB type="table" tableValues="0 0 0 0 1 1 1 1 1 1"/>
       </feComponentTransfer>
       <!-- Леко изглаждане да не е „пясък“ -->
-      <feGaussianBlur stdDeviation="0.45" result="out"/>
+      <feGaussianBlur stdDeviation="0.18" result="out"/>
     </filter>
   </defs>
   <!-- Белият правоъгълник + филтър = БЯЛО ЗЪРНЕСТО върху ЧЕРНО -->

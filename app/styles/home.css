@@ -4,6 +4,7 @@
     overflow: hidden;
     width: 100%;
     background: #000;
+    overflow-anchor: none;
 }
 
 .home-hero--vh {
@@ -144,7 +145,7 @@
 .home-hero__media.vid-mono.is-active~.home-hero__inner .home-hero__cta:hover,
 .home-hero__media.vid-mono:hover~.home-hero__inner .home-hero__cta:hover,
 .home-hero__media.vid-mono:focus-within~.home-hero__inner .home-hero__cta:hover {
-    border: none;
+    border-color: none;
     box-shadow: 0 0 0 2px rgba(255, 255, 255, .06) inset, 0 12px 24px rgba(0, 0, 0, .35), 0 0 18px;
 }
 
