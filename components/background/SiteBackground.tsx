@@ -24,7 +24,7 @@ export default function SiteBackground(): JSX.Element {
         grain1, grain2,
     } = useMemo(() => {
         // Мъгла: две „облака“ с разумно разделение
-        let s1 = { x: pick(60, 88), y: pick(12, 36) }; // горе-дясно
+        const s1 = { x: pick(60, 88), y: pick(12, 36) }; // горе-дясно
         let s2 = { x: pick(12, 40), y: pick(60, 88) }; // долу-ляво
 
         if (distance(s1, s2) < 40) {
@@ -33,7 +33,7 @@ export default function SiteBackground(): JSX.Element {
         }
 
         // Grain петна (центрове), пазим ги на разстояние от мъглата
-        let g1 = { x: pick(65, 85), y: pick(18, 38) };
+        const g1 = { x: pick(65, 85), y: pick(18, 38) };
         let g2 = { x: pick(15, 35), y: pick(65, 85) };
 
         // гарантираме разстояние м/у двата grain центъра
