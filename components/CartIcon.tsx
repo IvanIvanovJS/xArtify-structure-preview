@@ -11,10 +11,10 @@ export default function CartIcon() {
 
     return (
         <Link href="/cart">
-            <div className="relative p-2 cursor-pointer">
+            <div className="group relative p-2 cursor-pointer">
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5 text-white  dark:text-white "
+                    className="h-6 w-6 text-white  dark:text-white group-hover:text-primary"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -28,7 +28,7 @@ export default function CartIcon() {
                 </svg>
 
 
-                <span className="absolute -top-2 -right-3 inline-flex items-center justify-center h-4 w-6 text-xs font-bold leading-none text-white bg-neutral-700 hover:bg-primary hover:text-background rounded-full">
+                <span className="absolute -top-2 -right-3 inline-flex items-center  justify-center h-5 w-7 text-[14px] font-bold leading-none text-white group-hover:shadow-primary group-hover:shadow-md  border-[1px] border-neutral-800 rounded-full">
                     {itemCount}
                 </span>
 

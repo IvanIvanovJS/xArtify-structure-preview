@@ -1,24 +1,25 @@
 /* ================================
    File: app/globals.css
-   Theme: Neon Starfield (Greyscale + #16ffe4)
-   Mobile-first, perf-friendly
+   Theme: Greyscale Brush Strokes (+ #16ffe4 accents)
+   Mobile-first, zero animations
    ================================ */
 @import "tailwindcss";
 @import "./styles/header.css";
 @import "./styles/home.css";
 @import "./styles/mono.css";
 
-/* 1) Color tokens (greyscale + neon primary) */
+/* 1) Color tokens */
 :root {
   color-scheme: light;
 }
 
 @theme {
   --color-background: #0b0b0f;
-  /* дълбок „космос“, не абсолютен черен */
+  /* дълбоко тъмно сиво */
   --color-foreground: #e5e7eb;
+  /* четим неутрален текст */
   --color-primary: #16ffe4;
-  /* neon cyan */
+  /* неон акцент */
   --color-primary-foreground: #0b0b0f;
   --color-muted: #1a1a20;
   --color-muted-foreground: #9ca3af;
@@ -68,174 +69,131 @@ body {
 }
 
 /* ================================
-   3) Neon Starfield Background
-   Слоеве:
-   - base gradient
-   - ::before → далечни дребни звезди (по-плътни) → stars-far.svg
-   - ::after  → близки по-едри/ярки звезди (по-редки) → stars-near.svg
+   STATIC Background with external grain
+   - Zero animations
+   - Strong, visible neon grain
    ================================ */
 
+/* ================================
+   Fog + Local Neon Grain (static)
+   ================================ */
 
-/* === PATCH 1: Z-слой на звездното небе === */
+/* Настройки по подразбиране (ще се подменят от JSX при mount) */
+:root {
+  /* позиции на мъглата (fallback за SSR) */
+  --spot1-x: 78%;
+  --spot1-y: 22%;
+  --spot2-x: 22%;
+  --spot2-y: 78%;
+
+  /* интензитет и размер на мъглата */
+  --mist-size: 64vmin;
+  --spot1-intensity: 0.36;
+  /* 0.2 – 0.6 */
+  --spot2-intensity: 0.22;
+  /* 0.1 – 0.5 */
+
+  /* неонов цвят за grain (RGB с интервали за лесно rgba()) */
+  --grain-color: 22 255 228;
+  /* #16ffe4 */
+  --grain-opacity: 0.55;
+  /* 0.30 – 0.75 видимост на петното */
+  --grain-tile: 120px;
+  /* размер на плочката на grain маската */
+
+  /* размер на кръговите grain петна */
+  --grain1-diameter: 34vmin;
+  --grain2-diameter: 28vmin;
+}
+
 .bg-stars {
   position: fixed;
   inset: 0;
   z-index: 0;
-  /* <- беше -1 */
   pointer-events: none;
-  background:
-    radial-gradient(120% 80% at 50% 100%, #0f1117 0%, #0b0b0f 55%, #0b0b0f 100%),
-    #0b0b0f;
-  filter: grayscale(100%);
+
+  /* Базов тъмен фон */
+  background-color: #050507;
+
+  /* МЪГЛА (fog): два радиални градиента с неон-цианов оттенък */
+  background-image:
+    radial-gradient(var(--mist-size) var(--mist-size) at var(--spot1-x) var(--spot1-y),
+      rgba(22, 255, 228, var(--spot1-intensity)) 0%,
+      rgba(22, 255, 228, 0.07) 55%,
+      rgba(0, 0, 0, 0) 72%),
+    radial-gradient(calc(var(--mist-size) * 0.85) calc(var(--mist-size) * 0.85) at var(--spot2-x) var(--spot2-y),
+      rgba(22, 255, 228, var(--spot2-intensity)) 0%,
+      rgba(22, 255, 228, 0.05) 52%,
+      rgba(0, 0, 0, 0) 72%),
+    /* лек тъмен градиент за дълбочина */
+    radial-gradient(120% 90% at 50% 100%, #0d1118 0%, #050507 70%);
+  background-repeat: no-repeat;
+  background-size: cover, cover, cover;
+
+  /* НИКАКЪВ grayscale тук – иначе синьото ще изчезне */
+  filter: none;
+
+  /* фина винетка (по желание) */
+  -webkit-mask-image: radial-gradient(140% 140% at 50% 50%, rgba(0, 0, 0, 1) 70%, rgba(0, 0, 0, 0.92) 100%);
   mask-image: radial-gradient(140% 140% at 50% 50%, rgba(0, 0, 0, 1) 70%, rgba(0, 0, 0, 0.92) 100%);
 }
 
-/* === PATCH 2: Shooting star ефект === */
-/* Едно „метеорче“ = малък елиптичен блясък + опашка, движещ се диагонално */
-@keyframes meteor-path-a {
-  0% {
-    transform: translate3d(110vw, -20vh, 0) rotate(35deg);
-    opacity: 0;
-  }
-
-  5% {
-    opacity: 1;
-  }
-
-  100% {
-    transform: translate3d(-10vw, 60vh, 0) rotate(35deg);
-    opacity: 0;
-  }
-}
-
-@keyframes meteor-path-b {
-  0% {
-    transform: translate3d(120vw, -10vh, 0) rotate(25deg);
-    opacity: 0;
-  }
-
-  6% {
-    opacity: 1;
-  }
-
-  100% {
-    transform: translate3d(-15vw, 70vh, 0) rotate(25deg);
-    opacity: 0;
-  }
-}
-
-@keyframes meteor-path-c {
-  0% {
-    transform: translate3d(100vw, -25vh, 0) rotate(40deg);
-    opacity: 0;
-  }
-
-  7% {
-    opacity: 1;
-  }
-
-  100% {
-    transform: translate3d(-20vw, 80vh, 0) rotate(40deg);
-    opacity: 0;
-  }
-}
-
-/* Общ стил за „метеор“ */
-.shooting-star {
+/* ===== Локални grain петна (2 кръга), НЯМА анимация ===== */
+.bg-stars .grain-spot {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 8px;
-  /* дължина на опашката */
-  height: 8px;
-  /* дебелина */
+  inset: 0;
   pointer-events: none;
-  opacity: 0;
-  /* блясък с опашка в неон цвят */
-  background:
-    radial-gradient(closest-side, rgba(22, 255, 228, 1), rgba(22, 255, 228, 0.25), rgba(22, 255, 228, 0) 70%) 0 50% / 6px 6px no-repeat,
-    linear-gradient(90deg, rgba(22, 255, 228, 0.9), rgba(22, 255, 228, 0) 70%);
-  filter:
-    drop-shadow(0 0 2px rgba(22, 255, 228, 0.85)) drop-shadow(0 0 6px rgba(22, 255, 228, 0.90));
-  transform: translate3d(0, 0, 0) rotate(35deg);
+
+  /* Подравняваме към конкретна точка с CSS променливи (сетват се от JSX) */
+  width: var(--diameter);
+  height: var(--diameter);
+  left: var(--gx);
+  top: var(--gy);
+  transform: translate(-50%, -50%);
+  border-radius: 9999px;
+
+  /* Цветна база (цианово) – това е реалният цвят */
+  background-image: radial-gradient(circle at 50% 50%,
+      rgba(var(--grain-color), var(--grain-opacity)) 0%,
+      rgba(var(--grain-color), calc(var(--grain-opacity) * 0.55)) 45%,
+      rgba(var(--grain-color), 0) 100%);
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+
+  /* МАСКА с плочки от шум → остават само „точки“ от цвета */
+  -webkit-mask-image: url("/grain-mask.svg");
+  mask-image: url("/grain-mask.svg");
+  -webkit-mask-repeat: repeat;
+  mask-repeat: repeat;
+  -webkit-mask-size: var(--grain-tile) var(--grain-tile);
+  mask-size: var(--grain-tile) var(--grain-tile);
+
+  /* Никаква смесване/блендиране не е нужно – маската чисто изрязва */
+  opacity: 1;
 }
 
-/* Редки „прелитания“ – различни периоди/закъснения за непредвидимост */
-.shooting-star--a {
-  animation: meteor-path-a 32s linear infinite;
-  animation-delay: 6s;
+/* Първо петно (по-голямо) */
+.bg-stars .grain-spot--1 {
+  --diameter: var(--grain1-diameter);
+  /* fallback позиции (ще се подменят от JSX) */
+  --gx: 78%;
+  --gy: 24%;
 }
 
-.shooting-star--b {
-  animation: meteor-path-b 44s linear infinite;
-  animation-delay: 18s;
+/* Второ петно (по-малко) */
+.bg-stars .grain-spot--2 {
+  --diameter: var(--grain2-diameter);
+  --gx: 22%;
+  --gy: 76%;
 }
 
-.shooting-star--c {
-  animation: meteor-path-c 53s linear infinite;
-  animation-delay: 34s;
-}
-
-
-/* Далечни, дребни, по-плътни звезди */
-.bg-stars::before {
-  content: "";
-  position: absolute;
-  inset: -5% -5% -5% -5%;
-  /* overscan за плавен дрейф */
-  pointer-events: none;
-  will-change: transform, opacity;
-
-  background-image: url("/stars-far.svg");
-  background-repeat: repeat;
-  background-size: 500px 500px;
-  /* дребни, гъсти */
-  opacity: 0.9;
-  mix-blend-mode: screen;
-  transform: translate3d(0, 0, 0);
-  filter: drop-shadow(0 0 1px rgba(22, 255, 228, 1));
-}
-
-/* Близки, по-едри и ярки звезди */
-.bg-stars::after {
-  content: "";
-  position: absolute;
-  inset: -8% -8% -8% -8%;
-  pointer-events: none;
-  will-change: transform, opacity;
-
-  background-image: url("/stars-near.svg");
-  background-repeat: repeat;
-  background-size: 650px 650px;
-  /* по-едри, по-редки */
-  opacity: 0.85;
-  mix-blend-mode: screen;
-  transform: translate3d(0, 0, 0);
-  filter:
-    drop-shadow(0 0 4px rgba(22, 255, 228, 0.7)) drop-shadow(0 0 6px rgba(22, 255, 228, 1));
-}
-
-/* Accessibility: уважаваме reduced motion */
-@media (prefers-reduced-motion: reduce) {
-
-  .bg-stars::before,
-  .bg-stars::after {
-    animation: none;
-  }
-
-  .shooting-star {
-    display: none;
-  }
-}
 
 /* ================================
-   4) Optional helpers
+   4) Helpers (без промяна)
    ================================ */
 
 .section-veil {
-  background: linear-gradient(to bottom,
-      rgba(11, 11, 15, 0.72),
-      rgba(11, 11, 15, 0.72));
+  background: linear-gradient(to bottom, rgba(11, 11, 15, 0.72), rgba(11, 11, 15, 0.72));
   backdrop-filter: blur(2px) saturate(0.9);
   -webkit-backdrop-filter: blur(2px) saturate(0.9);
   border-radius: 1rem;
@@ -258,4 +216,10 @@ body {
   border-radius: inherit;
   box-shadow: 0 0 16px rgba(22, 255, 228, 0.18), 0 0 6px rgba(22, 255, 228, 0.12) inset;
   pointer-events: none;
+}
+
+/* ============ Cleanup от предишния вариант ============ */
+/* ако имаш останали елементи .shooting-star в JSX, скриваме ги безопасно */
+.shooting-star {
+  display: none !important;
 }

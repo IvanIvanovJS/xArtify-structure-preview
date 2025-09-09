@@ -13,7 +13,7 @@ export default function HomePage() {
   }
 
   return (
-    <div className=" mt-10 text-center space-y-4">
+    <div className=" text-center">
       <BannerVideo
         cloudName={cloudName}
         publicId="xartify/banner-home"

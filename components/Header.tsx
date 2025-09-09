@@ -1,247 +1,313 @@
-// File: app/components/Header.tsx
 "use client";
 
-import type { FC, ReactElement } from "react";
-import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { createPortal } from "react-dom";
 import { usePathname } from "next/navigation";
-import { signOut, useSession } from "next-auth/react";
-import { Menu, X, User2, Heart, Search as SearchIcon } from "lucide-react";
-import CartIcon from "@/components/CartIcon";
+import { JSX, useEffect, useMemo, useRef, useState } from "react";
+import { useSession } from "next-auth/react";
+import {
+    Search,
+    User2,
+    Heart,
+    ShoppingCart,
+    Menu,
+    LogIn,
+    LogOut,
+} from "lucide-react";
 
-interface SessionUser {
-    id?: string;
-    name?: string | null;
-    email?: string | null;
-    image?: string | null;
-    artistProfile?: object | null;
+function getScrollRoot(): Window | HTMLElement {
+    const main = document.querySelector("main");
+    if (main instanceof HTMLElement) {
+        const oy = window.getComputedStyle(main).overflowY;
+        if (oy === "auto" || oy === "scroll") return main;
+    }
+    return window;
 }
 
-const Header: FC = (): ReactElement => {
-    const { data: session } = useSession();
-    const pathname = usePathname();
+function readScrollTop(target: Window | HTMLElement): number {
+    return target instanceof Window
+        ? (target.scrollY || window.pageYOffset)
+        : target.scrollTop;
+}
 
-    const isAuthenticated: boolean = Boolean(session?.user);
-    const isArtist: boolean = Boolean((session?.user as SessionUser | undefined)?.artistProfile);
+function useInstantHideOnScroll(): { hidden: boolean } {
+    const [hidden, setHidden] = useState<boolean>(false);
+    const lastY = useRef<number>(0);
+    const scrollerRef = useRef<Window | HTMLElement | null>(null);
+    const ticking = useRef<boolean>(false);
 
-
-    const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
-    const [isProfileOpen, setIsProfileOpen] = useState<boolean>(false);
-    const [mounted, setMounted] = useState<boolean>(false);
-
-    const profileBtnRef = useRef<HTMLButtonElement | null>(null);
-    const profileMenuRef = useRef<HTMLDivElement | null>(null);
-
-    useEffect(() => { setMounted(true); }, []);
-
-    // Close menus when route changes
     useEffect(() => {
-        setIsMenuOpen(false);
-        setIsProfileOpen(false);
-    }, [pathname]);
+        scrollerRef.current = getScrollRoot();
 
-    // Click/tap outside + ESC to close profile menu (robust for mobile)
-    useEffect(() => {
-        function onDocPointerDown(e: Event): void {
-            const target = e.target as Node | null;
-            if (
-                isProfileOpen &&
-                profileMenuRef.current &&
-                profileBtnRef.current &&
-                target &&
-                !profileMenuRef.current.contains(target) &&
-                !profileBtnRef.current.contains(target)
-            ) {
-                setIsProfileOpen(false);
-            }
-        }
-        function onEsc(ev: KeyboardEvent): void {
-            if (ev.key === "Escape") {
-                setIsMenuOpen(false);
-                setIsProfileOpen(false);
-            }
-        }
-        document.addEventListener("pointerdown", onDocPointerDown);
-        document.addEventListener("keydown", onEsc);
-        return () => {
-            document.removeEventListener("pointerdown", onDocPointerDown);
-            document.removeEventListener("keydown", onEsc);
+        const update = (): void => {
+            ticking.current = false;
+            const y = readScrollTop(scrollerRef.current ?? window);
+            if (y <= 0) { setHidden(false); lastY.current = 0; return; }
+            setHidden(y > lastY.current);     // надолу → скрий; нагоре → покажи
+            lastY.current = y;
         };
-    }, [isProfileOpen]);
 
-    // Prevent body scroll when drawer is open
+        const onScroll = (): void => {
+            if (!ticking.current) { ticking.current = true; requestAnimationFrame(update); }
+        };
+
+        const el = scrollerRef.current ?? window;
+        (el as Window).addEventListener?.("scroll", onScroll, { passive: true });
+        (el as HTMLElement).addEventListener?.("scroll", onScroll, { passive: true } as AddEventListenerOptions);
+
+        return () => {
+            (el as Window).removeEventListener?.("scroll", onScroll);
+            (el as HTMLElement).removeEventListener?.("scroll", onScroll);
+        };
+    }, []);
+
+    return { hidden };
+}
+
+export default function Header(): JSX.Element {
+    const pathname = usePathname();
+    const isHome = pathname === "/" || pathname === "/home";
+    const { data: session } = useSession();
+
+    // състояния
+    const [drawerOpen, setDrawerOpen] = useState<boolean>(false);
+    const [searchOpen, setSearchOpen] = useState<boolean>(false);
+
+    // детекция за мобилен размер в клиент (само за анимации/позиции)
+    const [isMobile, setIsMobile] = useState<boolean>(false);
     useEffect(() => {
-        const el = document.documentElement;
-        if (isMenuOpen) el.classList.add("overflow-hidden");
-        else el.classList.remove("overflow-hidden");
-        return () => el.classList.remove("overflow-hidden");
-    }, [isMenuOpen]);
+        const mq = window.matchMedia("(max-width: 767px)");
+        const handler = (e: MediaQueryListEvent | MediaQueryList): void =>
+            setIsMobile("matches" in e ? e.matches : (e as MediaQueryList).matches);
+        handler(mq);
+        mq.addEventListener?.("change", handler);
+        return () => mq.removeEventListener?.("change", handler);
+    }, []);
 
-    const drawerItems: Array<{ href: string; label: string; show: boolean }> = [
-        { href: "/courses", label: "Курсове", show: true },
-        { href: "/gallery", label: "Галерия", show: true },
-        { href: "/artists", label: "Артисти", show: true },
-        { href: "/create-artist-profile", label: "Стани артист", show: !isArtist },
-        { href: "/upload-artwork", label: "Качване на картина", show: isArtist },
-        { href: "/about", label: "За нас", show: true },
-        { href: "/contacts", label: "Контакти", show: true },
-        { href: "/login", label: "Вход", show: !isAuthenticated },
-    ];
+    const { hidden } = useInstantHideOnScroll();
 
-    const subnavItems: Array<{ href: string; label: string; show: boolean }> = [
-        { href: "/courses", label: "Курсове", show: true },
-        { href: "/gallery", label: "Галерия", show: true },
-        { href: "/artists", label: "Артисти", show: true },
-        { href: "/create-artist-profile", label: "Стани артист", show: !isArtist },
-        { href: "/upload-artwork", label: "Качи картина", show: isArtist },
-        { href: "/about", label: "За нас", show: true },
-        { href: "/contacts", label: "Контакти", show: true },
-        { href: "/login", label: "Вход", show: !isAuthenticated },
-    ];
+    // навигационните линкове
+    const mainLinks = useMemo(
+        () => [
+            { href: "/courses", label: "Курсове" },
+            { href: "/gallery", label: "Галерия" },
+            { href: "/artists", label: "Артисти" },
+            session?.user
+                ? { href: "/art/upload", label: "Качи картина" }
+                : { href: "/apply", label: "Стани артист" },
+        ],
+        [session]
+    );
 
-    const handleSignOut = async (): Promise<void> => {
-        await signOut({ callbackUrl: "/login" });
-    };
+
 
     return (
-        <header className="x-header" role="banner">
-            <div className="x-header__bar" aria-label="Основна лента">
-                {/* LEFT: burger (mobile) + desktop logo */}
-                <div className="x-header__burger">
-                    <button
-                        type="button"
-                        className="x-header__burger-btn md:hidden"
-                        aria-label={isMenuOpen ? "Затвори меню" : "Отвори меню"}
-                        aria-expanded={isMenuOpen}
-                        aria-controls="mobile-drawer"
-                        onClick={() => setIsMenuOpen((v) => !v)}
-                    >
-                        {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
-                    </button>
-                    <Link href="/" className="hidden md:inline-flex items-center" aria-label="Xartify – начало">
-                        <Image src="/xArtify-logo7.png" alt="Xartify" width={300} height={70} priority />
-                    </Link>
-                </div>
-
-                {/* CENTER: mobile logo / desktop search */}
-                <div className="justify-self-center w-full max-w-xl">
-                    <Link href="/" className="x-header__logo md:hidden" aria-label="Xartify – начало">
-                        <Image src="/xArtify-logo7.png" alt="Xartify" width={300} height={20} priority />
-                    </Link>
-                    <div className="hidden md:block">
-                        <form className="x-search" action="/search" method="get" role="search">
-                            <input className="x-search__input" type="search" name="q" placeholder="Търсене..." autoComplete="off" aria-label="Поле за търсене" />
-                            <button className="x-search__icon" aria-label="Търси" type="submit">
-                                <SearchIcon size={18} />
+        <>
+            {/* BAR (shared) */}
+            <header
+                className={[
+                    "x-header will-change-transform fixed top-0 left-0 right-0 transform-gpu",
+                    "transition-none", // мигновено, без латентност
+                    hidden ? "-translate-y-full opacity-0" : "translate-y-0 opacity-100",
+                ].join(" ")}
+                role="banner"
+            >
+                <div className="x-header__bar max-w-7xl w-full">
+                    {/* ЛЯВО */}
+                    <div className="flex items-center gap-2">
+                        {/* MOBILE: профил/любими/карт вляво + Search иконка на мобилно */}
+                        <div className="md:hidden flex items-center gap-1">
+                            <Link href={session ? "/profile" : "/login"} aria-label="Моят профил" className="x-icon-btn">
+                                <User2 size={22} aria-hidden />
+                            </Link>
+                            <Link href="/favorites" aria-label="Любими" className="x-icon-btn">
+                                <Heart size={22} aria-hidden />
+                            </Link>
+                            <Link href="/cart" aria-label="Количка" className="x-icon-btn">
+                                <ShoppingCart size={22} aria-hidden />
+                            </Link>
+                            <button
+                                type="button"
+                                aria-expanded={searchOpen}
+                                aria-controls="header-search-mobile"
+                                onClick={() => setSearchOpen((s) => !s)}
+                                className="x-icon-btn"
+                            >
+                                <Search size={22} aria-hidden />
                             </button>
-                        </form>
+                        </div>
+
+                        {/* DESKTOP: Search иконка вляво */}
+                        <button
+                            type="button"
+                            aria-expanded={searchOpen}
+                            aria-controls="header-search-desktop"
+                            onClick={() => setSearchOpen((s) => !s)}
+                            className="hidden md:inline-flex x-icon-btn gap"
+                        >
+                            <Search size={24} aria-hidden />
+                        </button>
+                    </div>
+
+                    {/* ЦЕНТЪР: Лого */}
+                    <div className="x-header__logo">
+                        <Link
+                            href="/"
+                            aria-label="xArtify – начало"
+                            className="inline-block"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                setSearchOpen(false);
+                                setDrawerOpen(false);
+
+                                const scroller = getScrollRoot();
+                                // изключваме плавния скрол, за да няма „подскачане“
+                                const html = document.documentElement as HTMLElement;
+                                const prev = html.style.scrollBehavior;
+                                html.style.scrollBehavior = "auto";
+
+                                if (isHome) {
+                                    // НА началната: скрол до 0 на реалния контейнер
+                                    if (scroller instanceof Window) {
+                                        scroller.scrollTo({ top: 0, left: 0 });
+                                    } else {
+                                        (scroller as HTMLElement).scrollTop = 0;
+                                    }
+                                } else {
+                                    // ДРУГА страница: твърда навигация към "/" (top по дефиниция)
+                                    if ("scrollRestoration" in history) { history.scrollRestoration = "manual"; }
+                                    window.location.assign("/");
+                                }
+
+                                // връщаме предишното поведение
+                                html.style.scrollBehavior = prev;
+                            }}
+                        >
+                            <Image src="/xArtify-logo9.svg" alt="xArtify" width={220} height={60} priority />
+                        </Link>
+                    </div>
+                    {/* ДЯСНО */}
+                    <div className="x-header__actions">
+                        <div className="hidden md:flex items-center gap-4">
+                            <Link href={session ? "/profile" : "/login"} aria-label="Моят профил" className="x-icon-btn">
+                                <User2 size={24} aria-hidden />
+                            </Link>
+                            <Link href="/favorites" aria-label="Любими" className="x-icon-btn">
+                                <Heart size={24} aria-hidden />
+                            </Link>
+                            <Link href="/cart" aria-label="Количка" className="x-icon-btn">
+                                <ShoppingCart size={24} aria-hidden />
+                            </Link>
+                        </div>
+
+                        {/* MOBILE: бургер вдясно */}
+                        <button
+                            type="button"
+                            aria-label="Меню"
+                            aria-expanded={drawerOpen}
+                            onClick={() => setDrawerOpen((v) => !v)}
+                            className="md:hidden x-icon-btn"
+                        >
+                            <Menu size={22} aria-hidden />
+                        </button>
                     </div>
                 </div>
 
-                {/* RIGHT: actions */}
-                <div className="x-header__actions">
-                    <div className="relative">
-                        <button
-                            ref={profileBtnRef}
-                            type="button"
-                            className="x-icon-btn"
-                            aria-label="Профил"
-                            aria-haspopup="menu"
-                            aria-expanded={isProfileOpen}
-                            aria-controls="profile-menu"
-                            onClick={() => setIsProfileOpen((v) => !v)}
-                        >
-                            <User2 size={18} />
-                        </button>
+                {/* SEARCH POPOVER – overlay, не променя layout */}
+                <div
+                    id="header-search-popover"
+                    aria-hidden={!searchOpen}
+                    className={[
 
-                        <div
-                            id="profile-menu"
-                            ref={profileMenuRef}
-                            className="x-profile-menu"
-                            data-open={isProfileOpen ? "true" : "false"}
-                            role="menu"
-                            onClick={(e) => e.stopPropagation()}
-                            onPointerDown={(e) => e.stopPropagation()}
-                        >
-                            {isAuthenticated ? (
-                                <div>
-                                    <Link href="/my-profile" className="x-profile-menu__item" role="menuitem">Моят профил</Link>
-                                    <Link href="/my-courses" className="x-profile-menu__item" role="menuitem">Моите курсове</Link>
-                                    {!isArtist && <Link href="/create-artist-profile" className="x-profile-menu__item" role="menuitem">Стани артист</Link>}
-                                    {isArtist && <Link href="/upload-artwork" className="x-profile-menu__item" role="menuitem">Качване на картина</Link>}
-                                    <Link href="/change-password" className="x-profile-menu__item" role="menuitem">Смяна на парола</Link>
-                                    <button onClick={handleSignOut} className="x-profile-menu__item x-profile-menu__item--danger" role="menuitem">Изход</button>
-                                </div>
+                        searchOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none",
+                    ].join(" ")}
+                >
+                    <div className="x-search">
+                        <input
+                            id={isMobile ? "header-search-mobile" : "header-search-desktop"}
+                            type="search"
+                            placeholder="Търси в xArtify…"
+                            className="x-search__input"
+                            autoFocus
+                        />
+                        <div className="x-search__icon"><Search size={24} aria-hidden /></div>
+                    </div>
+                </div>
+
+                {/* Под лентата – четирите линка (DESKTOP центрирани) */}
+                <nav aria-label="Главна навигация" className="hidden md:block bg-transparent">
+                    <div className="x-subnav__inner justify-center">
+                        {mainLinks.map((l) => (
+                            <Link key={l.href} href={l.href} className="nav-pill">{l.label}</Link>
+                        ))}
+                    </div>
+                </nav>
+            </header>
+
+            {/* MOBILE DRAWER */}
+            <aside className="x-drawer" data-open={drawerOpen ? "true" : "false"} aria-hidden={!drawerOpen}>
+                <nav aria-label="Мобилно меню">
+                    <ul className="x-drawer__list">
+                        {mainLinks.map((l) => (
+                            <li key={l.href}>
+                                <Link href={l.href} className="x-drawer__item" onClick={() => setDrawerOpen(false)}>
+                                    {l.label}
+                                </Link>
+                            </li>
+                        ))}
+                        <li className="pt-2"><Link href="/about" className="x-drawer__item" onClick={() => setDrawerOpen(false)}>За нас</Link></li>
+                        <li><Link href="/contact" className="x-drawer__item" onClick={() => setDrawerOpen(false)}>Контакти</Link></li>
+                        <li className="pt-2">
+                            {session ? (
+                                <Link href="/api/auth/signout" className="x-drawer__item"><span className="inline-flex items-center gap-2"><LogOut size={18} /> Изход</span></Link>
                             ) : (
-                                <div>
-                                    <Link href="/login" className="x-profile-menu__item" role="menuitem">Вход</Link>
-                                </div>
+                                <Link href="/login" className="x-drawer__item"><span className="inline-flex items-center gap-2"><LogIn size={18} /> Вход</span></Link>
                             )}
+                        </li>
+                    </ul>
+                </nav>
+            </aside>
+            <button
+                type="button"
+                className="x-drawer__backdrop"
+                data-open={drawerOpen ? "true" : "false"}
+                aria-hidden={!drawerOpen}
+                onClick={() => setDrawerOpen(false)}
+            />
+
+            {/* HOME HERO – пълен видим екран */}
+            {isHome && (
+                <section className="x-hero">
+                    <div className="mx-auto -mt-10 max-w-7xl w-full px-4 md:px-6">
+                        {/* Цитат – отместен под бара */}
+                        <div className="pt-8 md:pt-10">
+                            <p className="home-quote " aria-label="Всяко гениално изкуство е започнало на бяло платно">
+                                {`ВСЯКО ГЕНИАЛНО${`\n`}ИЗКУСТВО Е${`\n`}ЗАПОЧНАЛО НА${`\n`}БЯЛО ПЛАТНО!`}
+                            </p>
+                        </div>
+
+                        {/* Долни линкове */}
+                        <div className="footer-wrapper">
+                            <div className="flex flex-col gap-1">
+                                <Link href="/about" className="footer-link">За нас</Link>
+                                <Link href="/contact" className="footer-link">{`Контакти`}</Link>
+                            </div>
+                            <div className="justify-self-end">
+                                {session ? (
+                                    <Link href="/api/auth/signout" className="footer-link inline-flex items-center gap-2">
+                                        <LogOut size={18} /> Изход
+                                    </Link>
+                                ) : (
+                                    <Link href="/login" className="footer-link inline-flex items-center gap-2">
+                                        <LogIn size={18} /> Вход
+                                    </Link>
+                                )}
+                            </div>
                         </div>
                     </div>
-
-                    <Link href="/favorite-artists" aria-label="Любими" className="x-icon-btn">
-                        <Heart size={18} />
-                    </Link>
-
-                    {/* IMPORTANT: do not wrap CartIcon with <Link> (it already links) */}
-                    <div className="x-icon-btn" aria-label="Количка">
-                        <CartIcon />
-                    </div>
-                </div>
-            </div>
-
-            {/* MOBILE search */}
-            <div className="x-header__search md:hidden" role="search">
-                <form className="x-search" action="/search" method="get">
-                    <input className="x-search__input" type="search" name="q" placeholder="Търсене..." autoComplete="off" aria-label="Поле за търсене" />
-                    <button className="x-search__icon" aria-label="Търси" type="submit">
-                        <SearchIcon size={18} />
-                    </button>
-                </form>
-            </div>
-
-            {/* SUBNAV */}
-            <div className="x-subnav " role="navigation" aria-label="Главна навигация">
-                <div className="x-subnav__inner no-scrollbar">
-                    {subnavItems.filter((i) => i.show).map((item) => (
-                        <Link key={item.href} href={item.href} className="x-subnav__link">{item.label}</Link>
-                    ))}
-                </div>
-            </div>
-
-            {/* DRAWER */}
-            {mounted && createPortal(
-                <>
-                    <aside
-                        id="mobile-drawer"
-                        className="x-drawer"
-                        data-open={isMenuOpen ? "true" : "false"}
-                        aria-hidden={!isMenuOpen}
-                    >
-                        <nav className="x-drawer__list" aria-label="Мобилно меню">
-                            {drawerItems.filter(i => i.show).map(item => (
-                                <Link key={item.href} href={item.href} className="x-drawer__item" onClick={() => setIsMenuOpen(false)}>
-                                    {item.label}
-                                </Link>
-                            ))}
-                        </nav>
-                    </aside>
-                    <div
-                        className="x-drawer__backdrop"
-                        data-open={isMenuOpen ? "true" : "false"}
-                        aria-hidden={!isMenuOpen}
-                        onClick={() => setIsMenuOpen(false)}
-                    />
-                </>,
-                document.body
+                </section>
             )}
-        </header>
+        </>
     );
-};
 
-export default Header;
-
-
+}

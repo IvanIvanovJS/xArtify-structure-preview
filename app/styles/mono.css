@@ -1,7 +1,7 @@
 /* VIDEO: grayscale по подразбиране; цвят при hover/focus/.is-active */
 /* Не задавай position тук, за да няма нов stacking context и да не чупим събитията */
 .vid-mono video {
-    filter: grayscale(1) !important;
+    filter: grayscale(0.9) !important;
     transition: filter .2s ease;
     will-change: filter;
     transform: translateZ(0);
