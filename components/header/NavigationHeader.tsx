@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
 import { JSX, useEffect, useMemo, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
 import {
@@ -78,10 +77,7 @@ function useInstantHideOnScroll(): { hidden: boolean } {
     return { hidden };
 }
 
-
-export default function Header(): JSX.Element {
-    const pathname = usePathname();
-    const isHome = pathname === "/" || pathname === "/home";
+export default function NavigationHeader(): JSX.Element {
     const { data: session } = useSession();
 
     // състояния
@@ -101,6 +97,44 @@ export default function Header(): JSX.Element {
 
     const { hidden } = useInstantHideOnScroll();
 
+    // Затваряне на search при клик извън
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            const target = event.target as Element;
+            const searchPopover = document.getElementById('header-search-popover');
+            const searchButton = target.closest('button[aria-controls*="header-search"]');
+
+            if (searchOpen && searchPopover && !searchPopover.contains(target) && !searchButton) {
+                setSearchOpen(false);
+            }
+        };
+
+        if (searchOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [searchOpen]);
+
+    // Затваряне на search при Escape
+    useEffect(() => {
+        const handleEscape = (event: KeyboardEvent) => {
+            if (event.key === 'Escape' && searchOpen) {
+                setSearchOpen(false);
+            }
+        };
+
+        if (searchOpen) {
+            document.addEventListener('keydown', handleEscape);
+        }
+
+        return () => {
+            document.removeEventListener('keydown', handleEscape);
+        };
+    }, [searchOpen]);
+
     // навигационните линкове
     const mainLinks = useMemo(
         () => [
@@ -108,17 +142,19 @@ export default function Header(): JSX.Element {
             { href: "/gallery", label: "Галерия" },
             { href: "/artists", label: "Артисти" },
             session?.user
-                ? { href: "/art/upload", label: "Качи картина" }
-                : { href: "/apply", label: "Стани артист" },
+                ? { href: "/upload-artwork", label: "Качи картина" }
+                : { href: "/create-artist-profile", label: "Стани артист" },
         ],
         [session]
     );
 
-
-
-    function getScrollRootSafe() {
-        throw new Error("Function not implemented.");
-    }
+    // Функция за скролване към началото
+    const scrollToTop = () => {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    };
 
     return (
         <>
@@ -178,17 +214,7 @@ export default function Header(): JSX.Element {
                                 e.preventDefault();
                                 setSearchOpen(false);
                                 setDrawerOpen(false);
-
-
-                                // изключваме плавния скрол, за да няма „подскачане“
-                                const html = document.documentElement as HTMLElement;
-                                const prev = html.style.scrollBehavior;
-                                html.style.scrollBehavior = "auto";
-
-
-
-                                // връщаме предишното поведение
-                                html.style.scrollBehavior = prev;
+                                scrollToTop();
                             }}
                         >
                             <Image src="/xArtify-logo9.svg" alt="xArtify" width={220} height={60} priority />
@@ -226,7 +252,7 @@ export default function Header(): JSX.Element {
                     id="header-search-popover"
                     aria-hidden={!searchOpen}
                     className={[
-                        "x-search-popover", // ← добави това!
+                        "x-search-popover",
                         searchOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none",
                     ].join(" ")}
                 >
@@ -282,40 +308,6 @@ export default function Header(): JSX.Element {
                 aria-hidden={!drawerOpen}
                 onClick={() => setDrawerOpen(false)}
             />
-
-            {/* HOME HERO – пълен видим екран */}
-            {isHome && (
-                <section className="x-hero">
-                    <div className="mx-auto -mt-10 max-w-7xl w-full px-4 md:px-6">
-                        {/* Цитат – отместен под бара */}
-                        <div className="pt-8 md:pt-10">
-                            <p className="home-quote " aria-label="Всяко гениално изкуство е започнало на празно платно">
-                                {`ВСЯКО ГЕНИАЛНО${`\n`}ИЗКУСТВО${`\n`}ЗАПОЧВА НА${`\n`}ПРАЗНО ПЛАТНО!`}
-                            </p>
-                        </div>
-
-                        {/* Долни линкове */}
-                        <div className="footer-wrapper">
-                            <div className="flex flex-col gap-1">
-                                <Link href="/about" className="footer-link">За нас</Link>
-                                <Link href="/contact" className="footer-link">{`Контакти`}</Link>
-                            </div>
-                            <div className="justify-self-end">
-                                {session ? (
-                                    <Link href="/api/auth/signout" className="footer-link inline-flex items-center gap-2">
-                                        <LogOut size={18} /> Изход
-                                    </Link>
-                                ) : (
-                                    <Link href="/login" className="footer-link inline-flex items-center gap-2">
-                                        <LogIn size={18} /> Вход
-                                    </Link>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                </section>
-            )}
         </>
     );
-
 }
