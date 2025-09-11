@@ -7,11 +7,13 @@
 @import "./styles/header.css";
 @import "./styles/home.css";
 @import "./styles/mono.css";
+@import "../components/cart/cart.css";
 
 /* 1) Color tokens */
 :root {
   color-scheme: light;
 }
+
 
 @theme {
   --color-background: #0b0b0f;
@@ -41,11 +43,6 @@
 }
 
 /* 2) Base reset */
-html,
-body {
-  height: 100%;
-}
-
 html,
 body {
   max-width: 100vw;

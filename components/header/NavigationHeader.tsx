@@ -3,13 +3,12 @@
 import Link from "next/link";
 import Image from "next/image";
 import { JSX, useEffect, useMemo, useRef, useState } from "react";
-import CartIcon from "../CartIcon";
+import CartIcon from "../cart/CartIcon";
 import { useSession } from "next-auth/react";
 import {
     Search,
     User2,
     Heart,
-    ShoppingCart,
     Menu,
     LogIn,
     LogOut,
@@ -27,46 +26,52 @@ function useHeaderScroll(): { hidden: boolean; showOnHover: () => void; hideOnLe
         if (typeof window === "undefined") return;
 
         const updateHeader = () => {
-            const currentScrollY = window.scrollY;
+            if (ticking.current) return;
 
-            // Ако сме в началото на страницата, винаги показваме хедъра
-            if (currentScrollY <= 10) {
-                setHidden(false);
+            ticking.current = true;
+            requestAnimationFrame(() => {
+                const currentScrollY = window.scrollY;
+
+                // Ако сме в началото на страницата, винаги показваме хедъра
+                if (currentScrollY <= 10) {
+                    setHidden(false);
+                    lastScrollY.current = currentScrollY;
+                    ticking.current = false;
+                    return;
+                }
+
+                // Ако hover-ваме в горната част, показваме хедъра
+                if (isHovering) {
+                    setHidden(false);
+                    lastScrollY.current = currentScrollY;
+                    ticking.current = false;
+                    return;
+                }
+
+                // Ако скролваме надолу и сме над 100px от началото - скриваме
+                if (currentScrollY > lastScrollY.current && currentScrollY > 60) {
+                    setHidden(true);
+                }
+                // Ако скролваме нагоре - показваме
+                else if (currentScrollY < lastScrollY.current) {
+                    setHidden(false);
+                }
+
                 lastScrollY.current = currentScrollY;
                 ticking.current = false;
-                return;
-            }
-
-            // Ако hover-ваме в горната част, показваме хедъра
-            if (isHovering) {
-                setHidden(false);
-                lastScrollY.current = currentScrollY;
-                ticking.current = false;
-                return;
-            }
-
-            // Ако скролваме надолу и сме над 100px от началото - скриваме
-            if (currentScrollY > lastScrollY.current && currentScrollY > 100) {
-                setHidden(true);
-            }
-            // Ако скролваме нагоре - показваме
-            else if (currentScrollY < lastScrollY.current) {
-                setHidden(false);
-            }
-
-            lastScrollY.current = currentScrollY;
-            ticking.current = false;
+            });
         };
 
+        window.addEventListener("scroll", updateHeader, { passive: true });
 
-
-        window.addEventListener("scroll", updateHeader);
+        // Първоначална проверка
+        updateHeader();
 
 
         return () => {
             window.removeEventListener("scroll", updateHeader);
         };
-    }, [isHovering]);
+    }, [isHovering, hidden]);
 
     const showOnHover = () => setIsHovering(true);
     const hideOnLeave = () => setIsHovering(false);
@@ -129,6 +134,17 @@ export default function NavigationHeader(): JSX.Element {
             }
         }
     }, [searchOpen, isMounted, isMobile]);
+
+    // Touch feedback за мобилни устройства
+    const handleTouchStart = (e: React.TouchEvent) => {
+        const target = e.currentTarget as HTMLElement;
+        target.classList.add('x-icon-btn--touching');
+    };
+
+    const handleTouchEnd = (e: React.TouchEvent) => {
+        const target = e.currentTarget as HTMLElement;
+        target.classList.remove('x-icon-btn--touching');
+    };
 
     // Затваряне на search при Escape
     useEffect(() => {
@@ -200,24 +216,38 @@ export default function NavigationHeader(): JSX.Element {
                     <div className="flex items-center gap-2">
                         {/* MOBILE: профил/любими/карт вляво + Search иконка на мобилно */}
                         <div className="md:hidden flex items-center gap-1">
-                            <Link href={session ? "/profile" : "/login"} aria-label="Моят профил" className="x-icon-btn">
-                                <User2 size={24} aria-hidden />
-                            </Link>
-                            <Link href="/favorites" aria-label="Любими" className="x-icon-btn">
-                                <Heart size={24} aria-hidden />
-                            </Link>
-                            <Link href="/cart" aria-label="Количка" className="x-icon-btn">
-                                <ShoppingCart size={24} aria-hidden />
-                            </Link>
                             <button
                                 type="button"
                                 aria-expanded={searchOpen}
                                 aria-controls="header-search-mobile"
                                 onClick={() => setSearchOpen((s) => !s)}
                                 className="x-icon-btn"
+                                onTouchStart={handleTouchStart}
+                                onTouchEnd={handleTouchEnd}
                             >
                                 <Search size={22} aria-hidden />
                             </button>
+                            <Link
+                                href={session ? "/profile" : "/login"}
+                                aria-label="Моят профил"
+                                className="x-icon-btn"
+                                onTouchStart={handleTouchStart}
+                                onTouchEnd={handleTouchEnd}
+                            >
+                                <User2 size={24} aria-hidden />
+                            </Link>
+                            <Link
+                                href="/favorites"
+                                aria-label="Любими"
+                                className="x-icon-btn"
+                                onTouchStart={handleTouchStart}
+                                onTouchEnd={handleTouchEnd}
+                            >
+                                <Heart size={24} aria-hidden />
+                            </Link>
+
+                            <CartIcon />
+
                         </div>
 
                         {/* DESKTOP: Search иконка вляво */}
@@ -227,6 +257,8 @@ export default function NavigationHeader(): JSX.Element {
                             aria-controls="header-search-desktop"
                             onClick={() => setSearchOpen((s) => !s)}
                             className="hidden md:inline-flex x-icon-btn gap"
+                            onTouchStart={handleTouchStart}
+                            onTouchEnd={handleTouchEnd}
                         >
                             <Search size={24} aria-hidden />
                         </button>
@@ -246,10 +278,22 @@ export default function NavigationHeader(): JSX.Element {
                     {/* ДЯСНО */}
                     <div className="x-header__actions">
                         <div className="hidden md:flex items-center gap-4">
-                            <Link href={session ? "/profile" : "/login"} aria-label="Моят профил" className="x-icon-btn">
+                            <Link
+                                href={session ? "/profile" : "/login"}
+                                aria-label="Моят профил"
+                                className="x-icon-btn"
+                                onTouchStart={handleTouchStart}
+                                onTouchEnd={handleTouchEnd}
+                            >
                                 <User2 size={24} aria-hidden />
                             </Link>
-                            <Link href="/favorites" aria-label="Любими" className="x-icon-btn">
+                            <Link
+                                href="/favorites"
+                                aria-label="Любими"
+                                className="x-icon-btn"
+                                onTouchStart={handleTouchStart}
+                                onTouchEnd={handleTouchEnd}
+                            >
                                 <Heart size={24} aria-hidden />
                             </Link>
 
@@ -264,6 +308,8 @@ export default function NavigationHeader(): JSX.Element {
                             aria-expanded={drawerOpen}
                             onClick={() => setDrawerOpen((v) => !v)}
                             className="md:hidden x-icon-btn"
+                            onTouchStart={handleTouchStart}
+                            onTouchEnd={handleTouchEnd}
                         >
                             <Menu size={22} aria-hidden />
                         </button>
@@ -309,12 +355,12 @@ export default function NavigationHeader(): JSX.Element {
                     <ul className="x-drawer__list">
                         {mainLinks.map((l) => (
                             <li key={l.href}>
-                                <Link href={l.href} className="x-drawer__item" onClick={() => setDrawerOpen(false)}>
+                                <Link href={l.href} className="x-drawer__item " onClick={() => setDrawerOpen(false)}>
                                     {l.label}
                                 </Link>
                             </li>
                         ))}
-                        <li className="pt-2"><Link href="/about" className="x-drawer__item" onClick={() => setDrawerOpen(false)}>За нас</Link></li>
+                        <li className="pt-2"><Link href="/about" className="x-drawer__item " onClick={() => setDrawerOpen(false)}>За нас</Link></li>
                         <li><Link href="/contact" className="x-drawer__item" onClick={() => setDrawerOpen(false)}>Контакти</Link></li>
                         <li className="pt-2">
                             {session ? (

@@ -51,6 +51,40 @@
         @apply h-10 w-10 rounded-xl flex items-center justify-center hover:shadow-primary hover:shadow-md hover:text-primary transition relative;
     }
 
+    .x-icon-btn:active {
+        @apply shadow-primary shadow-md text-primary;
+    }
+
+    /* Мобилни стилове за touch устройства */
+    @media (hover: none) and (pointer: coarse) {
+        .x-icon-btn:active {
+            @apply shadow-primary shadow-md text-primary;
+        }
+
+        .x-icon-btn:focus {
+            @apply shadow-primary shadow-md text-primary;
+        }
+
+        .x-drawer__item:active {
+            @apply shadow-primary shadow-md text-primary;
+        }
+
+        .x-drawer__item:focus {
+            @apply shadow-primary shadow-md text-primary;
+        }
+    }
+
+    /* Допълнителни стилове за touch feedback */
+    .x-icon-btn {
+        -webkit-tap-highlight-color: rgba(22, 255, 228, 0.2);
+        tap-highlight-color: rgba(22, 255, 228, 0.2);
+    }
+
+    /* Touch feedback клас */
+    .x-icon-btn--touching {
+        @apply shadow-primary shadow-md text-primary bg-primary/10;
+    }
+
     /* Поднавигация – център на desktop */
     .x-subnav {
         @apply hidden md:block justify-items-center mt-6 bg-transparent text-neutral-100;
@@ -98,7 +132,7 @@
 
     .footer-link {
         font-family: Albert Sans, Arial, sans-serif;
-        @apply inline-flex items-center rounded-xl px-3 py-1 text-[1rem] font-light leading-6 text-white/80 no-underline transition;
+        @apply inline-flex items-center rounded-xl px-4 py-2 text-[1rem] font-light leading-6 text-white/80 no-underline transition;
     }
 
     .footer-link:hover,
