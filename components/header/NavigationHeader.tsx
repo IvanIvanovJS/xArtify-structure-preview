@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { JSX, useEffect, useMemo, useRef, useState } from "react";
+import CartIcon from "../CartIcon";
 import { useSession } from "next-auth/react";
 import {
     Search,
@@ -14,67 +15,63 @@ import {
     LogOut,
 } from "lucide-react";
 
-// заменя useInstantHideOnScroll в Header.tsx
-function getScrollRootSafe(): Window | HTMLElement {
-    const main = document.querySelector("main") as HTMLElement | null;
-    if (main) {
-        const oy = getComputedStyle(main).overflowY;
-        const canScroll = main.scrollHeight > main.clientHeight;
-        if (canScroll && (oy === "auto" || oy === "scroll")) return main;
-    }
-    return window;
-}
-
-function getScrollTopWin(): number {
-    return window.scrollY || window.pageYOffset || 0;
-}
-function getScrollTopEl(el: HTMLElement | null): number {
-    return el ? el.scrollTop : 0;
-}
-
-function useInstantHideOnScroll(): { hidden: boolean } {
+// Опростена логика за скролване на хедъра
+function useHeaderScroll(): { hidden: boolean; showOnHover: () => void; hideOnLeave: () => void } {
     const [hidden, setHidden] = useState<boolean>(false);
-    const lastY = useRef<number>(0);
-    const mainRef = useRef<HTMLElement | null>(null);
-    const rafId = useRef<number | null>(null);
+    const [isHovering, setIsHovering] = useState<boolean>(false);
+    const lastScrollY = useRef<number>(0);
+    const ticking = useRef<boolean>(false);
 
     useEffect(() => {
         // guard за SSR
-        if (typeof window === "undefined" || typeof document === "undefined") return;
+        if (typeof window === "undefined") return;
 
-        const maybeMain = getScrollRootSafe();
-        mainRef.current = maybeMain instanceof Window ? null : (maybeMain as HTMLElement);
+        const updateHeader = () => {
+            const currentScrollY = window.scrollY;
 
-        const readY = (): number =>
-            Math.max(getScrollTopWin(), getScrollTopEl(mainRef.current));
+            // Ако сме в началото на страницата, винаги показваме хедъра
+            if (currentScrollY <= 10) {
+                setHidden(false);
+                lastScrollY.current = currentScrollY;
+                ticking.current = false;
+                return;
+            }
 
-        const update = (): void => {
-            rafId.current = null;
-            const y = readY();
-            if (y <= 0) { setHidden(false); lastY.current = 0; return; }
-            setHidden(y > lastY.current);      // надолу → скрий; нагоре → покажи
-            lastY.current = y;
+            // Ако hover-ваме в горната част, показваме хедъра
+            if (isHovering) {
+                setHidden(false);
+                lastScrollY.current = currentScrollY;
+                ticking.current = false;
+                return;
+            }
+
+            // Ако скролваме надолу и сме над 100px от началото - скриваме
+            if (currentScrollY > lastScrollY.current && currentScrollY > 100) {
+                setHidden(true);
+            }
+            // Ако скролваме нагоре - показваме
+            else if (currentScrollY < lastScrollY.current) {
+                setHidden(false);
+            }
+
+            lastScrollY.current = currentScrollY;
+            ticking.current = false;
         };
 
-        const onScroll = (): void => {
-            if (rafId.current == null) rafId.current = window.requestAnimationFrame(update);
-        };
 
-        // слушаме ВИНАГИ window + ПО ЖЕЛАНИЕ main (ако реално скролва)
-        window.addEventListener("scroll", onScroll, { passive: true });
-        if (mainRef.current) mainRef.current.addEventListener("scroll", onScroll, { passive: true });
 
-        // първоначален sync
-        update();
+        window.addEventListener("scroll", updateHeader);
+
 
         return () => {
-            window.removeEventListener("scroll", onScroll);
-            if (mainRef.current) mainRef.current.removeEventListener("scroll", onScroll);
-            if (rafId.current != null) { window.cancelAnimationFrame(rafId.current); rafId.current = null; }
+            window.removeEventListener("scroll", updateHeader);
         };
-    }, []);
+    }, [isHovering]);
 
-    return { hidden };
+    const showOnHover = () => setIsHovering(true);
+    const hideOnLeave = () => setIsHovering(false);
+
+    return { hidden, showOnHover, hideOnLeave };
 }
 
 export default function NavigationHeader(): JSX.Element {
@@ -83,10 +80,14 @@ export default function NavigationHeader(): JSX.Element {
     // състояния
     const [drawerOpen, setDrawerOpen] = useState<boolean>(false);
     const [searchOpen, setSearchOpen] = useState<boolean>(false);
+    const [isMounted, setIsMounted] = useState<boolean>(false);
 
     // детекция за мобилен размер в клиент (само за анимации/позиции)
     const [isMobile, setIsMobile] = useState<boolean>(false);
+
+    // Mount guard за да избегнем hydration mismatch
     useEffect(() => {
+        setIsMounted(true);
         const mq = window.matchMedia("(max-width: 767px)");
         const handler = (e: MediaQueryListEvent | MediaQueryList): void =>
             setIsMobile("matches" in e ? e.matches : (e as MediaQueryList).matches);
@@ -95,7 +96,7 @@ export default function NavigationHeader(): JSX.Element {
         return () => mq.removeEventListener?.("change", handler);
     }, []);
 
-    const { hidden } = useInstantHideOnScroll();
+    const { hidden, showOnHover, hideOnLeave } = useHeaderScroll();
 
     // Затваряне на search при клик извън
     useEffect(() => {
@@ -117,6 +118,17 @@ export default function NavigationHeader(): JSX.Element {
             document.removeEventListener('mousedown', handleClickOutside);
         };
     }, [searchOpen]);
+
+    // Управление на фокуса при отваряне/затваряне на search
+    useEffect(() => {
+        if (searchOpen) {
+            // Фокус върху input полето когато се отваря
+            const input = document.getElementById(isMounted && isMobile ? "header-search-mobile" : "header-search-desktop");
+            if (input) {
+                input.focus();
+            }
+        }
+    }, [searchOpen, isMounted, isMobile]);
 
     // Затваряне на search при Escape
     useEffect(() => {
@@ -141,7 +153,7 @@ export default function NavigationHeader(): JSX.Element {
             { href: "/courses", label: "Курсове" },
             { href: "/gallery", label: "Галерия" },
             { href: "/artists", label: "Артисти" },
-            session?.user
+            session?.user?.artistProfile
                 ? { href: "/upload-artwork", label: "Качи картина" }
                 : { href: "/create-artist-profile", label: "Стани артист" },
         ],
@@ -150,7 +162,12 @@ export default function NavigationHeader(): JSX.Element {
 
     // Функция за скролване към началото
     const scrollToTop = () => {
-        window.scrollTo({
+        // Затваряме всички отворени менюта
+        setSearchOpen(false);
+        setDrawerOpen(false);
+
+        // Скролваме към началото
+        document.querySelector('body')?.scrollTo({
             top: 0,
             behavior: 'smooth'
         });
@@ -158,28 +175,39 @@ export default function NavigationHeader(): JSX.Element {
 
     return (
         <>
+            {/* Hover зона за показване на хедъра - само на клиент */}
+            {isMounted && (
+                <div
+                    className="fixed top-0 left-0 right-0 h-4 z-[60]"
+                    onMouseEnter={showOnHover}
+                    onMouseLeave={hideOnLeave}
+                    aria-hidden="true"
+                />
+            )}
+
             {/* BAR (shared) */}
             <header
                 className={[
-                    "x-header will-change-transform fixed top-0 left-0 right-0 transform-gpu",
-                    "transition-none", // мигновено, без латентност
-                    hidden ? "-translate-y-full opacity-0" : "translate-y-0 opacity-100",
+                    "x-header",
+                    hidden ? "-translate-y-full" : "translate-y-0",
                 ].join(" ")}
                 role="banner"
+                onMouseEnter={isMounted ? showOnHover : undefined}
+                onMouseLeave={isMounted ? hideOnLeave : undefined}
             >
-                <div className="x-header__bar max-w-7xl w-full">
+                <div className="x-header__bar">
                     {/* ЛЯВО */}
                     <div className="flex items-center gap-2">
                         {/* MOBILE: профил/любими/карт вляво + Search иконка на мобилно */}
                         <div className="md:hidden flex items-center gap-1">
                             <Link href={session ? "/profile" : "/login"} aria-label="Моят профил" className="x-icon-btn">
-                                <User2 size={22} aria-hidden />
+                                <User2 size={24} aria-hidden />
                             </Link>
                             <Link href="/favorites" aria-label="Любими" className="x-icon-btn">
-                                <Heart size={22} aria-hidden />
+                                <Heart size={24} aria-hidden />
                             </Link>
                             <Link href="/cart" aria-label="Количка" className="x-icon-btn">
-                                <ShoppingCart size={22} aria-hidden />
+                                <ShoppingCart size={24} aria-hidden />
                             </Link>
                             <button
                                 type="button"
@@ -210,12 +238,7 @@ export default function NavigationHeader(): JSX.Element {
                             href="/"
                             aria-label="xArtify – начало"
                             className="inline-block"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                setSearchOpen(false);
-                                setDrawerOpen(false);
-                                scrollToTop();
-                            }}
+                            onClick={scrollToTop}
                         >
                             <Image src="/xArtify-logo9.svg" alt="xArtify" width={220} height={60} priority />
                         </Link>
@@ -229,9 +252,9 @@ export default function NavigationHeader(): JSX.Element {
                             <Link href="/favorites" aria-label="Любими" className="x-icon-btn">
                                 <Heart size={24} aria-hidden />
                             </Link>
-                            <Link href="/cart" aria-label="Количка" className="x-icon-btn">
-                                <ShoppingCart size={24} aria-hidden />
-                            </Link>
+
+                            <CartIcon />
+
                         </div>
 
                         {/* MOBILE: бургер вдясно */}
@@ -247,35 +270,37 @@ export default function NavigationHeader(): JSX.Element {
                     </div>
                 </div>
 
-                {/* SEARCH POPOVER – overlay, не променя layout */}
-                <div
-                    id="header-search-popover"
-                    aria-hidden={!searchOpen}
-                    className={[
-                        "x-search-popover",
-                        searchOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none",
-                    ].join(" ")}
-                >
-                    <div className="x-search">
-                        <input
-                            id={isMobile ? "header-search-mobile" : "header-search-desktop"}
-                            type="search"
-                            placeholder="Търси в xArtify…"
-                            className="x-search__input"
-                            autoFocus
-                        />
-                        <div className="x-search__icon"><Search size={24} aria-hidden /></div>
-                    </div>
-                </div>
-
                 {/* Под лентата – четирите линка (DESKTOP центрирани) */}
-                <nav aria-label="Главна навигация" className="hidden md:block bg-transparent">
+                <nav aria-label="Главна навигация" className="hidden md:block bg-transparent mt-1">
                     <div className="x-subnav__inner justify-center">
                         {mainLinks.map((l) => (
                             <Link key={l.href} href={l.href} className="nav-pill">{l.label}</Link>
                         ))}
                     </div>
                 </nav>
+                {/* SEARCH POPOVER – overlay, не променя layout */}
+                <div
+                    id="header-search-popover"
+                    aria-hidden={!searchOpen}
+                    inert={!searchOpen ? true : undefined}
+                    className={[
+
+                        searchOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none",
+                    ].join(" ")}
+                    style={{ display: searchOpen ? 'block' : 'none' }}
+                >
+                    <div className="x-search">
+                        <input
+                            id={isMounted && isMobile ? "header-search-mobile" : "header-search-desktop"}
+                            type="search"
+                            placeholder="Търси в xArtify…"
+                            className="x-search__input"
+                            autoFocus={searchOpen}
+                            tabIndex={searchOpen ? 0 : -1}
+                        />
+                        <div className="x-search__icon"><Search size={24} aria-hidden /></div>
+                    </div>
+                </div>
             </header>
 
             {/* MOBILE DRAWER */}

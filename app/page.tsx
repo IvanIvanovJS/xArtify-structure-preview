@@ -3,6 +3,7 @@
 import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
 import BannerVideo from "@/components/home/BannerVideo";
+import HomeHero from "@/components/home/HomeHero";
 
 export default function HomePage() {
   const { data: session, status } = useSession();
@@ -12,16 +13,18 @@ export default function HomePage() {
     return <p className="text-center mt-20">Зарежда...</p>;
   }
 
-  // ВАЖНО: използваме <main>, за да бъде намерен правилният скрол-контейнер
   return (
-    <main className="text-center mt-6">
+    <main className="min-h-screen w-full flex flex-col items-center justify-center">
+      {/* HomeHero е най-отгоре, извън main */}
+      <HomeHero />
+
+      {/* BannerVideo е вторият елемент */}
       <BannerVideo
         cloudName={cloudName}
         publicId="xartify/banner-home"
         posterPublicId="banner-home-poster"
         revealOnTap
       />
-
       {session ? (
         <>
           <h1 className="text-2xl font-bold">Здравей, {session.user?.name || session.user?.email}</h1>
@@ -55,5 +58,6 @@ export default function HomePage() {
         </>
       )}
     </main>
+
   );
 }

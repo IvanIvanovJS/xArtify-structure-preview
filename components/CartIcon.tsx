@@ -10,7 +10,7 @@ export default function CartIcon() {
     const itemCount = getCartItemCount();
 
     return (
-        <Link href="/cart">
+        <Link href="/cart" aria-label="Количка" className="x-icon-btn">
             <div className="group relative p-2 cursor-pointer">
                 <svg
                     xmlns="http://www.w3.org/2000/svg"

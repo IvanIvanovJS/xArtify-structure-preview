@@ -9,7 +9,7 @@ export default function HomeHero() {
 
     return (
         <section className="x-hero">
-            <div className="mx-auto -mt-10 max-w-7xl w-full px-4 md:px-6">
+            <div className="mx-auto max-w-7xl w-full px-4 md:px-6">
                 {/* Цитат – отместен под бара */}
                 <div className="pt-8 md:pt-10">
                     <p className="home-quote" aria-label="Всяко гениално изкуство е започнало на празно платно">
