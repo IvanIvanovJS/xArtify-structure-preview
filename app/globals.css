@@ -4,9 +4,11 @@
    Mobile-first, zero animations
    ================================ */
 @import "tailwindcss";
-@import "./styles/header.css";
-@import "./styles/home.css";
-@import "./styles/mono.css";
+@import "../components/header/styles/header.css";
+@import "../components/home/styles/home.css";
+@import "../components/home/styles/mono.css";
+@import "../components/home/styles/courseAdv.css";
+@import "../components/admin/styles/admin.css";
 @import "../components/cart/cart.css";
 
 /* 1) Color tokens */

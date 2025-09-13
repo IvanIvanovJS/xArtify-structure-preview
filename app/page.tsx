@@ -4,6 +4,7 @@ import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
 import BannerVideo from "@/components/home/BannerVideo";
 import HomeHero from "@/components/home/HomeHero";
+import CoursesAdv from "@/components/home/CoursesAdv";
 
 export default function HomePage() {
   const { data: session, status } = useSession();
@@ -24,6 +25,16 @@ export default function HomePage() {
         publicId="xartify/banner-home"
         posterPublicId="banner-home-poster"
         revealOnTap
+      />
+
+      {/* CoursesAdv секция */}
+      <CoursesAdv
+        title="500K"
+        subtitle="най-голямата и активна образователна общност в България"
+        image1Url="/test.jpg"
+        image2Url="/test2.jpg"
+        buttonUrl="/courses"
+        buttonText="ЗАПИШИ СЕ СЕГА"
       />
 
       {/* Останалият контент */}

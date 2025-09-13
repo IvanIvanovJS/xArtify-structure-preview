@@ -12,6 +12,7 @@ import {
     Menu,
     LogIn,
     LogOut,
+    Shield,
 } from "lucide-react";
 
 // Опростена логика за скролване на хедъра
@@ -278,6 +279,20 @@ export default function NavigationHeader(): JSX.Element {
                     {/* ДЯСНО */}
                     <div className="x-header__actions">
                         <div className="hidden md:flex items-center gap-4">
+                            {/* Admin Panel Link - само за admin потребители */}
+                            {session?.user?.role === "ADMIN" && (
+                                <Link
+                                    href="/admin"
+                                    aria-label="Admin Panel"
+                                    className="x-icon-btn"
+                                    onTouchStart={handleTouchStart}
+                                    onTouchEnd={handleTouchEnd}
+                                    title="Admin Panel"
+                                >
+                                    <Shield size={24} aria-hidden />
+                                </Link>
+                            )}
+
                             <Link
                                 href={session ? "/profile" : "/login"}
                                 aria-label="Моят профил"
@@ -362,6 +377,18 @@ export default function NavigationHeader(): JSX.Element {
                         ))}
                         <li className="pt-2"><Link href="/about" className="x-drawer__item " onClick={() => setDrawerOpen(false)}>За нас</Link></li>
                         <li><Link href="/contact" className="x-drawer__item" onClick={() => setDrawerOpen(false)}>Контакти</Link></li>
+
+                        {/* Admin Panel Link - само за admin потребители */}
+                        {session?.user?.role === "ADMIN" && (
+                            <li className="pt-2">
+                                <Link href="/admin" className="x-drawer__item" onClick={() => setDrawerOpen(false)}>
+                                    <span className="inline-flex items-center gap-2">
+                                        <Shield size={18} /> Admin Panel
+                                    </span>
+                                </Link>
+                            </li>
+                        )}
+
                         <li className="pt-2">
                             {session ? (
                                 <Link href="/api/auth/signout" className="x-drawer__item"><span className="inline-flex items-center gap-2"><LogOut size={18} /> Изход</span></Link>

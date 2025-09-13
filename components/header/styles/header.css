@@ -82,7 +82,7 @@
 
     /* Touch feedback клас */
     .x-icon-btn--touching {
-        @apply shadow-primary shadow-md text-primary bg-primary/10;
+        @apply shadow-primary shadow-md text-primary;
     }
 
     /* Поднавигация – център на desktop */
@@ -102,7 +102,7 @@
 
     .nav-pill:hover,
     .nav-pill:focus-visible {
-        @apply shadow-md shadow-primary outline-none;
+        @apply shadow-md shadow-primary;
     }
 
     /* Hero = пълен видим екран (да не се вижда банерът отдолу) */
