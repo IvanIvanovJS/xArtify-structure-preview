@@ -103,7 +103,7 @@ export async function GET(request: NextRequest) {
 
         // Обработка на месечните статистики
         const processedMonthlyStats = Array.isArray(monthlyStats)
-            ? monthlyStats.map((stat: any) => ({
+            ? monthlyStats.map((stat: { month: string; count: string; type: string }) => ({
                 month: stat.month,
                 count: parseInt(stat.count),
                 type: stat.type

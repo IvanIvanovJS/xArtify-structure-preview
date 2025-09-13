@@ -10,8 +10,13 @@ export default function CartIcon() {
     const itemCount = getCartItemCount();
 
     return (
-        <Link href="/cart" aria-label="Количка" className="cart-icon">
+        <Link href="/cart"
+            aria-label="Количка"
+            className="cart-icon"
+            title="Количка"
+        >
             <div className="x-icon-btn cart-icon__container">
+
                 <ShoppingCart size={24} aria-hidden />
                 <span className="cart-icon__badge">
                     {itemCount}

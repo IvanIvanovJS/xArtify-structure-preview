@@ -228,6 +228,14 @@ export default function NavigationHeader(): JSX.Element {
                             >
                                 <Search size={22} aria-hidden />
                             </button>
+                            {/* Admin Panel Link - само за admin потребители */}
+                            {session?.user?.role === "ADMIN" && (
+                                <Link href="/admin" className="x-icon-btn" title="Admin Panel"
+                                    onTouchStart={handleTouchStart}
+                                    onTouchEnd={handleTouchEnd}>
+                                    <Shield size={18} aria-hidden />
+                                </Link>
+                            )}
                             <Link
                                 href={session ? "/profile" : "/login"}
                                 aria-label="Моят профил"
@@ -297,15 +305,17 @@ export default function NavigationHeader(): JSX.Element {
                                 href={session ? "/profile" : "/login"}
                                 aria-label="Моят профил"
                                 className="x-icon-btn"
+                                title="Моят профил"
                                 onTouchStart={handleTouchStart}
                                 onTouchEnd={handleTouchEnd}
                             >
                                 <User2 size={24} aria-hidden />
                             </Link>
                             <Link
-                                href="/favorites"
-                                aria-label="Любими"
+                                href="/favorites-artists"
+                                aria-label="Любими артисти"
                                 className="x-icon-btn"
+                                title="Любими артисти"
                                 onTouchStart={handleTouchStart}
                                 onTouchEnd={handleTouchEnd}
                             >
@@ -359,10 +369,10 @@ export default function NavigationHeader(): JSX.Element {
                             autoFocus={searchOpen}
                             tabIndex={searchOpen ? 0 : -1}
                         />
-                        <div className="x-search__icon"><Search size={24} aria-hidden /></div>
+                        <div className="x-search__icon" title="Търсене"><Search size={24} aria-hidden /></div>
                     </div>
                 </div>
-            </header>
+            </header >
 
             {/* MOBILE DRAWER */}
             <aside className="x-drawer" data-open={drawerOpen ? "true" : "false"} aria-hidden={!drawerOpen}>
@@ -378,16 +388,7 @@ export default function NavigationHeader(): JSX.Element {
                         <li className="pt-2"><Link href="/about" className="x-drawer__item " onClick={() => setDrawerOpen(false)}>За нас</Link></li>
                         <li><Link href="/contact" className="x-drawer__item" onClick={() => setDrawerOpen(false)}>Контакти</Link></li>
 
-                        {/* Admin Panel Link - само за admin потребители */}
-                        {session?.user?.role === "ADMIN" && (
-                            <li className="pt-2">
-                                <Link href="/admin" className="x-drawer__item" onClick={() => setDrawerOpen(false)}>
-                                    <span className="inline-flex items-center gap-2">
-                                        <Shield size={18} /> Admin Panel
-                                    </span>
-                                </Link>
-                            </li>
-                        )}
+
 
                         <li className="pt-2">
                             {session ? (
@@ -398,7 +399,7 @@ export default function NavigationHeader(): JSX.Element {
                         </li>
                     </ul>
                 </nav>
-            </aside>
+            </aside >
             <button
                 type="button"
                 className="x-drawer__backdrop"

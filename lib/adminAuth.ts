@@ -76,7 +76,7 @@ export async function requireAnyRole(roles: ("USER" | "ARTIST" | "ADMIN")[]): Pr
         throw new Error("Не сте автентикирани");
     }
 
-    if (!roles.includes(session.user.role as any)) {
+    if (!roles.includes(session.user.role as "USER" | "ARTIST" | "ADMIN")) {
         throw new Error(`Нямате права за тази операция. Изисква се една от ролите: ${roles.join(", ")}`);
     }
 
