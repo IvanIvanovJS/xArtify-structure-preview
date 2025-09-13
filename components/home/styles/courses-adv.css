@@ -1,0 +1,167 @@
+/* CoursesAdv Admin Controls */
+.courses-adv__admin-control {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    opacity: 0;
+    transform: translateY(-4px);
+    transition: all 0.2s ease;
+    z-index: 10;
+}
+
+.courses-adv__admin-control.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.courses-adv__upload-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: rgba(0, 0, 0, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(4px);
+}
+
+.courses-adv__upload-btn:hover {
+    background: rgba(0, 0, 0, 0.9);
+    border-color: rgba(255, 255, 255, 0.4);
+    transform: scale(1.05);
+}
+
+.courses-adv__upload-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.courses-adv__upload-btn svg {
+    transition: transform 0.2s ease;
+}
+
+.courses-adv__upload-btn:not(:disabled):hover svg {
+    transform: scale(1.1);
+}
+
+/* Анимация за зареждане */
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.animate-spin {
+    animation: spin 1s linear infinite;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .courses-adv__admin-control {
+        top: 6px;
+        right: 6px;
+    }
+
+    .courses-adv__upload-btn {
+        width: 28px;
+        height: 28px;
+    }
+
+    .courses-adv__upload-btn svg {
+        width: 14px;
+        height: 14px;
+    }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .courses-adv__upload-btn {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .courses-adv__upload-btn:hover {
+        background: rgba(255, 255, 255, 0.2);
+        border-color: rgba(255, 255, 255, 0.4);
+    }
+}
+
+/* Editable Content Styles */
+.courses-adv__title--editable,
+.courses-adv__subtitle--editable {
+    position: relative;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.courses-adv__title--editable:hover,
+.courses-adv__subtitle--editable:hover {
+    background: rgba(22, 255, 228, 0.1);
+    border-radius: 4px;
+    padding: 4px 8px;
+    margin: -4px -8px;
+}
+
+.courses-adv__edit-hint {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    margin-left: 8px;
+    font-size: 0.8em;
+}
+
+.courses-adv__title--editable:hover .courses-adv__edit-hint,
+.courses-adv__subtitle--editable:hover .courses-adv__edit-hint {
+    opacity: 0.7;
+}
+
+/* Editing input/textarea styles */
+.courses-adv__title--editing,
+.courses-adv__subtitle--editing {
+    background: rgba(22, 255, 228, 0.1);
+    border: 2px solid #16ffe4;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-family: inherit;
+    font-size: inherit;
+    color: inherit;
+    width: 100%;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.courses-adv__title--editing:focus,
+.courses-adv__subtitle--editing:focus {
+    background: rgba(22, 255, 228, 0.15);
+    border-color: #16ffe4;
+    box-shadow: 0 0 0 3px rgba(22, 255, 228, 0.2);
+}
+
+.courses-adv__title--editing:disabled,
+.courses-adv__subtitle--editing:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Responsive adjustments for editing */
+@media (max-width: 768px) {
+
+    .courses-adv__title--editing,
+    .courses-adv__subtitle--editing {
+        padding: 6px 10px;
+        font-size: 0.9em;
+    }
+
+    .courses-adv__edit-hint {
+        font-size: 0.7em;
+        margin-left: 6px;
+    }
+}

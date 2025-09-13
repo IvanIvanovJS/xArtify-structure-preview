@@ -29,12 +29,8 @@ export default function HomePage() {
 
       {/* CoursesAdv секция */}
       <CoursesAdv
-        title="500K"
-        subtitle="най-голямата и активна образователна общност в България"
-        image1Url="/test.jpg"
-        image2Url="/test2.jpg"
         buttonUrl="/courses"
-        buttonText="ЗАПИШИ СЕ СЕГА"
+        buttonText="Научи повече"
       />
 
       {/* Останалият контент */}

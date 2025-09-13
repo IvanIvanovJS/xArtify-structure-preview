@@ -139,6 +139,19 @@ model Enrollment {
   isCompleted   Boolean   @default(false)
 }
 
+// Модел за контент (за editable текстове)
+model Content {
+  id        String   @id @default(cuid())
+  key       String   @unique // Уникален ключ за идентифициране на контента
+  title     String?
+  subtitle  String?
+  content   String?  @db.Text // За по-дълъг контент
+  image1Url String?  // URL на първото изображение
+  image2Url String?  // URL на второто изображение
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 // Добавяме enum за ролите на потребителите
 enum Role {
   USER

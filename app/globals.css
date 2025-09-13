@@ -9,6 +9,7 @@
 @import "../components/home/styles/mono.css";
 @import "../components/home/styles/courseAdv.css";
 @import "../components/admin/styles/admin.css";
+@import "../components/home/styles/courses-adv.css";
 @import "../components/cart/cart.css";
 
 /* 1) Color tokens */
