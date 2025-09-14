@@ -28,17 +28,18 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
-    gap: 1rem;
+
+    gap: 2rem;
     color: white;
     z-index: 2;
 }
 
 .courses-adv__title {
-    font-size: 16px;
+    font-size: clamp(14px, 2vw, 18px);
     font-weight: 400;
     letter-spacing: -0.02em;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-    margin-left: 22px;
+    margin-bottom: -2rem;
     line-height: 0.9;
     color: var(--color-primary);
     opacity: 0.8;
@@ -46,7 +47,7 @@
 }
 
 .courses-adv__subtitle {
-    font-size: 30px;
+    font-size: clamp(20px, 2vw, 40px);
     font-weight: 500;
     opacity: 0.95;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
@@ -79,6 +80,7 @@
     text-decoration: none;
     margin-top: 1rem;
     align-self: flex-start;
+    @apply shadow-md inset-shadow-sm/50 inset-shadow-primary shadow-primary;
 }
 
 .courses-adv__cta:hover {
@@ -96,20 +98,25 @@
 }
 
 /* Дясна част с изображения */
-.courses-adv__media {
+.courses-adv .courses-adv__media {
     position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 1rem;
     z-index: 1;
-    filter: grayscale(100%);
+    filter: grayscale(100%) !important;
     transition: filter 0.3s ease;
 }
 
-.courses-adv__media.is-active,
-.courses-adv__media:hover {
-    filter: grayscale(0%);
+.courses-adv .courses-adv__media.is-active {
+    filter: grayscale(0%) !important;
+}
+
+@media (hover: hover) {
+    .courses-adv .courses-adv__media:hover {
+        filter: grayscale(0%) !important;
+    }
 }
 
 .courses-adv__image {
@@ -158,6 +165,7 @@
         min-height: 50vh;
         padding: 1.5rem;
         gap: 1.5rem;
+        margin-left: 0;
     }
 
     .courses-adv__content {
@@ -196,7 +204,7 @@
 @media (max-width: 480px) {
     .courses-adv__container {
         padding: 1rem;
-        gap: 1rem;
+        gap: 4rem;
     }
 
     .courses-adv__image--main {

@@ -161,23 +161,24 @@ const CoursesAdv: FC<CoursesAdvProps> = ({
         startHideTimer();
     };
 
-    // Клик вътре в секцията, но ИЗВЪН CTA/мишената → връщаме grayscale
+    // Клик вътре в секцията, но ИЗВЪН медията/CTA/мишената → връщаме grayscale
     const onSectionPointerDownCapture: PointerEventHandler<HTMLElement> = (e) => {
         const target = e.target as Node;
+        const mediaEl = mediaRef.current;
         const ctaEl = sectionRef.current?.querySelector(".courses-adv__cta") ?? null;
         const nudgeBtn = sectionRef.current?.querySelector(".courses-nudge-btn") ?? null;
 
         const insideCTA = !!(ctaEl && ctaEl.contains(target));
         const insideNudge = !!(nudgeBtn && nudgeBtn.contains(target));
+        if (insideCTA || insideNudge) return; // ще се обработят по съответните handler-и
 
-        // Ако е клик върху CTA или nudge бутона, не правим нищо (те ще активират цветното състояние)
-        if (insideCTA || insideNudge) return;
-
-        // За всички останали кликове (включително върху снимките) връщаме grayscale
-        setIsTapActive(false);
-        if (hideTimerRef.current !== null) { window.clearTimeout(hideTimerRef.current); hideTimerRef.current = null; }
-        const isHoverNone = typeof window !== "undefined" && window.matchMedia && window.matchMedia("(hover: none)").matches;
-        if (isHoverNone) setShowNudge(true);
+        const insideMedia = !!(mediaEl && mediaEl.contains(target));
+        if (!insideMedia) {
+            setIsTapActive(false);
+            if (hideTimerRef.current !== null) { window.clearTimeout(hideTimerRef.current); hideTimerRef.current = null; }
+            const isHoverNone = typeof window !== "undefined" && window.matchMedia && window.matchMedia("(hover: none)").matches;
+            if (isHoverNone) setShowNudge(true);
+        }
     };
 
     // CTA: активира на pointerdown, без да пречим на навигацията
@@ -196,6 +197,7 @@ const CoursesAdv: FC<CoursesAdvProps> = ({
             if (isHoverNone) { e.preventDefault(); activateTap(); }
         }
     };
+
 
     // Admin функции
     const handleImageUpload = async (file: File, imageNumber: 1 | 2) => {
@@ -316,7 +318,15 @@ const CoursesAdv: FC<CoursesAdvProps> = ({
     };
 
     // Комбинирано състояние за класа is-active (desktop hover ИЛИ мобилен tap)
-    const isActive: boolean = isHover || isTapActive;
+    const isActive: boolean = (() => {
+        // На мобилни устройства използваме само isTapActive
+        const isHoverNone = typeof window !== "undefined" && window.matchMedia && window.matchMedia("(hover: none)").matches;
+        if (isHoverNone) {
+            return isTapActive;
+        }
+        // На desktop използваме hover или tap
+        return isHover || isTapActive;
+    })();
 
     return (
         <section
