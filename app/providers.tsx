@@ -11,7 +11,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
                     // Global SWR configuration
                     revalidateOnFocus: false,
                     revalidateOnReconnect: true,
-                    dedupingInterval: 5 * 60 * 1000, // 5 minutes
+                    dedupingInterval: 60 * 60 * 1000, // 60 minutes
                     errorRetryCount: 3,
                     errorRetryInterval: 1000,
                     // Global error handler

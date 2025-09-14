@@ -24,8 +24,8 @@ export default async function AllArtistsPage() {
     });
 
     return (
-        <div className="container mx-auto p-4 sm:p-8">
-            <h1 className="text-4xl font-bold text-center text-gray-800 dark:text-gray-200 mb-8">Всички артисти</h1>
+        <div className="container mx-auto px-4 py-8 sm:px-8">
+            <h1 className="text-4xl font-bold text-center text-white mb-8">Всички артисти</h1>
 
             {artists.length > 0 ? (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
@@ -43,7 +43,7 @@ export default async function AllArtistsPage() {
                                     />
                                 </div>
                                 {/* Име на артиста */}
-                                <p className="mt-2 text-md font-semibold text-gray-800 dark:text-gray-200 group-hover:underline">
+                                <p className="mt-2 text-md font-semibold text-white group-hover:underline">
                                     {artist.user.name}
                                 </p>
                             </div>
@@ -51,7 +51,7 @@ export default async function AllArtistsPage() {
                     ))}
                 </div>
             ) : (
-                <div className="text-center text-gray-600 dark:text-gray-400 text-xl">
+                <div className="text-center text-gray-400 text-xl">
                     Все още няма регистрирани артисти.
                 </div>
             )}

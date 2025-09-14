@@ -107,8 +107,17 @@
 
     /* Hero = пълен видим екран (да не се вижда банерът отдолу) */
     .x-hero {
-        height: 100svh;
-        @apply relative z-10 flex flex-col justify-start pt-[5rem] md:pt-[6rem];
+        height: 100vh;
+        min-height: 600px;
+        @apply relative z-10 flex flex-col justify-start;
+    }
+
+    @media (max-width: 767px) {
+        .x-hero {
+            height: 80vh;
+            min-height: 500px;
+
+        }
     }
 
     /* Цитат – 4 реда + неон сянка */
@@ -121,8 +130,9 @@
 
     @media (max-width: 1023px) {
         .home-quote {
-            @apply mt-30 text-5xl;
+            @apply mt-8 text-4xl;
             max-width: 70%;
+            margin-bottom: 3rem;
         }
     }
 
