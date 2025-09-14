@@ -7,16 +7,12 @@
     position: relative;
     width: 100%;
     min-height: 60vh;
-    background: linear-gradient(135deg,
-            var(--color-primary) 0%,
-            #4a4a55 25%,
-            #3a3a45 50%,
-            #2a2a35 75%,
-            #1b1b22 100%);
+    background: transparent;
     border-radius: 24px;
     overflow: hidden;
     isolation: isolate;
     margin: 2rem 0;
+
 }
 
 .courses-adv__container {
@@ -183,13 +179,13 @@
     }
 
     .courses-adv__image--main {
-        width: 200px;
-        height: 140px;
+        width: 240px;
+        height: 180px;
     }
 
     .courses-adv__image--secondary {
-        width: 150px;
-        height: 110px;
+        width: 200px;
+        height: 140px;
         margin-left: -40px;
         margin-top: 30px;
     }
@@ -207,13 +203,13 @@
     }
 
     .courses-adv__image--main {
-        width: 160px;
-        height: 120px;
+        width: 200px;
+        height: 140px;
     }
 
     .courses-adv__image--secondary {
-        width: 120px;
-        height: 90px;
+        width: 160px;
+        height: 120px;
         margin-left: -30px;
         margin-top: 25px;
     }

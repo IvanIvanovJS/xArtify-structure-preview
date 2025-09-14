@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import type { FC, KeyboardEventHandler, PointerEventHandler, ReactElement } from "react";
 import { useEffect, useRef, useState } from "react";
-import { useSession } from "next-auth/react";
 import { FolderOpen, Upload } from "lucide-react";
+import { useHomeContent } from "@/lib/hooks/useHomeContent";
+import OptimizedImage from "@/components/ui/OptimizedImage";
+import SkeletonLoader from "@/components/ui/SkeletonLoader";
+import ImageSkeleton from "@/components/ui/ImageSkeleton";
 
 export type CoursesAdvProps = {
     /** Заглавие на секцията */
@@ -39,11 +41,13 @@ const CoursesAdv: FC<CoursesAdvProps> = ({
     nudgeDelayMs = 2000,
     className,
 }): ReactElement => {
-    const { data: session } = useSession();
     const sectionRef = useRef<HTMLElement | null>(null);
     const mediaRef = useRef<HTMLDivElement | null>(null);
     const fileInput1Ref = useRef<HTMLInputElement | null>(null);
     const fileInput2Ref = useRef<HTMLInputElement | null>(null);
+
+    // SWR hook за кеширане на данните
+    const { data: contentData, isLoading, isAdmin, updateContent } = useHomeContent();
 
     // Състояния
     const [isHover, setIsHover] = useState<boolean>(false);
@@ -51,8 +55,6 @@ const CoursesAdv: FC<CoursesAdvProps> = ({
     const [showNudge, setShowNudge] = useState<boolean>(false);
 
     // Admin състояния
-    const [currentImage1, setCurrentImage1] = useState<string>(image1Url);
-    const [currentImage2, setCurrentImage2] = useState<string>(image2Url);
     const [isUploading1, setIsUploading1] = useState<boolean>(false);
     const [isUploading2, setIsUploading2] = useState<boolean>(false);
     const [showAdminControls, setShowAdminControls] = useState<boolean>(false);
@@ -64,6 +66,12 @@ const CoursesAdv: FC<CoursesAdvProps> = ({
     const [isEditingSubtitle, setIsEditingSubtitle] = useState<boolean>(false);
     const [isSavingContent, setIsSavingContent] = useState<boolean>(false);
 
+    // Използваме данните от SWR или fallback стойностите само ако няма loading
+    const displayTitle = isLoading ? title : (contentData?.title || title);
+    const displaySubtitle = isLoading ? subtitle : (contentData?.subtitle || subtitle);
+    const displayImage1 = isLoading ? null : (contentData?.image1Url || image1Url);
+    const displayImage2 = isLoading ? null : (contentData?.image2Url || image2Url);
+
     // Таймери
     const hideTimerRef = useRef<number | null>(null);
     const nudgeTimerRef = useRef<number | null>(null);
@@ -74,32 +82,13 @@ const CoursesAdv: FC<CoursesAdvProps> = ({
         if (nudgeTimerRef.current !== null) window.clearTimeout(nudgeTimerRef.current);
     }, []);
 
-    // Зареждане на контента от базата данни при инициализация
+    // Синхронизиране на local state с данните от SWR
     useEffect(() => {
-        const loadContent = async () => {
-            try {
-                const response = await fetch("/api/home/updateContent");
-                const result = await response.json();
-
-                if (result.success && result.data) {
-                    setCurrentTitle(result.data.title);
-                    setCurrentSubtitle(result.data.subtitle);
-                    // Зареждаме изображенията от базата данни
-                    if (result.data.image1Url) {
-                        setCurrentImage1(result.data.image1Url);
-                    }
-                    if (result.data.image2Url) {
-                        setCurrentImage2(result.data.image2Url);
-                    }
-                }
-            } catch (error) {
-                console.error("Error loading content:", error);
-                // Използваме default стойностите ако има грешка
-            }
-        };
-
-        loadContent();
-    }, []);
+        if (contentData) {
+            setCurrentTitle(contentData.title);
+            setCurrentSubtitle(contentData.subtitle);
+        }
+    }, [contentData]);
 
     // Показване на подсказката: секцията видима ≥50% за nudgeDelayMs и НЕ е активно
     useEffect(() => {
@@ -210,14 +199,10 @@ const CoursesAdv: FC<CoursesAdvProps> = ({
     };
 
     // Admin функции
-    const isAdmin = session?.user?.role === "ADMIN";
-
     const handleImageUpload = async (file: File, imageNumber: 1 | 2) => {
         if (!file) return;
 
         const setIsUploading = imageNumber === 1 ? setIsUploading1 : setIsUploading2;
-        const setCurrentImage = imageNumber === 1 ? setCurrentImage1 : setCurrentImage2;
-
         setIsUploading(true);
 
         try {
@@ -233,9 +218,9 @@ const CoursesAdv: FC<CoursesAdvProps> = ({
             const result = await response.json();
 
             if (result.success) {
-                setCurrentImage(result.url);
                 // Автоматично запазваме новия URL в базата данни
-                await saveContentWithNewImage(result.url, imageNumber);
+                const imageKey = imageNumber === 1 ? 'image1Url' : 'image2Url';
+                await updateContent({ [imageKey]: result.url });
             } else {
                 alert(`Грешка при качване: ${result.error}`);
             }
@@ -263,20 +248,10 @@ const CoursesAdv: FC<CoursesAdvProps> = ({
     const saveContent = async () => {
         setIsSavingContent(true);
         try {
-            const response = await fetch("/api/home/updateContent", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    title: currentTitle,
-                    subtitle: currentSubtitle,
-                    image1Url: currentImage1,
-                    image2Url: currentImage2,
-                }),
+            const result = await updateContent({
+                title: currentTitle,
+                subtitle: currentSubtitle,
             });
-
-            const result = await response.json();
 
             if (result.success) {
                 // Успешно запазено
@@ -288,41 +263,6 @@ const CoursesAdv: FC<CoursesAdvProps> = ({
         } catch (error) {
             console.error("Save content error:", error);
             alert("Грешка при запазване на промените");
-        } finally {
-            setIsSavingContent(false);
-        }
-    };
-
-    const saveContentWithNewImage = async (newImageUrl: string, imageNumber: 1 | 2) => {
-        setIsSavingContent(true);
-        try {
-            const image1Url = imageNumber === 1 ? newImageUrl : currentImage1;
-            const image2Url = imageNumber === 2 ? newImageUrl : currentImage2;
-
-            const response = await fetch("/api/home/updateContent", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    title: currentTitle,
-                    subtitle: currentSubtitle,
-                    image1Url: image1Url,
-                    image2Url: image2Url,
-                }),
-            });
-
-            const result = await response.json();
-
-            if (result.success) {
-                // Успешно запазено
-                console.log("Image saved successfully");
-            } else {
-                alert(`Грешка при запазване на изображението: ${result.error}`);
-            }
-        } catch (error) {
-            console.error("Save image error:", error);
-            alert("Грешка при запазване на изображението");
         } finally {
             setIsSavingContent(false);
         }
@@ -345,7 +285,7 @@ const CoursesAdv: FC<CoursesAdvProps> = ({
             e.preventDefault();
             saveContent();
         } else if (e.key === "Escape") {
-            setCurrentTitle(title);
+            setCurrentTitle(displayTitle);
             setIsEditingTitle(false);
         }
     };
@@ -355,13 +295,13 @@ const CoursesAdv: FC<CoursesAdvProps> = ({
             e.preventDefault();
             saveContent();
         } else if (e.key === "Escape") {
-            setCurrentSubtitle(subtitle);
+            setCurrentSubtitle(displaySubtitle);
             setIsEditingSubtitle(false);
         }
     };
 
     const handleTitleBlur = () => {
-        if (currentTitle !== title) {
+        if (currentTitle !== displayTitle) {
             saveContent();
         } else {
             setIsEditingTitle(false);
@@ -369,7 +309,7 @@ const CoursesAdv: FC<CoursesAdvProps> = ({
     };
 
     const handleSubtitleBlur = () => {
-        if (currentSubtitle !== subtitle) {
+        if (currentSubtitle !== displaySubtitle) {
             saveContent();
         } else {
             setIsEditingSubtitle(false);
@@ -382,7 +322,7 @@ const CoursesAdv: FC<CoursesAdvProps> = ({
     return (
         <section
             ref={sectionRef}
-            className={`courses-adv ${className ?? ""}`.trim()}
+            className={`courses-adv${className ?? ""}`.trim()}
             aria-label="Курсове реклама секция"
             onPointerDownCapture={onSectionPointerDownCapture}
             onPointerEnter={onPointerEnter}
@@ -391,7 +331,16 @@ const CoursesAdv: FC<CoursesAdvProps> = ({
             <div className="courses-adv__container">
                 {/* Лява част с текст */}
                 <div className="courses-adv__content">
-                    {isEditingTitle ? (
+                    {isLoading ? (
+                        // Skeleton loader за заглавието
+                        <SkeletonLoader
+                            className="courses-adv__title"
+                            height="2.5rem"
+                            width="60%"
+                            variant="text"
+                            animation="pulse"
+                        />
+                    ) : isEditingTitle ? (
                         <input
                             type="text"
                             value={currentTitle}
@@ -413,7 +362,17 @@ const CoursesAdv: FC<CoursesAdvProps> = ({
                         </h2>
                     )}
 
-                    {isEditingSubtitle ? (
+                    {isLoading ? (
+                        // Skeleton loader за подзаглавието
+                        <SkeletonLoader
+                            className="courses-adv__subtitle"
+                            height="1.5rem"
+                            width="100%"
+                            variant="text"
+                            lines={2}
+                            animation="pulse"
+                        />
+                    ) : isEditingSubtitle ? (
                         <textarea
                             value={currentSubtitle}
                             onChange={(e) => setCurrentSubtitle(e.target.value)}
@@ -452,14 +411,23 @@ const CoursesAdv: FC<CoursesAdvProps> = ({
                     onMouseLeave={() => isAdmin && setShowAdminControls(false)}
                 >
                     <div className="courses-adv__image courses-adv__image--main">
-                        <Image
-                            src={currentImage1}
-                            alt="Образователна общност"
-                            fill
-                            style={{ objectFit: 'cover' }}
-                        />
+                        {isLoading || !displayImage1 ? (
+                            <ImageSkeleton
+                                className="w-full h-full"
+                                aspectRatio="auto"
+                            />
+                        ) : (
+                            <OptimizedImage
+                                src={displayImage1}
+                                alt="Образователна общност"
+                                fill
+                                priority={true}
+                                quality={85}
+                                placeholder="blur"
+                            />
+                        )}
                         {/* Admin upload контрол за първото изображение */}
-                        {isAdmin && (
+                        {isAdmin && !isLoading && (
                             <div className={`courses-adv__admin-control ${showAdminControls ? 'is-visible' : ''}`}>
                                 <button
                                     type="button"
@@ -485,14 +453,23 @@ const CoursesAdv: FC<CoursesAdvProps> = ({
                         )}
                     </div>
                     <div className="courses-adv__image courses-adv__image--secondary">
-                        <Image
-                            src={currentImage2}
-                            alt="Студенти в действие"
-                            fill
-                            style={{ objectFit: 'cover' }}
-                        />
+                        {isLoading || !displayImage2 ? (
+                            <ImageSkeleton
+                                className="w-full h-full"
+                                aspectRatio="auto"
+                            />
+                        ) : (
+                            <OptimizedImage
+                                src={displayImage2}
+                                alt="Студенти в действие"
+                                fill
+                                priority={false}
+                                quality={85}
+                                placeholder="blur"
+                            />
+                        )}
                         {/* Admin upload контрол за второто изображение */}
-                        {isAdmin && (
+                        {isAdmin && !isLoading && (
                             <div className={`courses-adv__admin-control ${showAdminControls ? 'is-visible' : ''}`}>
                                 <button
                                     type="button"
@@ -521,8 +498,7 @@ const CoursesAdv: FC<CoursesAdvProps> = ({
 
                 {/* Подсказка: показва се само когато НЕ е активно и след nudgeDelayMs на мобилни */}
                 {showNudge && !isTapActive && (
-                    <button type="button" className="courses-nudge-btn" aria-label="Покажи цветовете">
-                        <span className="courses-nudge-bubble" aria-hidden="true">{`Нарисувай ме =>`}</span>
+                    <button type="button" className="courses-nudge-btn mb-4" aria-label="Покажи цветовете">
                         <span className="courses-nudge-dot" aria-hidden="true" onPointerDown={onNudgeDotPointerDown} />
                     </button>
                 )}
