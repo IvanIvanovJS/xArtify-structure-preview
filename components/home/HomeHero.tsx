@@ -23,7 +23,7 @@ export default function HomeHero() {
                         <Link href="/about" className="footer-link">За нас</Link>
                         <Link href="/contact" className="footer-link">Контакти</Link>
                     </div>
-                    <div className="justify-self-end">
+                    <div>
                         {session ? (
                             <Link href="/api/auth/signout" className="footer-link inline-flex items-center gap-2">
                                 <LogOut size={18} /> Изход

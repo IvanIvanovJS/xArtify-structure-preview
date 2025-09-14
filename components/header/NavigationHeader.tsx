@@ -214,7 +214,7 @@ export default function NavigationHeader(): JSX.Element {
             >
                 <div className="x-header__bar">
                     {/* ЛЯВО */}
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center md:gap-2 gap-1">
                         {/* MOBILE: профил/любими/карт вляво + Search иконка на мобилно */}
                         <div className="md:hidden flex items-center gap-1">
                             <button

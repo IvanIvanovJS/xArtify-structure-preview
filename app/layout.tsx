@@ -40,7 +40,7 @@ export default async function RootLayout({
             <CartProvider>
               <Header />
               {/* Съдържанието е над фона */}
-              <main className="relative z-10 pt-16 md:pt-20 space-y-20">
+              <main className="relative z-10 pt-16 md:pt-30 space-y-20">
                 {children}
               </main>
             </CartProvider>
