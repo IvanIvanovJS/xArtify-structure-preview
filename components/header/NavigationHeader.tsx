@@ -90,8 +90,8 @@ export default function NavigationHeader(): JSX.Element {
     const [searchOpen, setSearchOpen] = useState<boolean>(false);
     const [isMounted, setIsMounted] = useState<boolean>(false);
 
-    // Скриваме хедъра на login страницата
-    const shouldHideHeader = pathname === "/login";
+    // Скриваме хедъра на login, register и forgotten-password страниците
+    const shouldHideHeader = pathname === "/login" || pathname === "/register" || pathname === "/forgotten-password";
 
     // детекция за мобилен размер в клиент (само за анимации/позиции)
     const [isMobile, setIsMobile] = useState<boolean>(false);
