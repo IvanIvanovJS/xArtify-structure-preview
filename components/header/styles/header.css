@@ -158,7 +158,7 @@
     }
 
     .x-icon-btn:focus-visible {
-        @apply ring-2 ring-blue-500 ring-offset-2 ring-offset-white;
+        @apply shadow-md shadow-primary outline-none text-primary;
     }
 
 

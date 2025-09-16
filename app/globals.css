@@ -11,10 +11,12 @@
 @import "../components/admin/styles/admin.css";
 @import "../components/home/styles/courses-adv.css";
 @import "../components/cart/cart.css";
+@import "../components/credentials/LoginForm/styles/login.css";
 
 /* 1) Color tokens */
 :root {
   color-scheme: light;
+  font-size: 16px;
 }
 
 
@@ -119,7 +121,7 @@ body {
   background-image:
     radial-gradient(var(--mist-size) var(--mist-size) at var(--spot1-x) var(--spot1-y),
       rgba(22, 255, 228, var(--spot1-intensity)) 0%,
-      rgba(22, 255, 228, 0.09) 40%,
+      rgba(0, 209, 255, 0.07) 40%,
       rgba(0, 0, 0, 0) 72%),
     radial-gradient(calc(var(--mist-size) * 0.85) calc(var(--mist-size) * 0.85) at var(--spot2-x) var(--spot2-y),
       rgba(22, 255, 228, var(--spot2-intensity)) 0%,
