@@ -11,6 +11,7 @@ import { CartProvider } from "./context/CartContext";
 import SessionGuard from "@/components/SessionGuard";
 import SiteBackground from "@/components/background/SiteBackground";
 import { JSX } from "react";
+import MainWrapper from "@/components/MainWrapper";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -40,9 +41,9 @@ export default async function RootLayout({
             <CartProvider>
               <Header />
               {/* Съдържанието е над фона */}
-              <main className="relative z-10 pt-16 md:pt-30 space-y-20">
+              <MainWrapper>
                 {children}
-              </main>
+              </MainWrapper>
             </CartProvider>
           </SessionGuard>
         </SessionProvider>

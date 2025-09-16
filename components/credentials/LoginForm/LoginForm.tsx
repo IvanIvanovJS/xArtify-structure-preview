@@ -68,14 +68,21 @@ export default function LoginForm() {
 
     return (
         <div className="login-container">
-            <article className="login-header">
-                <h3 className="login-title">
-                    Вход
-                </h3>
-                <Link href="/register" className="login-register-link">
-                    Регистрация
-                </Link>
-            </article>
+            <div className="login-header-container">
+                {/* Logo */}
+                <div className="login-logo">
+                    <Image src="/web-logo.svg" width={48} height={48} alt="xArtify Logo" />
+                </div>
+
+                {/* Main title */}
+                <h1 className="login-main-title">Влез в xArtify</h1>
+
+                {/* Sign up link */}
+                <div className="login-signup-text">
+                    Нямате акаунт? <Link href="/register" className="login-signup-link">Регистрация</Link>
+                </div>
+            </div>
+
 
             {error && (<div className="login-error">{error}</div>
             )}
@@ -241,9 +248,12 @@ export default function LoginForm() {
 
 
             <div className="login-footer">
-                Все още нямате профил?{" "}
-                <Link href="/register" className="login-footer-link">
-                    Регистрация
+                При вход се съгласявате с{" "}
+                <Link href="/terms" className="login-footer-link">
+                    Общи условия
+                </Link>
+                {" "}и <Link href="/privacy" className="login-footer-link">
+                    Политика за поверителност
                 </Link>
             </div>
         </div>

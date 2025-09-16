@@ -5,6 +5,7 @@ import Image from "next/image";
 import { JSX, useEffect, useMemo, useRef, useState } from "react";
 import CartIcon from "../cart/CartIcon";
 import { useSession } from "next-auth/react";
+import { usePathname } from "next/navigation";
 import {
     Search,
     User2,
@@ -82,11 +83,15 @@ function useHeaderScroll(): { hidden: boolean; showOnHover: () => void; hideOnLe
 
 export default function NavigationHeader(): JSX.Element {
     const { data: session } = useSession();
+    const pathname = usePathname();
 
     // състояния
     const [drawerOpen, setDrawerOpen] = useState<boolean>(false);
     const [searchOpen, setSearchOpen] = useState<boolean>(false);
     const [isMounted, setIsMounted] = useState<boolean>(false);
+
+    // Скриваме хедъра на login страницата
+    const shouldHideHeader = pathname === "/login";
 
     // детекция за мобилен размер в клиент (само за анимации/позиции)
     const [isMobile, setIsMobile] = useState<boolean>(false);
@@ -189,6 +194,11 @@ export default function NavigationHeader(): JSX.Element {
             behavior: 'smooth'
         });
     };
+
+    // Ако трябва да скрием хедъра, не рендираме нищо
+    if (shouldHideHeader) {
+        return <></>;
+    }
 
     return (
         <>
