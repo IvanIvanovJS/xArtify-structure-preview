@@ -101,7 +101,26 @@ export default function RegisterForm() {
 
 
 
+            {/* Социални регистрации (стил като в LoginForm) */}
+            <div className="flex flex-col items-center space-y-6 gap-4 w-full">
+                <button
+                    onClick={() => signIn("google", { callbackUrl: "/" })}
+                    className="cursor-pointer gap-2 h-12 flex items-center justify-center w-2/3 py-2 px-4 border-b-3 hover:bg-gray-200 border-gray-300 rounded-full text-sm font-medium transition-colors"
+                    type="button"
+                >
+                    <Image src="/google-icon.svg" alt="Google" width={8} height={8} className="h-8 w-8 mr-5" />
+                    Регистрация с Google
+                </button>
 
+                <button
+                    onClick={() => signIn("facebook", { callbackUrl: "/" })}
+                    className="cursor-pointer gap-2 h-12 flex items-center justify-center w-2/3 py-2 px-4 border-b-3 hover:bg-gray-200 border-gray-300 rounded-full text-sm font-medium transition-colors"
+                    type="button"
+                >
+                    <Image src="/facebook-icon.svg" alt="Facebook" width={8} height={8} className="h-8 w-8 mr-2" />
+                    Регистрация с Facebook
+                </button>
+            </div>
 
             {/* Форма - направена като LoginForm (ширина и floating labels) */}
             <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col items-center space-y-6 w-full gap-4">
@@ -228,26 +247,7 @@ export default function RegisterForm() {
                 <span className="relative left-0 w-2/3 h-px bg-gray-300 dark:bg-gray-600"></span>
                 <span className="absolute z-10 px-4 text-sm text-gray-500 bg-white dark:bg-gray-800">или</span>
             </div>
-            {/* Социални регистрации (стил като в LoginForm) */}
-            <div className="flex flex-col items-center space-y-6 gap-4 w-full">
-                <button
-                    onClick={() => signIn("google", { callbackUrl: "/" })}
-                    className="cursor-pointer gap-2 h-12 flex items-center justify-center w-2/3 py-2 px-4 border-b-3 hover:bg-gray-200 border-gray-300 rounded-full text-sm font-medium transition-colors"
-                    type="button"
-                >
-                    <Image src="/google-icon.svg" alt="Google" width={8} height={8} className="h-8 w-8 mr-5" />
-                    Регистрация с Google
-                </button>
 
-                <button
-                    onClick={() => signIn("facebook", { callbackUrl: "/" })}
-                    className="cursor-pointer gap-2 h-12 flex items-center justify-center w-2/3 py-2 px-4 border-b-3 hover:bg-gray-200 border-gray-300 rounded-full text-sm font-medium transition-colors"
-                    type="button"
-                >
-                    <Image src="/facebook-icon.svg" alt="Facebook" width={8} height={8} className="h-8 w-8 mr-2" />
-                    Регистрация с Facebook
-                </button>
-            </div>
             {spacer}
             {/* Връзка към вход (подобно на LoginForm footer) */}
             <div className="text-sm text-center text-gray-700 dark:text-gray-400 h-8">
