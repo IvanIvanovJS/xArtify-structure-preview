@@ -98,7 +98,13 @@ export default function RegisterForm() {
 
             </article>
 
-
+            {/* Връзка към вход (подобно на LoginForm footer) */}
+            <div className="text-sm text-center text-gray-700 dark:text-gray-400 h-8">
+                Вече имате регистрация?{" "}
+                <Link href="/login">
+                    <button className="cursor-pointer font-medium text-blue-500 hover:underline">Вход</button>
+                </Link>
+            </div>
 
 
             {/* Социални регистрации (стил като в LoginForm) */}
@@ -120,6 +126,10 @@ export default function RegisterForm() {
                     <Image src="/facebook-icon.svg" alt="Facebook" width={8} height={8} className="h-8 w-8 mr-2" />
                     Регистрация с Facebook
                 </button>
+            </div>
+            <div className="relative flex items-center justify-center h-14">
+                <span className="relative left-0 w-2/3 h-px bg-gray-300 dark:bg-gray-600"></span>
+                <span className="absolute z-10 px-4 text-sm text-gray-500 bg-white dark:bg-gray-800">или</span>
             </div>
 
             {/* Форма - направена като LoginForm (ширина и floating labels) */}
@@ -243,19 +253,10 @@ export default function RegisterForm() {
                 </button>
             </form>
 
-            <div className="relative flex items-center justify-center h-14">
-                <span className="relative left-0 w-2/3 h-px bg-gray-300 dark:bg-gray-600"></span>
-                <span className="absolute z-10 px-4 text-sm text-gray-500 bg-white dark:bg-gray-800">или</span>
-            </div>
 
-            {spacer}
-            {/* Връзка към вход (подобно на LoginForm footer) */}
-            <div className="text-sm text-center text-gray-700 dark:text-gray-400 h-8">
-                Вече имате регистрация?{" "}
-                <Link href="/login">
-                    <button className="cursor-pointer font-medium text-blue-500 hover:underline">Вход</button>
-                </Link>
-            </div>
+
+
+
         </div>
     );
 }
