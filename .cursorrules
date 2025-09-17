@@ -1,0 +1,594 @@
+# xArtify Art Platform - AI Agent Rules
+
+## Project Overview
+xArtify is a Bulgarian art platform built with Next.js 15, featuring:
+- Art gallery with paintings from artists
+- Online courses and materials
+- Artist profiles and artwork management
+- E-commerce with Stripe payments
+- Admin dashboard for platform management
+- Mobile-first responsive design with grayscale + neon theme
+
+## Core Technologies & Stack
+- **Framework**: Next.js 15.5.2 with App Router
+- **Language**: TypeScript (strict mode)
+- **Database**: PostgreSQL with Prisma ORM
+- **Authentication**: NextAuth.js v4 with multiple providers
+- **Styling**: Tailwind CSS v4 with custom CSS modules
+- **Payments**: Stripe integration
+- **Image Storage**: Cloudinary
+- **Rate Limiting**: Upstash Redis
+- **Email**: Resend
+- **Deployment**: Vercel
+
+## TypeScript & Code Quality Rules
+
+### Strict Typing Requirements
+- **NEVER use `any` type** - always provide explicit types
+- Use `interface` for object shapes, `type` for unions/primitives
+- Always type function parameters and return values
+- Use generic types for reusable components
+- Prefer `const assertions` for immutable data
+- Use `satisfies` operator for type checking without widening
+
+### Component Patterns
+```typescript
+// ✅ Correct component typing
+interface ComponentProps {
+  title: string;
+  isVisible: boolean;
+  onAction: (id: string) => void;
+  children?: React.ReactNode;
+}
+
+export default function Component({ title, isVisible, onAction, children }: ComponentProps): JSX.Element {
+  // Implementation
+}
+
+// ❌ Never do this
+function Component(props: any) {
+  // Implementation
+}
+```
+
+### API Route Patterns
+```typescript
+// ✅ Correct API route typing
+export async function GET(): Promise<NextResponse> {
+  try {
+    const data = await prisma.model.findMany();
+    return NextResponse.json(data);
+  } catch (error) {
+    console.error('Error:', error);
+    return NextResponse.json({ message: 'Error occurred' }, { status: 500 });
+  }
+}
+```
+
+## Security Best Practices
+
+### Authentication & Authorization
+- Always check session in protected routes: `const session = await getServerSession(authOptions)`
+- Use role-based access control: `session?.user?.role === "ADMIN"`
+- Implement rate limiting on all API endpoints
+- Validate all inputs with Zod schemas
+- Use CSRF protection and secure headers
+
+### Data Validation
+```typescript
+// ✅ Always validate with Zod
+import { z } from "zod";
+
+const CreatePaintingSchema = z.object({
+  title: z.string().min(1).max(140),
+  price: z.number().positive(),
+  images: z.array(z.string().url()).min(1).max(10),
+});
+
+export async function POST(req: Request) {
+  const body = await req.json();
+  const validatedData = CreatePaintingSchema.parse(body);
+  // Process validated data
+}
+```
+
+### Security Headers
+- CSP with nonce-based script execution
+- HSTS in production
+- X-Frame-Options: DENY
+- Content-Type-Options: nosniff
+- Referrer-Policy: strict-origin-when-cross-origin
+
+## Mobile-First UX Guidelines
+
+### Responsive Design
+- **Mobile-first approach**: Design for mobile, enhance for desktop
+- Use Tailwind's mobile-first breakpoints: `sm:`, `md:`, `lg:`, `xl:`
+- Touch-friendly button sizes (minimum 44px)
+- Optimize for thumb navigation
+- Implement proper viewport meta tag
+
+### Performance Optimization
+- Use Next.js Image component with optimization
+- Implement lazy loading for images
+- Use SWR for data fetching with caching
+- Minimize bundle size with dynamic imports
+- Implement proper loading states and skeletons
+
+### Mobile UX Patterns
+```typescript
+// ✅ Mobile-optimized component
+export default function MobileOptimizedComponent(): JSX.Element {
+  const [isMobile, setIsMobile] = useState(false);
+  
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 767px)");
+    setIsMobile(mq.matches);
+    mq.addEventListener("change", (e) => setIsMobile(e.matches));
+  }, []);
+
+  return (
+    <div className="p-4 md:p-8">
+      <button className="w-full md:w-auto min-h-[44px] touch-manipulation">
+        Mobile-friendly button
+      </button>
+    </div>
+  );
+}
+```
+
+## Visual Design System
+
+### Color Palette
+- **Background**: `#0b0b0f` (deep dark gray)
+- **Foreground**: `#e5e7eb` (readable neutral)
+- **Primary**: `#16ffe4` (neon cyan accent)
+- **Muted**: `#1a1a20` (subtle gray)
+- **Muted Foreground**: `#9ca3af` (secondary text)
+
+### Typography
+- **Font**: Inter (Google Fonts)
+- **Base size**: 16px
+- **Line height**: 1.5 for readability
+- **Font smoothing**: antialiased
+
+### Component Styling
+```css
+/* ✅ Use CSS custom properties */
+.btn-neon {
+  position: relative;
+  background: var(--color-primary);
+  color: var(--color-primary-foreground);
+}
+
+.btn-neon::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  box-shadow: 0 0 16px rgba(22, 255, 228, 0.18);
+}
+```
+
+### CSS Organization Rules
+- **NEVER use inline styles** - always create separate CSS files
+- Use CSS modules or separate `.css` files for component styling
+- Import CSS files at the top of components or in `globals.css`
+- Follow the existing pattern: `components/ComponentName/styles/component.css`
+- Use CSS custom properties for theme consistency
+- Keep styles organized by component or feature
+
+```typescript
+// ✅ CORRECT: Import CSS file
+import "./styles/component.css";
+
+export default function Component(): JSX.Element {
+  return <div className="component-wrapper">Content</div>;
+}
+
+// ❌ FORBIDDEN: Inline styles
+export default function BadComponent(): JSX.Element {
+  return <div style={{ color: 'red', padding: '10px' }}>Content</div>;
+}
+```
+
+## Database & Data Modeling
+
+### Prisma Schema Patterns with RLS
+```prisma
+// ✅ REQUIRED: Proper model relationships with RLS
+model User {
+  id            String    @id @default(cuid())
+  email         String?   @unique
+  role          String    @default("USER")
+  artistProfile ArtistProfile?
+  paintings     Painting[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  @@map("users")
+}
+
+model Painting {
+  id        String    @id @default(cuid())
+  title     String
+  price     Float
+  artistId  String
+  artist    ArtistProfile @relation(fields: [artistId], references: [id])
+  createdAt DateTime  @default(now())
+  
+  @@map("paintings")
+}
+
+// ✅ REQUIRED: Enable RLS policies
+-- Enable RLS on all tables
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE paintings ENABLE ROW LEVEL SECURITY;
+
+-- Users can only see their own data
+CREATE POLICY "Users can view own data" ON users
+  FOR SELECT USING (auth.uid()::text = id);
+
+-- Artists can manage their own paintings
+CREATE POLICY "Artists can manage own paintings" ON paintings
+  FOR ALL USING (artist_id IN (
+    SELECT id FROM artist_profiles WHERE user_id = auth.uid()::text
+  ));
+```
+
+### Data Access Patterns
+- Use Prisma's `include` for related data
+- Implement proper error handling
+- Use transactions for complex operations
+- Validate data before database operations
+
+## SEO Optimization
+
+### Metadata & Structure
+```typescript
+// ✅ Proper metadata
+export const metadata: Metadata = {
+  title: "xArtify - Where Art Knows You",
+  description: "Art for everyone",
+  openGraph: {
+    title: "xArtify",
+    description: "Art for everyone",
+    images: ["/og-image.jpg"],
+  },
+};
+```
+
+### URL Structure
+- Use semantic URLs: `/gallery/[paintingId]`
+- Implement proper redirects
+- Use canonical URLs
+- Optimize for Bulgarian language (lang="bg")
+
+## Payment Integration
+
+### Stripe Best Practices
+```typescript
+// ✅ Secure payment handling
+import Stripe from 'stripe';
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+
+export async function createPaymentIntent(amount: number) {
+  const paymentIntent = await stripe.paymentIntents.create({
+    amount: amount * 100, // Convert to cents
+    currency: 'bgn',
+    metadata: { /* relevant data */ },
+  });
+  
+  return paymentIntent;
+}
+```
+
+## Error Handling & Logging
+
+### Consistent Error Patterns
+```typescript
+// ✅ Proper error handling
+export async function apiHandler(req: Request) {
+  try {
+    const data = await processRequest(req);
+    return NextResponse.json(data);
+  } catch (error) {
+    console.error('API Error:', error);
+    
+    if (error instanceof ValidationError) {
+      return NextResponse.json({ message: 'Invalid data' }, { status: 400 });
+    }
+    
+    return NextResponse.json({ message: 'Internal server error' }, { status: 500 });
+  }
+}
+```
+
+## File Organization
+
+### Directory Structure
+```
+app/
+├── api/           # API routes
+├── (auth)/        # Auth pages
+├── admin/         # Admin pages
+├── gallery/       # Gallery pages
+└── components/    # Reusable components
+
+components/
+├── ui/            # Base UI components
+├── forms/         # Form components
+└── layout/        # Layout components
+```
+
+### Import Conventions
+```typescript
+// ✅ Proper import order
+import { type NextRequest } from "next/server";
+import { getServerSession } from "next-auth";
+
+import { authOptions } from "@/lib/authOptions";
+import { prisma } from "@/lib/prisma";
+import { validateInput } from "@/lib/validators";
+```
+
+## Performance Guidelines
+
+### Image Optimization
+- Use Next.js Image component
+- Implement proper alt text
+- Use appropriate image formats (WebP, AVIF)
+- Implement lazy loading
+- Use blur placeholders
+
+### Bundle Optimization
+- Use dynamic imports for large components
+- Implement code splitting
+- Minimize third-party dependencies
+- Use tree shaking effectively
+
+## Testing & Quality Assurance
+
+### Component Testing
+- Test user interactions
+- Test responsive behavior
+- Test accessibility features
+- Test error states
+
+### API Testing
+- Test authentication flows
+- Test validation
+- Test error handling
+- Test rate limiting
+
+## Deployment & Environment
+
+### Environment Variables
+```bash
+# Required environment variables
+DATABASE_URL=
+NEXTAUTH_SECRET=
+NEXTAUTH_URL=
+STRIPE_SECRET_KEY=
+STRIPE_PUBLISHABLE_KEY=
+CLOUDINARY_URL=
+KV_REST_API_URL=
+KV_REST_API_TOKEN=
+```
+
+### Build Optimization
+- Use `next build` for production
+- Implement proper caching strategies
+- Use CDN for static assets
+- Monitor performance metrics
+
+## Accessibility Guidelines
+
+### WCAG Compliance
+- Use semantic HTML elements
+- Implement proper ARIA labels
+- Ensure keyboard navigation
+- Maintain color contrast ratios
+- Provide alternative text for images
+
+### Screen Reader Support
+```typescript
+// ✅ Accessible components
+<button
+  aria-label="Add to cart"
+  aria-describedby="cart-description"
+  onClick={handleAddToCart}
+>
+  Add to Cart
+</button>
+```
+
+## Priority Tiers
+
+### Tier 1 (Always Enforce)
+- **Security**: Authentication, validation, rate limiting, CSP headers
+- **No `any` types**: Strict TypeScript with explicit interfaces
+- **Mobile-first**: Responsive design, touch optimization, performance
+- **RLS**: Row Level Security for database access
+- **Stripe SCA**: Strong Customer Authentication compliance
+
+### Tier 2 (Strongly Recommended)
+- **Accessibility**: WCAG compliance, ARIA labels, keyboard navigation
+- **SEO metadata**: Bulgarian market optimization, OpenGraph, structured data
+- **Analytics**: User behavior tracking, performance monitoring
+
+### Tier 3 (Optional/Contextual)
+- **Animations**: Subtle transitions, loading states
+- **POD**: Print-on-demand integrations
+- **Advanced AI**: AI-powered features, recommendations
+
+## Error Handling & Resilience
+
+### Retry Strategy
+```typescript
+// ✅ REQUIRED: Exponential backoff for external APIs
+async function retryWithBackoff<T>(
+  fn: () => Promise<T>,
+  maxRetries: number = 3,
+  baseDelay: number = 1000
+): Promise<T> {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (error) {
+      if (attempt === maxRetries) throw error;
+      
+      const delay = baseDelay * Math.pow(2, attempt - 1);
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  }
+  throw new Error('Max retries exceeded');
+}
+
+// Usage for Stripe/Supabase calls
+const paymentIntent = await retryWithBackoff(() => 
+  stripe.paymentIntents.create({ amount, currency: 'bgn' })
+);
+```
+
+### Fallback Strategy
+```typescript
+// ✅ REQUIRED: Graceful degradation
+async function uploadWithFallback(file: File): Promise<string> {
+  try {
+    return await cloudinaryUpload(file);
+  } catch (error) {
+    console.warn('Cloudinary failed, using Supabase fallback');
+    return await supabaseUpload(file);
+  }
+}
+```
+
+### User Feedback
+```typescript
+// ✅ REQUIRED: Always provide user feedback
+const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'retrying' | 'success' | 'error'>('idle');
+
+const handleUpload = async () => {
+  setUploadStatus('uploading');
+  try {
+    await uploadFile();
+    setUploadStatus('success');
+  } catch (error) {
+    setUploadStatus('retrying');
+    // Show "Upload failed, retrying..." message
+  }
+};
+```
+
+## Logging Levels
+
+### Structured Logging
+```typescript
+// ✅ REQUIRED: Consistent logging levels
+enum LogLevel {
+  INFO = 'info',
+  WARN = 'warn', 
+  ERROR = 'error',
+  CRITICAL = 'critical'
+}
+
+// Info: Normal operations
+logger.info('User login', { userId, email, timestamp });
+
+// Warn: Retry attempts, degraded service
+logger.warn('API retry attempt', { endpoint, attempt: 2, maxRetries: 3 });
+
+// Error: Failed payments, invalid input
+logger.error('Payment failed', { userId, amount, error: error.message });
+
+// Critical: Security violations, DB corruption
+logger.critical('Security violation', { userId, action: 'unauthorized_access', ip });
+```
+
+## Code Review Checklist
+
+### Tier 1 (Mandatory)
+- [ ] All TypeScript types are explicit (no `any`)
+- [ ] Mobile-first responsive design implemented
+- [ ] Security validations (auth, rate limiting, CSP)
+- [ ] Error handling with retries and fallbacks
+- [ ] Stripe SCA compliance for payments
+
+### Tier 2 (Strongly Recommended)
+- [ ] Accessibility features (WCAG, ARIA)
+- [ ] SEO metadata properly set
+- [ ] Analytics tracking implemented
+- [ ] Performance optimizations applied
+
+### Tier 3 (Optional)
+- [ ] Subtle animations and transitions
+- [ ] Advanced AI features
+- [ ] Print-on-demand integrations
+
+## Common Patterns to Follow
+
+### Form Handling
+```typescript
+// ✅ React Hook Form with Zod validation
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+const form = useForm<FormData>({
+  resolver: zodResolver(FormSchema),
+  defaultValues: { /* ... */ },
+});
+```
+
+### CSS Anti-Patterns to Avoid
+```typescript
+// ❌ FORBIDDEN: Inline styles
+<div style={{ color: 'red', padding: '10px' }}>Content</div>
+
+// ❌ FORBIDDEN: Style objects in components
+const styles = { color: 'red', padding: '10px' };
+<div style={styles}>Content</div>
+
+// ✅ CORRECT: Separate CSS file
+import "./styles/component.css";
+<div className="component-wrapper">Content</div>
+```
+
+### State Management
+```typescript
+// ✅ Use SWR for server state
+import useSWR from 'swr';
+
+const { data, error, isLoading } = useSWR('/api/paintings', fetcher);
+```
+
+### Context Usage
+```typescript
+// ✅ Proper context implementation
+const CartContext = createContext<CartContextType | undefined>(undefined);
+
+export function CartProvider({ children }: { children: React.ReactNode }) {
+  const [items, setItems] = useState<CartItem[]>([]);
+  // Implementation
+}
+```
+
+## AI Agent Optimization Hints
+
+### Response Format Preferences
+- **Prefer structured outputs**: JSON-like configs, schema changes, env vars
+- **Code-first answers**: Skip prose unless explicitly asked
+- **Short, actionable responses**: Focus on implementation over explanation
+- **Mark secrets clearly**: Use `<STRIPE_SECRET_KEY>` format for placeholders
+
+### Context Awareness
+- **Check user role**: Verify admin permissions before suggesting admin actions
+- **Validate context**: Ensure suggestions match current project state
+- **Cross-reference**: Check existing patterns before proposing new ones
+
+### Efficiency Guidelines
+- **Batch operations**: Group related changes in single responses
+- **Reuse patterns**: Follow established codebase conventions
+- **Minimize context**: Focus on essential information only
+
+Remember: Always prioritize Tier 1 requirements (Security, no `any`, mobile-first, RLS, Stripe SCA), maintain strict typing, implement proper security, follow the established patterns in the codebase, and NEVER use inline styles - always create separate CSS files.

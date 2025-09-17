@@ -20,8 +20,8 @@
     justify-content: center;
     width: 32px;
     height: 32px;
-    background: rgba(0, 0, 0, 0.8);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: var(--color-black-8);
+    border: 1px solid var(--color-white-2);
     border-radius: 6px;
     color: white;
     cursor: pointer;
@@ -30,8 +30,8 @@
 }
 
 .courses-adv__upload-btn:hover {
-    background: rgba(0, 0, 0, 0.9);
-    border-color: rgba(255, 255, 255, 0.4);
+    background: var(--color-black-9);
+    border-color: var(--color-white-4);
     transform: scale(1.05);
 }
 
@@ -85,13 +85,13 @@
 /* Dark mode support */
 @media (prefers-color-scheme: dark) {
     .courses-adv__upload-btn {
-        background: rgba(255, 255, 255, 0.1);
-        border-color: rgba(255, 255, 255, 0.2);
+        background: var(--color-white-1);
+        border-color: var(--color-white-2);
     }
 
     .courses-adv__upload-btn:hover {
-        background: rgba(255, 255, 255, 0.2);
-        border-color: rgba(255, 255, 255, 0.4);
+        background: var(--color-white-2);
+        border-color: var(--color-white-4);
     }
 }
 
@@ -105,7 +105,7 @@
 
 .courses-adv__title--editable:hover,
 .courses-adv__subtitle--editable:hover {
-    background: rgba(22, 255, 228, 0.1);
+    background: var(--color-primary-10);
     border-radius: 4px;
     padding: 4px 8px;
     margin: -4px -8px;
@@ -126,7 +126,7 @@
 /* Editing input/textarea styles */
 .courses-adv__title--editing,
 .courses-adv__subtitle--editing {
-    background: rgba(22, 255, 228, 0.1);
+    background: var(--color-primary-10);
     border: 2px solid #16ffe4;
     border-radius: 6px;
     padding: 8px 12px;
@@ -140,9 +140,9 @@
 
 .courses-adv__title--editing:focus,
 .courses-adv__subtitle--editing:focus {
-    background: rgba(22, 255, 228, 0.15);
+    background: var(--color-primary-15);
     border-color: #16ffe4;
-    box-shadow: 0 0 0 3px rgba(22, 255, 228, 0.2);
+    box-shadow: 0 0 0 3px var(--color-primary-20);
 }
 
 .courses-adv__title--editing:disabled,

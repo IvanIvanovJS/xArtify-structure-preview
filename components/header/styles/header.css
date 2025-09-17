@@ -76,8 +76,8 @@
 
     /* Допълнителни стилове за touch feedback */
     .x-icon-btn {
-        -webkit-tap-highlight-color: rgba(22, 255, 228, 0.2);
-        tap-highlight-color: rgba(22, 255, 228, 0.2);
+        -webkit-tap-highlight-color: var(--color-primary-20);
+        tap-highlight-color: var(--color-primary-20);
     }
 
     /* Touch feedback клас */
@@ -132,7 +132,7 @@
         font-family: Albert Sans, Arial, sans-serif;
         @apply text-left text-2xl mb-20 sm:text-4xl md:text-4xl font-semibold tracking-tight text-white;
         max-width: 40%;
-        text-shadow: 0 0 10px rgba(22, 255, 228, .45), 0 1px 1px rgba(0, 0, 0, .35);
+        text-shadow: 0 0 10px var(--color-primary-45), 0 1px 1px var(--color-black-35);
     }
 
     @media (max-width: 1023px) {
