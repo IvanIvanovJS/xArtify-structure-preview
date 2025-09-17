@@ -58,7 +58,7 @@ export default function MyProfilePage() {
             setLoading(false);
         }
 
-    }, []);
+    }, [router]);
     useEffect(() => {
         fetchProfileData();
     }, [fetchProfileData]);

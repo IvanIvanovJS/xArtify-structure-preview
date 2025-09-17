@@ -1,0 +1,294 @@
+/* ================================
+   CoursesAdv Component Styles
+   Градиентен фон от тъмно към светло с primary цвят
+   ================================ */
+
+.courses-adv {
+    position: relative;
+    width: 100%;
+    min-height: 60vh;
+    background: transparent;
+    border-radius: 24px;
+    overflow: hidden;
+    isolation: isolate;
+}
+
+.courses-adv__container {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: 60vh;
+    padding: 2rem;
+    gap: 2rem;
+    align-items: center;
+}
+
+/* Лява част с текст */
+.courses-adv__content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    gap: 2rem;
+    color: white;
+    z-index: 2;
+}
+
+.courses-adv__title {
+    font-size: clamp(14px, 2vw, 18px);
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    text-shadow: 0 2px 4px var(--color-black-5);
+    margin-bottom: -2rem;
+    line-height: 0.9;
+    color: var(--color-primary);
+    opacity: 0.8;
+
+}
+
+.courses-adv__subtitle {
+    font-size: clamp(20px, 2vw, 40px);
+    font-weight: 500;
+    opacity: 0.95;
+    text-shadow: 0 1px 2px var(--color-black-4);
+    margin: 0;
+    line-height: 1.4;
+    max-width: 50%;
+
+}
+
+/* CTA бутон – използва същия стил като home-hero__cta */
+.courses-adv__cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 1.2rem 2.4rem;
+    border-radius: 1.8rem;
+    background: transparent;
+    opacity: 0.75;
+    color: white;
+    font-weight: 700;
+    font-size: 20px;
+    border: 1px;
+    line-height: 1;
+    box-shadow: 0 0 0 2px var(--color-white-06) inset,
+        0 10px 18px var(--color-black-28),
+        0 0 24px var(--color-secondary-30);
+    transition: transform 0.15s ease, box-shadow 0.15s ease,
+        background-color 0.15s ease, color 0.15s ease;
+    text-decoration: none;
+    margin-top: 1rem;
+    align-self: flex-start;
+    @apply shadow-md inset-shadow-sm/50 inset-shadow-primary shadow-primary;
+}
+
+.courses-adv__cta:hover {
+    border: none;
+    box-shadow: 0 0 0 2px var(--color-white-06) inset,
+        0 12px 24px var(--color-black-35),
+        0 0 18px var(--color-secondary-50);
+}
+
+.courses-adv__cta:focus-visible {
+    outline: none;
+    border: none;
+    box-shadow: 0 0 0 2px #00d1ff, 0 0 0 4px var(--color-black-85),
+        0 0 14px var(--color-secondary-65);
+}
+
+/* Дясна част с изображения */
+.courses-adv .courses-adv__media {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    z-index: 1;
+    filter: grayscale(100%) !important;
+    transition: filter 0.3s ease;
+}
+
+.courses-adv .courses-adv__media.is-active {
+    filter: grayscale(0%) !important;
+}
+
+@media (hover: hover) {
+    .courses-adv .courses-adv__media:hover {
+        filter: grayscale(0%) !important;
+    }
+}
+
+.courses-adv__image {
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px var(--color-black-3);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.courses-adv__image:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px var(--color-black-4);
+}
+
+.courses-adv__image--main {
+    width: 280px;
+    height: 200px;
+    z-index: 2;
+}
+
+.courses-adv__image--secondary {
+    width: 200px;
+    height: 150px;
+    z-index: 1;
+    margin-left: -60px;
+    margin-top: 40px;
+}
+
+.courses-adv__image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* Мобилна версия */
+@media (max-width: 768px) {
+    .courses-adv {
+        min-height: 50vh;
+    }
+
+    .courses-adv__container {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr;
+        min-height: 50vh;
+        padding: 1.5rem;
+        gap: 1.5rem;
+        margin-left: 0;
+    }
+
+    .courses-adv__content {
+        text-align: center;
+        order: 1;
+    }
+
+    .courses-adv__subtitle {
+        max-width: 100%;
+    }
+
+    .courses-adv__media {
+        order: 2;
+        justify-content: center;
+        align-items: flex-start;
+    }
+
+    .courses-adv__image--main {
+        width: 240px;
+        height: 180px;
+    }
+
+    .courses-adv__image--secondary {
+        width: 200px;
+        height: 140px;
+        margin-left: -40px;
+        margin-top: 30px;
+    }
+
+    .courses-adv__cta {
+        align-self: center;
+    }
+}
+
+/* Много малки екрани */
+@media (max-width: 480px) {
+    .courses-adv__container {
+        padding: 1rem;
+        gap: 4rem;
+    }
+
+    .courses-adv__image--main {
+        width: 200px;
+        height: 140px;
+    }
+
+    .courses-adv__image--secondary {
+        width: 160px;
+        height: 120px;
+        margin-left: -30px;
+        margin-top: 25px;
+    }
+}
+
+/* Само за устройства без hover (мобилни) - nudge bubble */
+@media (hover: none) {
+    .courses-nudge-btn {
+        position: absolute;
+        right: 12px;
+        bottom: 12px;
+        z-index: 4;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: none;
+        background: transparent;
+        padding: 6px;
+        border-radius: 9999px;
+        touch-action: manipulation;
+    }
+
+    .courses-nudge-dot {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 50% 50%,
+                var(--color-primary-55) 0 30%,
+                rgb(22, 255, 228) 41% 100%);
+        box-shadow: 0 0 0 8px var(--color-primary-20),
+            0 6px 14px var(--color-black-35);
+        pointer-events: auto;
+    }
+
+    .courses-nudge-bubble {
+        font-size: 13px;
+        font-weight: 500;
+        pointer-events: none;
+        background: linear-gradient(to right,
+                rgb(1, 129, 118),
+                rgb(1, 155, 140),
+                rgb(22, 200, 180),
+                rgb(22, 255, 228),
+                rgb(120, 255, 240),
+                rgb(200, 255, 250));
+        background-clip: text;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-right: 6px;
+    }
+}
+
+/* Скрыване на nudge bubble за desktop */
+@media (hover: hover) {
+    .courses-nudge-btn {
+        display: none;
+    }
+}
+
+/* Анимация за CTA бутона когато медията е активна */
+.courses-adv__media.is-active~.courses-adv__container .courses-adv__cta,
+.courses-adv__media:hover~.courses-adv__container .courses-adv__cta {
+    background: #2b2b2b;
+    border: none;
+    color: white;
+    box-shadow: 0 0 0 2px var(--color-white-06) inset,
+        0 12px 24px var(--color-black-28),
+        0 0 18px var(--color-gray-114-114-111);
+}
+
+.courses-adv__media.is-active~.courses-adv__container .courses-adv__cta:hover,
+.courses-adv__media:hover~.courses-adv__container .courses-adv__cta:hover {
+    border-color: none;
+    box-shadow: 0 0 0 2px var(--color-white-06) inset,
+        0 12px 24px var(--color-black-35),
+        0 0 18px var(--color-gray-114-114-111-4);
+}

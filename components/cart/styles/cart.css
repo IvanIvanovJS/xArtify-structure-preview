@@ -1,0 +1,41 @@
+/* Cart Icon Styles */
+@layer components {
+    .cart-icon {
+        @apply h-10 w-10 rounded-xl flex items-center justify-center hover:shadow-primary hover:shadow-md hover:text-primary transition relative;
+    }
+
+    .cart-icon__container {
+        @apply relative p-2 cursor-pointer;
+    }
+
+    .cart-icon__badge {
+        @apply absolute -top-2 -right-3 inline-flex items-center justify-center h-5 w-7 text-[14px] font-bold leading-none text-white border-[1px] border-neutral-100/30 rounded-full;
+    }
+
+    @media(min-width: 768px) {
+
+        /* Hover effects using CSS instead of group utility */
+        .cart-icon:hover .cart-icon__badge {
+            @apply shadow-primary shadow-md;
+        }
+    }
+
+    /* Mobile styles - по-малки размери */
+    @media (max-width: 767px) {
+        .cart-icon__badge {
+            @apply h-4 w-6 text-[12px] -top-1 -right-2;
+        }
+    }
+
+    @media (hover: none) and (pointer: coarse) {
+        .cart-icon__badge:active {
+            @apply shadow-primary shadow-md text-primary;
+        }
+
+        .cart-icon__badge:focus {
+            @apply shadow-primary shadow-md text-primary;
+        }
+
+
+    }
+}

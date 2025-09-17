@@ -4,7 +4,7 @@ import { PrismaClient } from "@prisma/client";
 
 declare global {
   // Позволяваме глобална променлива в dev, за да не отваряме много конекции при HMR
-  // eslint-disable-next-line no-var
+
   var prisma: PrismaClient | undefined;
 }
 

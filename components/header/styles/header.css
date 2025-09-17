@@ -1,0 +1,245 @@
+/* ================================
+   File: app/styles/header.css
+   ================================ */
+@theme {
+    --color-ring: #6EE7B7;
+}
+
+@layer components {
+
+
+    .x-header {
+        @apply fixed w-full z-50 transition-transform duration-300;
+
+    }
+
+    /* grid layout */
+    .x-header__bar {
+        height: 56px;
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        align-items: center;
+        padding-inline: 1rem;
+        margin-inline: auto;
+        max-width: 1280px;
+    }
+
+    @media (min-width: 768px) {
+        .x-header__bar {
+            grid-template-columns: auto 1fr auto;
+            height: auto;
+        }
+    }
+
+    .x-header__burger {
+        @apply inline-flex items-center justify-start gap-2 text-neutral-900;
+    }
+
+    .x-header__burger-btn {
+        @apply h-10 w-10 rounded-xl border border-neutral-200 flex items-center justify-center hover:bg-neutral-100 transition z-[60];
+    }
+
+    .x-header__logo {
+        @apply justify-self-center ml-16;
+    }
+
+    .x-header__actions {
+        @apply flex items-center gap-2 justify-self-end ml-auto;
+    }
+
+    .x-icon-btn {
+        @apply h-10 w-10 rounded-xl flex items-center justify-center hover:shadow-primary hover:shadow-md hover:text-primary transition relative;
+    }
+
+    .x-icon-btn:active {
+        @apply shadow-primary shadow-md text-primary;
+    }
+
+    /* Мобилни стилове за touch устройства */
+    @media (hover: none) and (pointer: coarse) {
+        .x-icon-btn:active {
+            @apply shadow-primary shadow-md text-primary;
+        }
+
+        .x-icon-btn:focus {
+            @apply shadow-primary shadow-md text-primary;
+        }
+
+        .x-drawer__item:active {
+            @apply shadow-primary shadow-md text-primary;
+        }
+
+        .x-drawer__item:focus {
+            @apply shadow-primary shadow-md text-primary;
+        }
+    }
+
+    /* Допълнителни стилове за touch feedback */
+    .x-icon-btn {
+        -webkit-tap-highlight-color: var(--color-primary-20);
+        tap-highlight-color: var(--color-primary-20);
+    }
+
+    /* Touch feedback клас */
+    .x-icon-btn--touching {
+        @apply shadow-primary shadow-md text-primary;
+    }
+
+    /* Поднавигация – център на desktop */
+    .x-subnav {
+        @apply hidden md:block justify-items-center mt-6 bg-transparent text-neutral-100;
+    }
+
+    .x-subnav__inner {
+        @apply mx-auto p-1 max-w-7xl flex gap-12 overflow-x-auto h-14 items-center justify-center;
+    }
+
+    /* Пил-линкове (по спек) */
+    .nav-pill {
+        font-family: Albert Sans, Arial, sans-serif;
+        @apply inline-flex items-center rounded-xl px-4 py-1 text-[18px] font-light leading-6 text-white/80 no-underline transition;
+    }
+
+    .nav-pill:hover,
+    .nav-pill:focus-visible {
+        @apply shadow-md shadow-primary;
+    }
+
+    /* Hero = пълен видим екран (да не се вижда банерът отдолу) */
+    .x-hero {
+        height: 100vh;
+        min-height: 600px;
+        @apply relative z-10 flex flex-col justify-start;
+    }
+
+    @media (max-width: 767px) {
+        .x-hero {
+            height: 80vh;
+            min-height: 500px;
+        }
+
+        .x-header {
+            height: 55px
+        }
+
+        .x-header__logo {
+            margin-left: 0;
+        }
+    }
+
+    /* Цитат – 4 реда + неон сянка */
+    .home-quote {
+        font-family: Albert Sans, Arial, sans-serif;
+        @apply text-left text-2xl mb-20 sm:text-4xl md:text-4xl font-semibold tracking-tight text-white;
+        max-width: 40%;
+        text-shadow: 0 0 10px var(--color-primary-45), 0 1px 1px var(--color-black-35);
+    }
+
+    @media (max-width: 1023px) {
+        .home-quote {
+            @apply mt-8 text-4xl;
+            max-width: 70%;
+            margin-bottom: 3rem;
+        }
+    }
+
+    .footer-wrapper {
+        @apply grid grid-cols-2 items-start;
+    }
+
+    .footer-link {
+        font-family: Albert Sans, Arial, sans-serif;
+        @apply inline-flex items-center rounded-xl px-4 py-2 text-[1rem] font-light leading-6 text-white/80 no-underline transition;
+    }
+
+    .footer-link:hover,
+    .footer-link:focus-visible {
+        @apply shadow-md shadow-primary outline-none;
+    }
+
+    .x-icon-btn:focus-visible {
+        @apply shadow-md shadow-primary outline-none text-primary;
+    }
+
+
+    .x-search {
+        @apply relative max-w-xl mx-auto;
+    }
+
+    .x-search__input {
+        @apply w-full rounded-xl bg-white/5 text-white placeholder-white/50 outline-none px-12 py-3 backdrop-blur border-0;
+    }
+
+    .x-search__icon {
+        @apply absolute inset-y-0 left-4 flex items-center;
+    }
+
+
+
+    /* === MOBILE DRAWER: от ДЯСНО, 2/3 ширина === */
+    .x-drawer {
+        @apply md:hidden shadow-2xl rounded-tl-2xl rounded-bl-2xl border-l border-neutral-200;
+    }
+
+    .x-drawer {
+        position: fixed;
+        right: 0;
+        left: auto;
+        /* ← отдясно */
+        top: 56px;
+        z-index: 60;
+        width: 66.6667vw;
+        /* 2/3 ширина */
+        max-width: 420px;
+        transform: translateX(100%);
+        /* скрито вдясно */
+        transition: transform 180ms ease;
+        background-color: #0b0b0f;
+        opacity: 90%;
+    }
+
+    .footer-wrapper {
+        @apply flex justify-between items-start;
+        position: absolute;
+        bottom: clamp(6vw, 10vw, 12vw);
+        left: 0;
+        right: 0;
+        padding: 0 1rem;
+        z-index: 50;
+    }
+
+    @media (min-width: 768px) {
+        .x-drawer {
+            top: 72px;
+        }
+    }
+
+    .x-drawer[data-open="true"] {
+        transform: translateX(0);
+    }
+
+    .x-drawer__list {
+        @apply p-3 flex flex-col gap-1;
+    }
+
+    .x-drawer__item {
+        @apply px-3 py-2.5 text-[15px] text-neutral-300 rounded-xl hover:bg-neutral-100;
+    }
+
+    .x-drawer__backdrop {
+        @apply fixed inset-0 z-50 md:hidden bg-black/30 backdrop-blur-[1px] hidden;
+    }
+
+    .x-drawer__backdrop[data-open="true"] {
+        display: block;
+    }
+
+    .no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+
+    .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+}

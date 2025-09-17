@@ -37,6 +37,7 @@
     "react-phone-number-input": "^3.4.12",
     "resend": "^6.0.1",
     "stripe": "^18.4.0",
+    "swr": "^2.3.6",
     "zod": "^4.0.16"
   },
   "devDependencies": {

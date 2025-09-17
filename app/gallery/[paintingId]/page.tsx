@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { bgnToEur } from '@/lib/currency';
 import ImageGallery from '@/components/ImageGallery';
-import AddToCartButton from "@/components/AddToCartButton";
+import AddToCartButton from "@/components/cart/AddToCartButton";
 import { prisma } from "@/lib/prisma";
 export const runtime = "nodejs";
 

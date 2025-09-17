@@ -1,0 +1,273 @@
+/* CoursesAdv Admin Controls */
+.courses-adv__admin-control {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    opacity: 0;
+    transform: translateY(-4px);
+    transition: all 0.2s ease;
+    z-index: 10;
+}
+
+.courses-adv__admin-control.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.courses-adv__upload-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: var(--color-black-8);
+    border: 1px solid var(--color-white-2);
+    border-radius: 6px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(4px);
+}
+
+.courses-adv__upload-btn:hover {
+    background: var(--color-black-9);
+    border-color: var(--color-white-4);
+    transform: scale(1.05);
+}
+
+.courses-adv__upload-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.courses-adv__upload-btn svg {
+    transition: transform 0.2s ease;
+}
+
+.courses-adv__upload-btn:not(:disabled):hover svg {
+    transform: scale(1.1);
+}
+
+/* Анимация за зареждане */
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.animate-spin {
+    animation: spin 1s linear infinite;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .courses-adv__admin-control {
+        top: 6px;
+        right: 6px;
+    }
+
+    .courses-adv__upload-btn {
+        width: 28px;
+        height: 28px;
+    }
+
+    .courses-adv__upload-btn svg {
+        width: 14px;
+        height: 14px;
+    }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .courses-adv__upload-btn {
+        background: var(--color-white-1);
+        border-color: var(--color-white-2);
+    }
+
+    .courses-adv__upload-btn:hover {
+        background: var(--color-white-2);
+        border-color: var(--color-white-4);
+    }
+}
+
+/* Editable Content Styles */
+.courses-adv__title--editable,
+.courses-adv__subtitle--editable {
+    position: relative;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.courses-adv__title--editable:hover,
+.courses-adv__subtitle--editable:hover {
+    background: var(--color-primary-10);
+    border-radius: 4px;
+    padding: 4px 8px;
+    margin: -4px -8px;
+}
+
+.courses-adv__edit-hint {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    margin-left: 8px;
+    font-size: 0.8em;
+}
+
+.courses-adv__title--editable:hover .courses-adv__edit-hint,
+.courses-adv__subtitle--editable:hover .courses-adv__edit-hint {
+    opacity: 0.7;
+}
+
+/* Editing input/textarea styles */
+.courses-adv__title--editing,
+.courses-adv__subtitle--editing {
+    background: var(--color-primary-10);
+    border: 2px solid #16ffe4;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-family: inherit;
+    font-size: inherit;
+    color: inherit;
+    width: 100%;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.courses-adv__title--editing:focus,
+.courses-adv__subtitle--editing:focus {
+    background: var(--color-primary-15);
+    border-color: #16ffe4;
+    box-shadow: 0 0 0 3px var(--color-primary-20);
+}
+
+.courses-adv__title--editing:disabled,
+.courses-adv__subtitle--editing:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Responsive adjustments for editing */
+@media (max-width: 768px) {
+
+    .courses-adv__title--editing,
+    .courses-adv__subtitle--editing {
+        padding: 6px 10px;
+        font-size: 0.9em;
+    }
+
+    .courses-adv__edit-hint {
+        font-size: 0.7em;
+        margin-left: 6px;
+    }
+}
+
+/* Layout Preservation - Fixed dimensions to prevent layout shift */
+.courses-adv__title {
+    min-height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: left;
+}
+
+@media (max-width: 768px) {
+    .courses-adv__title {
+        justify-content: center;
+    }
+}
+
+.courses-adv__subtitle {
+    min-height: 3rem;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+}
+
+.courses-adv__image {
+    position: relative;
+    overflow: hidden;
+    /* Fixed aspect ratios to prevent layout shift */
+}
+
+.courses-adv__image--main {
+    aspect-ratio: 4/3;
+}
+
+.courses-adv__image--secondary {
+    aspect-ratio: 3/4;
+}
+
+/* Skeleton Loader Enhancements */
+.courses-adv__title .bg-gray-200,
+.courses-adv__subtitle .bg-gray-200 {
+    background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+.courses-adv__title .dark\\:bg-gray-700,
+.courses-adv__subtitle .dark\\:bg-gray-700 {
+    background: linear-gradient(90deg, #374151 25%, #4b5563 50%, #374151 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+/* Image loading states */
+.courses-adv__image .animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* Smooth transitions for content changes */
+.courses-adv__content {
+    transition: opacity 0.3s ease;
+}
+
+.courses-adv__content.loading {
+    opacity: 0.7;
+}
+
+/* Optimized image container */
+.courses-adv__image .relative {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+/* Ensure images maintain aspect ratio */
+.courses-adv__image img {
+    transition: opacity 0.3s ease;
+}
+
+.courses-adv__image img[data-loaded="false"] {
+    opacity: 0;
+}
+
+.courses-adv__image img[data-loaded="true"] {
+    opacity: 1;
+}

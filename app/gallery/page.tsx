@@ -32,15 +32,15 @@ export default async function PaintingsPage() {
 
 
     return (
-        <div className="container mx-auto p-4">
-            <h1 className="text-3xl font-bold mb-6 text-center">Галерия с Картини</h1>
+        <div className="container mx-auto px-4 py-8">
+            <h1 className="text-3xl font-bold mb-6 text-center text-white">Галерия с Картини</h1>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 {paintings.length > 0 ? (
                     paintings.map((painting: Painting) => (
                         <PaintingCard key={painting.id} painting={painting} />
                     ))
                 ) : (
-                    <p className="col-span-full text-center text-gray-500">
+                    <p className="col-span-full text-center text-gray-400">
                         Все още няма качени картини.
                     </p>
                 )}

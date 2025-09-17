@@ -1,0 +1,224 @@
+/* Банер секция – слоеве и подравняване */
+.home-hero {
+    position: relative;
+    width: 98%;
+    justify-self: center;
+    background: transparent;
+    border-radius: 24px;
+    /* Ключово: изрязва всичко извън заоблените ъгли */
+    overflow: hidden;
+    /* За правилна подредба на z-index вътре */
+    isolation: isolate;
+}
+
+
+.home-hero--vh {
+    height: 56vh;
+}
+
+
+@media (min-width: 640px) {
+    .home-hero--vh {
+        height: 64vh;
+    }
+}
+
+@media (min-width: 1024px) {
+    .home-hero--vh {
+        height: 78vh;
+    }
+}
+
+
+/* Медията е под текста */
+.home-hero__media {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    touch-action: manipulation;
+    background: transparent;
+    /* без фонов цвят зад клипа */
+    border-radius: inherit;
+    /* наследява 36px */
+    overflow: hidden;
+    /* гарантира изрязване на видеото по радиуса */
+    /* WebKit/iOS fix: принуждава коректно рендване на кривите ъгли при <video> */
+    -webkit-mask-image: -webkit-radial-gradient(white, black);
+}
+
+
+.home-hero__video {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    /* винаги да запълва контейнера без черни ленти */
+    pointer-events: none;
+    /* Радиусът се прилага от контейнера; тук е излишен, но не пречи */
+    border-radius: inherit;
+    /* WebKit/iOS fix, същият като при контейнера за всеки случай */
+    -webkit-mask-image: -webkit-radial-gradient(white, black);
+}
+
+/* Overlay над видеото, но под текста; без да прихваща кликове */
+.home-hero__overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    background: linear-gradient(180deg, rgba(0, 0, 0, .18) 0%, rgba(0, 0, 0, .38) 60%, rgba(0, 0, 0, .6) 100%);
+    border-radius: inherit;
+}
+
+
+/* Текстовият слой е най-отгоре */
+.home-hero__inner {
+    position: relative;
+    z-index: 3;
+    height: 100%;
+    display: grid;
+    place-items: center;
+    padding: 2rem 1rem;
+}
+
+
+.home-hero__content {
+    max-width: 60rem;
+    text-align: center;
+    color: #fff;
+}
+
+.home-hero__title {
+    font-size: clamp(1.6rem, 3vw + 1rem, 3rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, .4);
+}
+
+.home-hero__subtitle {
+    margin-top: .5rem;
+    font-size: clamp(.95rem, 1vw + .75rem, 1.25rem);
+    opacity: .92;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, .35);
+}
+
+
+/* CTA бутон – по подразбиране тъмно-сив (grayscale) */
+.home-hero__cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+    padding: 1.2rem 2.4rem;
+    border-radius: 1.8rem;
+    background: transparent;
+    opacity: 0.75;
+    color: white;
+    font-weight: 700;
+    font-size: 20px;
+    border: 1px;
+
+    line-height: 1;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, .06) inset, 0 10px 18px rgba(0, 0, 0, .28), 0 0 24px rgba(00, 209, 255, .3);
+    transition: transform .15s ease, box-shadow .15s ease, background-color .15s ease, color .15s ease;
+    text-decoration: none;
+    margin-top: 64px;
+    @apply shadow-md inset-shadow-sm/50 inset-shadow-primary shadow-primary;
+}
+
+.home-hero__cta:hover {
+    border: none;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, .06) inset, 0 12px 24px rgba(0, 0, 0, .35), 0 0 18px rgba(0, 209, 255, .5);
+}
+
+.home-hero__cta:focus-visible {
+    outline: none;
+    border: none;
+    box-shadow: 0 0 0 2px #00d1ff, 0 0 0 4px rgba(0, 0, 0, .85), 0 0 14px rgba(0, 209, 255, .65);
+}
+
+
+/* Когато видеото е цветно → CTA става синo */
+
+.home-hero__media.vid-mono:hover~.home-hero__inner .home-hero__cta,
+.home-hero__media.vid-mono:focus-within~.home-hero__inner .home-hero__cta {
+    background: #2b2b2b;
+    border: none;
+    color: white;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, .06) inset, 0 12px 24px rgba(0, 0, 0, .28), 0 0 18px rgba(114, 114, 111, 0.35);
+}
+
+.home-hero__media.vid-mono.is-active~.home-hero__inner .home-hero__cta {
+    background: #2b2b2b;
+    border: none;
+    color: white;
+    box-shadow: 0 0 0 2px rgba(1, 1, 1, 0.06) inset, 0 12px 24px rgba(0, 0, 0, .28), 0 0 18px rgba(114, 114, 111, .35);
+}
+
+.home-hero__media.vid-mono.is-tap~.home-hero__inner .home-hero__cta {
+    border: none;
+    background: #2b2b2b;
+    color: white;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, .06) inset, 0 12px 24px rgba(0, 0, 0, .28), 0 0 24px rgba(114, 114, 111, 0.35);
+}
+
+
+.home-hero__media.vid-mono.is-active~.home-hero__inner .home-hero__cta:hover,
+.home-hero__media.vid-mono:hover~.home-hero__inner .home-hero__cta:hover,
+.home-hero__media.vid-mono:focus-within~.home-hero__inner .home-hero__cta:hover {
+    border-color: none;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, .06) inset, 0 12px 24px rgba(0, 0, 0, .35), 0 0 18px;
+}
+
+/* Само за устройства без hover (мобилни) */
+@media (hover: none) {
+    .hero-nudge-btn {
+        position: absolute;
+        right: 12px;
+        bottom: 12px;
+        z-index: 4;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: none;
+        background: transparent;
+        padding: 6px;
+        border-radius: 9999px;
+        touch-action: manipulation;
+    }
+
+    .hero-nudge-dot {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 50% 50%, rgb(22, 255, 228, .55) 0 30%, rgb(22, 255, 228) 41% 100%);
+        box-shadow: 0 0 0 8px rgba(22, 255, 228, .20), 0 6px 14px rgba(0, 0, 0, .35);
+        pointer-events: auto;
+    }
+
+    .hero-nudge-bubble {
+        font-size: 13px;
+        font-weight: 500;
+        pointer-events: none;
+        background: linear-gradient(to right,
+                rgb(1, 129, 118),
+                /* darkest teal */
+                rgb(1, 155, 140),
+                /* dark teal */
+                rgb(22, 200, 180),
+                /* muted version */
+                rgb(22, 255, 228),
+                /* main color */
+                rgb(120, 255, 240),
+                /* bright aqua */
+                rgb(200, 255, 250)
+                /* lightest shade */
+            );
+        background-clip: text;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+
+        margin-right: 6px;
+
+    }
+}

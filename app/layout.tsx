@@ -3,25 +3,29 @@ import "./globals.css";
 
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import Header from "@/components/Header";
+import Header from "@/components/header/Header";
 import SessionProvider from "@/components/SessionProvider";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { CartProvider } from "./context/CartContext";
-import SessionGuard from "@/components/SessionGuard"
-
+import SessionGuard from "@/components/SessionGuard";
+import SiteBackground from "@/components/background/SiteBackground";
+import { JSX } from "react";
+import MainWrapper from "@/components/MainWrapper";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "xArtify - Where Art Knows You",
   description: "Art for everyone",
-
 };
 
-export default async function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}): Promise<JSX.Element> {
   const session = await getServerSession(authOptions);
-  // const nonce = (await headers()).get("x-nonce") ?? undefined;
 
   return (
     <html lang="bg">
@@ -29,12 +33,17 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       </head>
       <body className={inter.className}>
+        {/* Фонът трябва да е първи в body, на z-0 */}
+        <SiteBackground />
+
         <SessionProvider session={session}>
           <SessionGuard>
             <CartProvider>
               <Header />
-              <main className="min-h-[calc(100vh-64px)]">{children}</main>
-
+              {/* Съдържанието е над фона */}
+              <MainWrapper>
+                {children}
+              </MainWrapper>
             </CartProvider>
           </SessionGuard>
         </SessionProvider>
