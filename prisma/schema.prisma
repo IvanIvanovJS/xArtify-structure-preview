@@ -82,8 +82,25 @@ model Painting {
   isSold       Boolean   @default(false)
   artistId     String
   artist       ArtistProfile @relation(fields: [artistId], references: [id])
+  
+  // Enhanced fields for filtering
+  widthCm      Float?    // Width in centimeters
+  heightCm     Float?    // Height in centimeters
+  slug         String?   @unique // SEO-friendly URL slug
+  technique    String?   // Painting technique (oil, acrylic, watercolor, etc.)
+  subject      String?   // Subject matter (portrait, landscape, abstract, etc.)
+  tags         String[]  // Array of tag strings for filtering
+  style        String?   // Art style (realism, impressionism, abstract, etc.)
+  
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
+  
+  @@index([technique])
+  @@index([subject])
+  @@index([style])
+  @@index([price])
+  @@index([createdAt])
+  @@index([widthCm, heightCm])
 }
 
 model ArtistProfile {

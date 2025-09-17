@@ -12,6 +12,13 @@
 @import "../components/home/styles/courses-adv.css";
 @import "../components/cart/styles/cart.css";
 @import "../components/credentials/LoginForm/styles/login.css";
+@import "../components/gallery/styles/gallery-page.css";
+@import "../components/gallery/styles/gallery-grid.css";
+@import "../components/gallery/styles/sort-bar.css";
+@import "../components/gallery/styles/active-chips.css";
+@import "../components/gallery/styles/filters-sidebar.css";
+@import "../components/gallery/styles/filters-mobile-sheet.css";
+
 
 /* 1) Color tokens */
 :root {

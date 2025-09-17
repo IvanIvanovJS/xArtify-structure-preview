@@ -107,15 +107,16 @@ export default function ForgotPasswordForm() {
 
                 {/* Buttons */}
                 <div className="forgot-password-buttons">
-                    <Link href="/login" className="forgot-password-back-btn">
-                        Назад
-                    </Link>
                     <input
                         type="submit"
                         value="Изпрати линк"
                         className="forgot-password-submit-btn"
                         disabled={form.formState.isSubmitting}
                     />
+                    <Link href="/login" className="forgot-password-back-btn">
+                        Назад
+                    </Link>
+
                 </div>
             </form>
 
