@@ -69,7 +69,7 @@
     bottom: 1rem;
     width: 85%;
     max-width: 380px;
-    background-image: url("/darkest.png");
+    background-image: url("/darkest42.png");
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -124,7 +124,6 @@
 .mobile-filters-close-button:hover {
     border-color: #16ffe4;
     box-shadow: 0 0 12px rgba(22, 255, 228, 0.3);
-    color: rgba(255, 107, 107, 0.5);
     transform: scale(.95);
 }
 
@@ -161,7 +160,7 @@
 }
 
 .mobile-filters-clear-button:hover {
-    color: #ff6b6b;
+    color: var(--color-white-8);
     border-color: #ff6b6b;
     background: rgba(255, 107, 107, 0.1);
     box-shadow: 0 0 8px rgba(255, 107, 107, 0.2);
