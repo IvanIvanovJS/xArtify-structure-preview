@@ -55,7 +55,7 @@
     transition: transform 0.2s ease;
     color: var(--color-muted-foreground);
     flex-shrink: 0;
-    margin-left: auto;
+
 }
 
 .dropdown-icon.rotate-180 {

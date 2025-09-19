@@ -151,7 +151,10 @@ function AuthorFilter({
 }): React.JSX.Element {
     const dropdownOptions = [
         { value: "", label: "Всички художници" },
-        ...authors.map(author => ({ value: author.name, label: author.name }))
+        ...(authors || []).filter(author => author && author.name).map(author => ({
+            value: author.name,
+            label: author.name
+        }))
     ];
 
     return (
@@ -222,16 +225,16 @@ function PriceFilter({
             <div className="range-slider-container">
                 <input
                     type="range"
-                    min={priceRange.min}
-                    max={priceRange.max / 2}
+                    min={priceRange?.min || 0}
+                    max={priceRange?.max ? priceRange.max / 2 : 5000}
                     value={sliderMin}
                     onChange={(e) => handleSliderChange('min', parseInt(e.target.value))}
                     className="range-slider range-slider-min"
                 />
                 <input
                     type="range"
-                    min={priceRange.max / 2}
-                    max={priceRange.max}
+                    min={priceRange?.max ? priceRange.max / 2 : 5000}
+                    max={priceRange?.max || 10000}
                     value={sliderMax}
                     onChange={(e) => handleSliderChange('max', parseInt(e.target.value))}
                     className="range-slider range-slider-max"
@@ -251,8 +254,8 @@ function PriceFilter({
                     <label className="price-input-label">От</label>
                     <input
                         type="number"
-                        min={priceRange.min}
-                        max={priceRange.max}
+                        min={priceRange?.min || 0}
+                        max={priceRange?.max || 10000}
                         value={sliderMin}
                         onChange={(e) => handleSliderChange('min', parseInt(e.target.value) || 0)}
                         className="price-input"
@@ -262,8 +265,8 @@ function PriceFilter({
                     <label className="price-input-label">До</label>
                     <input
                         type="number"
-                        min={priceRange.min}
-                        max={priceRange.max}
+                        min={priceRange?.min || 0}
+                        max={priceRange?.max || 10000}
                         value={sliderMax}
                         onChange={(e) => handleSliderChange('max', parseInt(e.target.value) || 0)}
                         className="price-input"
@@ -420,7 +423,7 @@ export default function FiltersSidebar({
         subject: (searchParams.subject as string) || '',
         style: (searchParams.style as string) || '',
         priceMin: parseInt((searchParams.priceMin as string) || '0') || 0,
-        priceMax: parseInt((searchParams.priceMax as string) || '0') || filterOptions.priceRange.max,
+        priceMax: parseInt((searchParams.priceMax as string) || '0') || filterOptions.priceRange?.max || 10000,
         widthMin: parseInt((searchParams.widthMin as string) || '0') || 0,
         widthMax: parseInt((searchParams.widthMax as string) || '0') || 0,
         heightMin: parseInt((searchParams.heightMin as string) || '0') || 0,

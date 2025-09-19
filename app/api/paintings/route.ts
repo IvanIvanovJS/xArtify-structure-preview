@@ -236,51 +236,153 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     }
 }
 
-// POST /api/paintings - Добавя нова картина (само за художници)
-export async function POST(req: Request) {
-    const session = await getServerSession(authOptions);
+// Validation schema for painting creation
+const CreatePaintingSchema = z.object({
+    title: z.string().min(1, 'Title is required').max(140, 'Title too long'),
+    description: z.string().max(1000, 'Description too long').optional(),
+    dimensions: z.string().max(100, 'Dimensions too long').optional(),
+    materials: z.string().max(200, 'Materials too long').optional(),
+    price: z.number().positive('Price must be positive').max(100000, 'Price too high'),
+    images: z.array(z.string().url('Invalid image URL')).min(2, 'At least 2 images required').max(5, 'Maximum 5 images allowed'),
+    technique: z.string().min(1, 'Technique is required'),
+    subject: z.string().min(1, 'Subject is required'),
+    style: z.string().min(1, 'Style is required'),
+    tags: z.array(z.string()).min(1, 'At least one tag required').max(10, 'Maximum 10 tags allowed'),
+    widthCm: z.number().positive('Width must be positive').max(500, 'Width too large').optional(),
+    heightCm: z.number().positive('Height must be positive').max(500, 'Height too large').optional(),
+});
 
-    // Проверяваме дали потребителят е влязъл
-    if (!session || !session.user || !session.user.id) {
-        return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-    }
-
-    const userId = session.user.id;
-
+// POST /api/paintings - Create new painting (artists and admins only)
+export async function POST(request: NextRequest): Promise<NextResponse> {
     try {
-        const { title,
-            dimensions,
-            materials,
-            description,
-            price,
-            images,
-        } = await req.json();
+        const session = await getServerSession(authOptions);
 
-        // Проверяваме дали съществува профил на артист за текущия потребител
-        const artistProfile = await prisma.artistProfile.findUnique({
-            where: { userId },
-        });
-
-        // Ако няма профил на артист, връщаме грешка
-        if (!artistProfile) {
-            return NextResponse.json({ message: 'Artist profile not found' }, { status: 403 });
+        // Authentication check
+        if (!session?.user?.id) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const newPainting = await prisma.painting.create({
-            data: {
-                title,
-                dimensions,
-                materials,
-                description,
-                price,
-                images,
-                artistId: artistProfile.id,
-            },
+        const userId = session.user.id;
+
+        // Parse and validate request body
+        const body = await request.json();
+        const validatedData = CreatePaintingSchema.parse(body);
+
+        // Authorization check - only artists and admins can create paintings
+        const user = await prisma.user.findUnique({
+            where: { id: userId },
+            include: { artistProfile: true },
         });
 
+        if (!user) {
+            return NextResponse.json({ error: 'User not found' }, { status: 404 });
+        }
+
+        const isAuthorized = user.artistProfile || user.role === 'ADMIN';
+        if (!isAuthorized) {
+            return NextResponse.json({
+                error: 'Only artists and admins can create paintings'
+            }, { status: 403 });
+        }
+
+        // For ADMIN users without artist profile, we need to create one or use a default
+        let artistId = user.artistProfile?.id;
+        if (!artistId && user.role === 'ADMIN') {
+            // Create a temporary artist profile for admin
+            const adminArtistProfile = await prisma.artistProfile.create({
+                data: {
+                    userId: user.id,
+                    bio: 'Admin user',
+                    phoneNumber: '+359000000000', // Default phone for admin
+                },
+            });
+            artistId = adminArtistProfile.id;
+        }
+
+        if (!artistId) {
+            return NextResponse.json({
+                error: 'Artist profile is required to create paintings'
+            }, { status: 400 });
+        }
+
+        // Generate slug from title
+        const slug = validatedData.title
+            .toLowerCase()
+            .replace(/[^a-z0-9\s-]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/-+/g, '-')
+            .trim();
+
+        // Check if slug already exists and make it unique
+        let uniqueSlug = slug;
+        let counter = 1;
+        while (await prisma.painting.findUnique({ where: { slug: uniqueSlug } })) {
+            uniqueSlug = `${slug}-${counter}`;
+            counter++;
+        }
+
+        // Create painting with transaction for data consistency
+        const newPainting = await prisma.$transaction(async (tx) => {
+            const painting = await tx.painting.create({
+                data: {
+                    title: validatedData.title,
+                    description: validatedData.description,
+                    dimensions: validatedData.dimensions,
+                    materials: validatedData.materials,
+                    price: validatedData.price,
+                    images: validatedData.images,
+                    technique: validatedData.technique,
+                    subject: validatedData.subject,
+                    style: validatedData.style,
+                    tags: validatedData.tags,
+                    widthCm: validatedData.widthCm,
+                    heightCm: validatedData.heightCm,
+                    slug: uniqueSlug,
+                    artistId: artistId,
+                },
+                include: {
+                    artist: {
+                        select: {
+                            id: true,
+                            bio: true,
+                            user: {
+                                select: {
+                                    name: true,
+                                    email: true,
+                                },
+                            },
+                        },
+                    },
+                },
+            });
+
+            return painting;
+        });
+
+        // Log successful creation
+        console.log(`Painting created successfully: ${newPainting.id} by user ${userId}`);
+
         return NextResponse.json(newPainting, { status: 201 });
+
     } catch (error) {
         console.error('Error creating painting:', error);
-        return NextResponse.json({ message: 'Error creating painting' }, { status: 500 });
+
+        if (error instanceof z.ZodError) {
+            return NextResponse.json({
+                error: 'Validation failed',
+                details: error.issues,
+            }, { status: 400 });
+        }
+
+        if (error instanceof Error) {
+            return NextResponse.json({
+                error: 'Failed to create painting',
+                message: error.message,
+            }, { status: 500 });
+        }
+
+        return NextResponse.json({
+            error: 'Internal server error',
+        }, { status: 500 });
     }
 }

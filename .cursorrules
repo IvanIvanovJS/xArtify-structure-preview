@@ -177,6 +177,13 @@ export default function MobileOptimizedComponent(): JSX.Element {
 - Use CSS custom properties for theme consistency
 - Keep styles organized by component or feature
 
+### Dropdown Components
+- **ALWAYS use CustomDropdown** for all dropdown/select functionality
+- Import from `@/components/ui/CustomDropdown`
+- Use proper TypeScript interfaces with `value` and `label` properties
+- Include proper accessibility attributes (`aria-label`, `aria-expanded`)
+- Follow the existing pattern for dropdown options structure
+
 ```typescript
 // ✅ CORRECT: Import CSS file
 import "./styles/component.css";

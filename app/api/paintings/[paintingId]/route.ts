@@ -54,9 +54,20 @@ export async function PUT(req: NextRequest) {
         const price = typeof paintingData.price === "string" ? parseFloat(paintingData.price) : paintingData.price ?? 0;
         const images = Array.isArray(paintingData.images) ? paintingData.images : [];
 
-        // ownership check
-        const painting = await prisma.painting.findUnique({ where: { id: paintingIdValue }, include: { artist: true } });
-        if (!painting || painting.artist?.userId !== session.user.id) {
+        // ownership check - allow if user owns the painting or is admin
+        const painting = await prisma.painting.findUnique({
+            where: { id: paintingIdValue },
+            include: { artist: { include: { user: true } } }
+        });
+
+        if (!painting) {
+            return NextResponse.json({ message: "Painting not found" }, { status: 404 });
+        }
+
+        const isOwner = painting.artist?.userId === session.user.id;
+        const isAdmin = session.user.role === 'ADMIN';
+
+        if (!isOwner && !isAdmin) {
             return NextResponse.json({ message: "Forbidden" }, { status: 403 });
         }
 
@@ -106,8 +117,19 @@ export async function DELETE(req: NextRequest) {
     }
 
     try {
-        const painting = await prisma.painting.findUnique({ where: { id: paintingId }, include: { artist: true } });
-        if (!painting || painting.artist?.userId !== session.user.id) {
+        const painting = await prisma.painting.findUnique({
+            where: { id: paintingId },
+            include: { artist: { include: { user: true } } }
+        });
+
+        if (!painting) {
+            return NextResponse.json({ message: "Painting not found" }, { status: 404 });
+        }
+
+        const isOwner = painting.artist?.userId === session.user.id;
+        const isAdmin = session.user.role === 'ADMIN';
+
+        if (!isOwner && !isAdmin) {
             return NextResponse.json({ message: "Forbidden" }, { status: 403 });
         }
 

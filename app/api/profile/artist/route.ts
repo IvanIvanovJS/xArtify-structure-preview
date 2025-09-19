@@ -5,6 +5,35 @@ import { authOptions } from "@/lib/authOptions";
 import { prisma } from "@/lib/prisma";
 export const runtime = "nodejs";
 
+// GET заявка за получаване на профил на артист
+export async function GET() {
+    const session = await getServerSession(authOptions);
+
+    if (!session || !session.user) {
+        return NextResponse.json({ error: "Неупълномощен достъп" }, { status: 401 });
+    }
+
+    const userId = session.user.id;
+
+    try {
+        const artistProfile = await prisma.artistProfile.findUnique({
+            where: { userId },
+            select: {
+                id: true,
+                bio: true,
+                phoneNumber: true,
+                createdAt: true,
+                updatedAt: true,
+            },
+        });
+
+        return NextResponse.json({ artistProfile }, { status: 200 });
+    } catch (error) {
+        console.error('Error fetching artist profile:', error);
+        return NextResponse.json({ error: 'Възникна грешка при зареждане на профила на артиста.' }, { status: 500 });
+    }
+}
+
 // POST заявка за създаване или актуализиране на профил на артист
 export async function POST(req: Request) {
     // Взимаме сесията на потребителя

@@ -1,0 +1,252 @@
+/* Upload Artwork Page Styles */
+.upload-artwork-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    gap: 1rem;
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(22, 255, 228, 0.2);
+    border-top: 3px solid var(--color-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.upload-artwork-loading p {
+    color: var(--color-muted-foreground);
+    font-size: 0.875rem;
+}
+
+.upload-artwork-page {
+    min-height: 100vh;
+    background: transparent;
+}
+
+.page-header {
+    background: linear-gradient(135deg, var(--color-primary-05) 33%, var(--color-muted) 75%);
+    border-bottom: 1px solid rgba(22, 255, 228, 0.1);
+    padding: 3rem 0;
+}
+
+.header-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+}
+
+.header-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 80px;
+    height: 80px;
+    background: var(--color-primary);
+    border-radius: 20px;
+    color: var(--color-background);
+    flex-shrink: 0;
+}
+
+.header-text {
+    flex: 1;
+}
+
+.page-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--color-foreground);
+    margin-bottom: 0.5rem;
+    background: linear-gradient(135deg, var(--color-foreground) 0%, var(--color-primary) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.page-subtitle {
+    font-size: 1.125rem;
+    color: var(--color-muted-foreground);
+    line-height: 1.6;
+    max-width: 600px;
+}
+
+.page-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 3rem 2rem;
+}
+
+.upload-section {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.upload-section,
+.tips-section {
+    background: var(--color-muted);
+    border-radius: 16px;
+    padding: 2rem;
+    border: 1px solid rgba(22, 255, 228, 0.1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    margin-bottom: 2rem;
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(22, 255, 228, 0.1);
+}
+
+.section-header svg {
+    color: var(--color-primary);
+}
+
+.section-header h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--color-foreground);
+}
+
+.tips-section h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--color-foreground);
+    margin-bottom: 1rem;
+}
+
+.tips-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.tips-list li {
+    position: relative;
+    padding-left: 1.5rem;
+    color: var(--color-muted-foreground);
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+.tips-list li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    top: 0;
+    color: var(--color-primary);
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+/* Mobile Responsiveness */
+
+@media (max-width: 768px) {
+    .page-header {
+        padding: 2rem 0;
+    }
+
+    .header-content {
+        padding: 0 1rem;
+        flex-direction: column;
+        text-align: center;
+        gap: 1.5rem;
+    }
+
+    .header-icon {
+        width: 60px;
+        height: 60px;
+    }
+
+    .page-title {
+        font-size: 2rem;
+    }
+
+    .page-subtitle {
+        font-size: 1rem;
+    }
+
+    .page-content {
+        padding: 2rem 1rem;
+    }
+
+    .upload-section,
+    .tips-section {
+        padding: 1.5rem;
+    }
+
+    .section-header h2 {
+        font-size: 1.125rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .page-header {
+        padding: 1.5rem 0;
+    }
+
+    .header-content {
+        padding: 0 0.75rem;
+    }
+
+    .header-icon {
+        width: 50px;
+        height: 50px;
+    }
+
+    .page-title {
+        font-size: 1.75rem;
+    }
+
+    .page-subtitle {
+        font-size: 0.875rem;
+    }
+
+    .page-content {
+        padding: 1.5rem 0.75rem;
+    }
+
+    .upload-section,
+    .tips-section {
+        padding: 1rem;
+        border-radius: 12px;
+    }
+
+    .section-header {
+        margin-bottom: 1rem;
+        padding-bottom: 0.75rem;
+    }
+
+    .section-header h2 {
+        font-size: 1rem;
+    }
+
+    .tips-section h3 {
+        font-size: 1rem;
+    }
+
+    .tips-list li {
+        font-size: 0.8125rem;
+    }
+}

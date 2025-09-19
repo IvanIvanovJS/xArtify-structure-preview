@@ -1,133 +1,149 @@
-// app/api/paintings/filter-options/route.ts
 import { NextResponse } from 'next/server';
-import { prisma } from "@/lib/prisma";
+import { prisma } from '@/lib/prisma';
 
-export const runtime = "nodejs";
-
-// Simple in-memory cache for filter options (expires after 5 minutes)
-let filterOptionsCache: { data: FilterOptions; timestamp: number } | null = null;
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+export const runtime = 'nodejs';
 
 interface FilterOptions {
     techniques: string[];
     subjects: string[];
     styles: string[];
-    authors: Array<{ id: string; name: string }>;
     tags: string[];
-    priceRange: {
-        min: number;
-        max: number;
-    };
-    sizeRange: {
-        widthMin: number;
-        widthMax: number;
-        heightMin: number;
-        heightMax: number;
-    };
 }
 
-// GET /api/paintings/filter-options - Get all available filter options
 export async function GET(): Promise<NextResponse> {
     try {
-        // Check cache first
-        if (filterOptionsCache && Date.now() - filterOptionsCache.timestamp < CACHE_DURATION) {
-            return NextResponse.json(filterOptionsCache.data);
-        }
-        // Optimize: Use single query to get all painting data needed
-        const [paintings, artists] = await Promise.all([
-            // Get all paintings with only the fields we need
+        // Default options that are always available
+        const defaultTechniques = [
+            'Маслени бои', 'Акрилни бои', 'Акварел', 'Темпера', 'Гуаш', 'Пастел',
+            'Молив', 'Въглен', 'Туш', 'Смесена техника', 'Цифрово изкуство', 'Колаж',
+            'Скулптура', 'Графика', 'Монопринт', 'Линогравюра', 'Друго'
+        ];
+
+        const defaultSubjects = [
+            'Пейзаж', 'Портрет', 'Натюрморт', 'Абстракция', 'Фигура', 'Градски пейзаж',
+            'Морски пейзаж', 'Планински пейзаж', 'Животни', 'Цветя', 'Архитектура',
+            'Исторически', 'Религиозен', 'Митичен', 'Фантастичен', 'Еротичен', 'Социален', 'Друго'
+        ];
+
+        const defaultStyles = [
+            'Реализъм', 'Импресионизъм', 'Експресионизъм', 'Абстракционизъм', 'Сюрреализъм',
+            'Кубизъм', 'Поп арт', 'Минимализъм', 'Концептуализъм', 'Барок', 'Ренесанс',
+            'Романтизъм', 'Класицизъм', 'Модернизъм', 'Постмодернизъм', 'Контемпорарен',
+            'Наивно изкуство', 'Друго'
+        ];
+
+        const defaultTags = [
+            'Цвете', 'Природа', 'Портрет', 'Абстракция', 'Модерно', 'Класическо',
+            'Ярко', 'Тъмно', 'Голям размер', 'Малък размер', 'Експресивно', 'Спокойно',
+            'Град', 'Море', 'Планини', 'Животни', 'Цветя', 'Архитектура', 'История',
+            'Романтично', 'Драматично', 'Елегантно', 'Смело', 'Нежно', 'Сила',
+            'Свобода', 'Любов', 'Мечти', 'Реалност', 'Фантазия', 'Емоции'
+        ];
+
+        // Get unique values from existing paintings
+        const [techniques, subjects, styles, dbTags] = await Promise.all([
             prisma.painting.findMany({
-                select: {
-                    technique: true,
-                    subject: true,
-                    style: true,
-                    price: true,
-                    widthCm: true,
-                    heightCm: true,
-                    tags: true
-                }
-            }),
-            // Get artists with user names
-            prisma.artistProfile.findMany({
-                select: {
-                    id: true,
-                    user: {
-                        select: {
-                            name: true
-                        }
-                    }
-                },
+                select: { technique: true },
                 where: {
-                    user: {
-                        name: { not: null }
-                    }
-                }
-            })
+                    technique: { not: null },
+                    // Exclude temporary tag paintings
+                    title: { not: { startsWith: 'TEMP_TAG_' } }
+                },
+                distinct: ['technique'],
+            }),
+            prisma.painting.findMany({
+                select: { subject: true },
+                where: {
+                    subject: { not: null },
+                    // Exclude temporary tag paintings
+                    title: { not: { startsWith: 'TEMP_TAG_' } }
+                },
+                distinct: ['subject'],
+            }),
+            prisma.painting.findMany({
+                select: { style: true },
+                where: {
+                    style: { not: null },
+                    // Exclude temporary tag paintings
+                    title: { not: { startsWith: 'TEMP_TAG_' } }
+                },
+                distinct: ['style'],
+            }),
+            prisma.painting.findMany({
+                select: { tags: true },
+                where: {
+                    tags: {
+                        isEmpty: false
+                    },
+                    // Exclude temporary tag paintings
+                    title: { not: { startsWith: 'TEMP_TAG_' } }
+                },
+            }),
         ]);
 
-        // Process data in memory (much faster than multiple DB queries)
-        const uniqueTechniques = [...new Set(
-            paintings.map(p => p.technique).filter(Boolean)
-        )] as string[];
+        // Extract unique tags from all paintings
+        const uniqueTags = Array.from(
+            new Set(
+                dbTags
+                    .flatMap(painting => painting.tags)
+                    .filter(tag => tag && tag.trim().length > 0)
+            )
+        ).sort();
 
-        const uniqueSubjects = [...new Set(
-            paintings.map(p => p.subject).filter(Boolean)
-        )] as string[];
+        // Combine default options with database options, removing duplicates
+        const allTechniques = Array.from(new Set([
+            ...defaultTechniques,
+            ...techniques.map(t => t.technique).filter((technique): technique is string => technique !== null)
+        ]));
+        const allSubjects = Array.from(new Set([
+            ...defaultSubjects,
+            ...subjects.map(s => s.subject).filter((subject): subject is string => subject !== null)
+        ]));
+        const allStyles = Array.from(new Set([
+            ...defaultStyles,
+            ...styles.map(s => s.style).filter((style): style is string => style !== null)
+        ]));
+        const allTagsCombined = Array.from(new Set([...defaultTags, ...uniqueTags]));
 
-        const uniqueStyles = [...new Set(
-            paintings.map(p => p.style).filter(Boolean)
-        )] as string[];
-
-        // Extract all unique tags
-        const allTags = paintings.flatMap(p => p.tags || []);
-        const uniqueTags = [...new Set(allTags)].sort();
-
-        // Calculate price range
-        const prices = paintings.map(p => p.price).filter(price => price > 0);
-        const priceRange = {
-            min: prices.length > 0 ? Math.min(...prices) : 0,
-            max: prices.length > 0 ? Math.max(...prices) : 10000
+        const filterOptions: FilterOptions = {
+            techniques: allTechniques.sort(),
+            subjects: allSubjects.sort(),
+            styles: allStyles.sort(),
+            tags: allTagsCombined.sort(),
         };
 
-        // Calculate size range
-        const widths = paintings.map(p => p.widthCm).filter(width => width !== null && width > 0) as number[];
-        const heights = paintings.map(p => p.heightCm).filter(height => height !== null && height > 0) as number[];
+        return NextResponse.json(filterOptions);
 
-        const sizeRange = {
-            widthMin: widths.length > 0 ? Math.min(...widths) : 0,
-            widthMax: widths.length > 0 ? Math.max(...widths) : 220,
-            heightMin: heights.length > 0 ? Math.min(...heights) : 0,
-            heightMax: heights.length > 0 ? Math.max(...heights) : 220
-        };
-
-        // Prepare authors list
-        const authors = artists.map(artist => ({
-            id: artist.id,
-            name: artist.user.name || 'Unknown Artist'
-        }));
-
-        const result: FilterOptions = {
-            techniques: uniqueTechniques.sort(),
-            subjects: uniqueSubjects.sort(),
-            styles: uniqueStyles.sort(),
-            authors: authors.sort((a, b) => a.name.localeCompare(b.name)),
-            tags: uniqueTags,
-            priceRange,
-            sizeRange
-        };
-
-        // Cache the result
-        filterOptionsCache = {
-            data: result,
-            timestamp: Date.now()
-        };
-
-        return NextResponse.json(result);
     } catch (error) {
         console.error('Error fetching filter options:', error);
-        return NextResponse.json(
-            { message: 'Error fetching filter options', error: error instanceof Error ? error.message : 'Unknown error' },
-            { status: 500 }
-        );
+
+        // Return default options if database query fails
+        const defaultOptions: FilterOptions = {
+            techniques: [
+                'Маслени бои', 'Акрилни бои', 'Акварел', 'Темпера', 'Гуаш', 'Пастел',
+                'Молив', 'Въглен', 'Туш', 'Смесена техника', 'Цифрово изкуство', 'Колаж',
+                'Скулптура', 'Графика', 'Монопринт', 'Линогравюра', 'Друго'
+            ],
+            subjects: [
+                'Пейзаж', 'Портрет', 'Натюрморт', 'Абстракция', 'Фигура', 'Градски пейзаж',
+                'Морски пейзаж', 'Планински пейзаж', 'Животни', 'Цветя', 'Архитектура',
+                'Исторически', 'Религиозен', 'Митичен', 'Фантастичен', 'Еротичен', 'Социален', 'Друго'
+            ],
+            styles: [
+                'Реализъм', 'Импресионизъм', 'Експресионизъм', 'Абстракционизъм', 'Сюрреализъм',
+                'Кубизъм', 'Поп арт', 'Минимализъм', 'Концептуализъм', 'Барок', 'Ренесанс',
+                'Романтизъм', 'Класицизъм', 'Модернизъм', 'Постмодернизъм', 'Контемпорарен',
+                'Наивно изкуство', 'Друго'
+            ],
+            tags: [
+                'Цвете', 'Природа', 'Портрет', 'Абстракция', 'Модерно', 'Класическо',
+                'Ярко', 'Тъмно', 'Голям размер', 'Малък размер', 'Експресивно', 'Спокойно',
+                'Град', 'Море', 'Планини', 'Животни', 'Цветя', 'Архитектура', 'История',
+                'Романтично', 'Драматично', 'Елегантно', 'Смело', 'Нежно', 'Сила',
+                'Свобода', 'Любов', 'Мечти', 'Реалност', 'Фантазия', 'Емоции'
+            ],
+        };
+
+        return NextResponse.json(defaultOptions);
     }
 }

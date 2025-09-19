@@ -271,7 +271,7 @@
     .custom-select {
         width: 100%;
         /* 2/3 от ширината на екрана */
-        max-width: 300px;
+
     }
 
     .custom-select .sort-dropdown {
@@ -281,7 +281,7 @@
 
     .dropdown-options {
         max-height: 150px;
-        max-width: 300px;
+
     }
 }
 
