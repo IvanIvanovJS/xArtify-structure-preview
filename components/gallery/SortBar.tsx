@@ -2,7 +2,8 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ChevronDownIcon } from 'lucide-react';
+import { ChevronDownIcon, CheckIcon } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
 
 // Types
 interface SortBarProps {
@@ -22,6 +23,8 @@ const sortOptions = [
 export default function SortBar({ searchParams, totalItems }: SortBarProps): React.JSX.Element {
     const router = useRouter();
     const currentSearchParams = useSearchParams();
+    const [isOpen, setIsOpen] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement>(null);
 
     const currentSort = (searchParams.sort as string) || 'newest';
     const currentPage = (searchParams.page as string) || '1';
@@ -37,7 +40,22 @@ export default function SortBar({ searchParams, totalItems }: SortBarProps): Rea
 
         // Navigate to new URL
         router.push(`/gallery?${newSearchParams.toString()}`);
+        setIsOpen(false);
     };
+
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setIsOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
 
     const clearAllFilters = (): void => {
         router.push('/gallery');
@@ -50,7 +68,7 @@ export default function SortBar({ searchParams, totalItems }: SortBarProps): Rea
         return value !== undefined && value !== '';
     });
 
-    // const selectedSortLabel = sortOptions.find(option => option.value === currentSort)?.label || 'Най-нови'; // Not used yet
+    const selectedSortLabel = sortOptions.find(option => option.value === currentSort)?.label || 'Най-нови';
 
     return (
         <div className="sort-bar">
@@ -82,24 +100,41 @@ export default function SortBar({ searchParams, totalItems }: SortBarProps): Rea
 
                 {/* Sort Dropdown */}
                 <div className="sort-dropdown-container">
-                    <label htmlFor="sort-select" className="sort-label">
+                    <label className="sort-label">
                         Сортирай по:
                     </label>
-                    <div className="custom-select">
-                        <select
-                            id="sort-select"
-                            value={currentSort}
-                            onChange={(e) => handleSortChange(e.target.value)}
+                    <div className="custom-select" ref={dropdownRef}>
+                        <button
+                            type="button"
                             className="sort-dropdown"
+                            onClick={() => setIsOpen(!isOpen)}
                             aria-label="Избери начин на сортиране"
+                            aria-expanded={isOpen}
                         >
-                            {sortOptions.map((option) => (
-                                <option key={option.value} value={option.value}>
-                                    {option.label}
-                                </option>
-                            ))}
-                        </select>
-                        <ChevronDownIcon className="select-icon" size={16} />
+                            <span className="selected-option">{selectedSortLabel}</span>
+                            <ChevronDownIcon
+                                className={`select-icon ${isOpen ? 'rotate-180' : ''}`}
+                                size={16}
+                            />
+                        </button>
+
+                        {isOpen && (
+                            <div className="dropdown-options">
+                                {sortOptions.map((option) => (
+                                    <button
+                                        key={option.value}
+                                        type="button"
+                                        className={`dropdown-option ${currentSort === option.value ? 'selected' : ''}`}
+                                        onClick={() => handleSortChange(option.value)}
+                                    >
+                                        <span className="option-label">{option.label}</span>
+                                        {currentSort === option.value && (
+                                            <CheckIcon className="check-icon" size={16} />
+                                        )}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

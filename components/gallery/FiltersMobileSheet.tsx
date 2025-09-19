@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { createPortal } from 'react-dom';
+import CustomDropdown from '@/components/ui/CustomDropdown';
 import {
     SlidersHorizontalIcon,
     XIcon,
@@ -149,21 +150,20 @@ function MobileSelectFilter({
     onChange: (value: string) => void;
     placeholder?: string;
 }): React.JSX.Element {
+    const dropdownOptions = [
+        { value: "", label: placeholder },
+        ...options.map(option => ({ value: option, label: option }))
+    ];
+
     return (
         <div className="mobile-select-filter">
-            <label className="mobile-filter-label">{title}</label>
-            <select
+            <CustomDropdown
                 value={value}
-                onChange={(e) => onChange(e.target.value)}
-                className="mobile-filter-select"
-            >
-                <option value="">{placeholder}</option>
-                {options.map((option) => (
-                    <option key={option} value={option}>
-                        {option}
-                    </option>
-                ))}
-            </select>
+                onChange={onChange}
+                options={dropdownOptions}
+                label={title}
+                className="mobile-filter-dropdown"
+            />
         </div>
     );
 }
@@ -178,21 +178,20 @@ function MobileAuthorFilter({
     value: string;
     onChange: (value: string) => void;
 }): React.JSX.Element {
+    const dropdownOptions = [
+        { value: "", label: "Всички художници" },
+        ...authors.map(author => ({ value: author.name, label: author.name }))
+    ];
+
     return (
         <div className="mobile-select-filter">
-            <label className="mobile-filter-label">Художник</label>
-            <select
+            <CustomDropdown
                 value={value}
-                onChange={(e) => onChange(e.target.value)}
-                className="mobile-filter-select"
-            >
-                <option value="">Всички художници</option>
-                {authors.map((author) => (
-                    <option key={author.id} value={author.name}>
-                        {author.name}
-                    </option>
-                ))}
-            </select>
+                onChange={onChange}
+                options={dropdownOptions}
+                label="Художник"
+                className="mobile-filter-dropdown"
+            />
         </div>
     );
 }
@@ -253,14 +252,14 @@ function MobilePriceFilter({
                 <input
                     type="range"
                     min={priceRange.min}
-                    max={priceRange.max}
+                    max={priceRange.max / 2}
                     value={sliderMin}
                     onChange={(e) => handleSliderChange('min', parseInt(e.target.value))}
                     className="mobile-range-slider mobile-range-slider-min"
                 />
                 <input
                     type="range"
-                    min={priceRange.min}
+                    min={priceRange.max / 2}
                     max={priceRange.max}
                     value={sliderMax}
                     onChange={(e) => handleSliderChange('max', parseInt(e.target.value))}
@@ -574,22 +573,7 @@ export default function FiltersMobileSheet({
                         exit={{ x: '100%' }}
                         transition={{ type: 'spring', damping: 30, stiffness: 300 }}
                         className="mobile-filters-sheet"
-                        style={{
-                            background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%)',
-                            borderLeft: '1px solid rgba(22, 255, 228, 0.3)',
-                            position: 'fixed',
-                            top: 0,
-                            right: 0,
-                            bottom: 0,
-                            width: '85%',
-                            maxWidth: '380px',
-                            zIndex: 9999,
-                            display: 'flex',
-                            flexDirection: 'column',
-                            overflow: 'hidden',
-                            boxShadow: '-8px 0 32px rgba(0, 0, 0, 0.4), -4px 0 16px rgba(22, 255, 228, 0.1)',
-                            backdropFilter: 'blur(10px)'
-                        }}
+
                     >
                         {/* Sheet Header */}
                         <div className="mobile-filters-sheet-header">

@@ -64,18 +64,22 @@
 /* Mobile Sheet */
 .mobile-filters-sheet {
     position: fixed;
-    top: 0;
+    top: 1rem;
     right: 0;
-    bottom: 0;
+    bottom: 1rem;
     width: 85%;
     max-width: 380px;
-    background: linear-gradient(135deg, rgba(22, 255, 228, 0.08) 0%, rgba(22, 255, 228, 0.15) 25%, rgba(22, 255, 228, 0.02) 50%, rgba(22, 255, 228, 0.01) 75%, rgba(22, 255, 228, 0.1) 100%);
+    background-image: url("/darkest.png");
+    background-size: cover;
+    background-position: auto;
+    background-repeat: no-repeat;
     border-left: 1px solid rgba(22, 255, 228, 0.3);
     z-index: 9999;
+    border-radius: 1rem 0 0 1rem;
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    box-shadow: -8px 0 32px rgba(0, 0, 0, 0.4), -4px 0 16px rgba(22, 255, 228, 0.1);
+    box-shadow: -8px 0 32px rgba(0, 0, 0, 0.4), -4px 0 16px rgba(22, 255, 228, 0.3);
     visibility: visible;
     opacity: 1;
     transform: translateX(0) !important;
@@ -88,8 +92,8 @@
     align-items: center;
     padding: 1.5rem;
     border-bottom: 1px solid rgba(22, 255, 228, 0.2);
-    background: linear-gradient(45deg, rgba(22, 255, 228, 0.12) 0%, rgba(22, 255, 228, 0.08) 50%, rgba(22, 255, 228, 0.01) 100%);
     min-height: 70px;
+    background: transparent;
     position: relative;
 }
 
@@ -120,7 +124,8 @@
 .mobile-filters-close-button:hover {
     border-color: #16ffe4;
     box-shadow: 0 0 12px rgba(22, 255, 228, 0.3);
-    transform: scale(1.05);
+    color: rgba(255, 107, 107, 0.5);
+    transform: scale(.95);
 }
 
 .mobile-filters-sheet-content {
@@ -130,16 +135,16 @@
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
-    background: linear-gradient(225deg, rgba(22, 255, 228, 0.5) 5%, rgba(22, 255, 228, 0.2) 18%, rgba(22, 255, 228, 0.8) 20%, rgba(22, 255, 228, 0.05) 24%, rgba(22, 255, 228, 0.15) 35%, rgba(22, 255, 228, 0.01) 55%, rgba(22, 255, 228, 0.15) 75%, rgba(22, 255, 228, 0.3) 80%, rgba(22, 255, 228, 0.01) 90%);
+
 }
 
 .mobile-filters-sheet-footer {
     display: flex;
     gap: 1rem;
     padding: 1.5rem;
-    border-top: 1px solid rgba(22, 255, 228, 0.2);
-    background: linear-gradient(315deg, rgba(22, 255, 228, 0.1) 0%, rgba(22, 255, 228, 0.16) 50%, rgba(22, 255, 228, 0.08) 100%);
-    backdrop-filter: blur(5px);
+    border-top: 1px solid rgba(22, 255, 228, 0.1);
+    background: transparent;
+
 }
 
 .mobile-filters-clear-button {
@@ -163,20 +168,16 @@
 }
 
 .mobile-filters-apply-button {
-    padding: 0.75rem 1.5rem;
-    position: relative;
-    cursor: pointer;
-    gap: 0.5rem;
-    height: 3rem;
+    flex: 1;
+    background: transparent;
+    padding: 0.875rem;
     border-radius: 1.25rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
     font-size: 0.875rem;
-    font-weight: 500;
-    transition: all 0.2s ease;
     color: var(--color-white-8);
     border: 1px solid var(--color-primary-60);
-    background: none;
-    outline: none;
-    text-decoration: none;
 }
 
 .mobile-filters-apply-button:hover {
@@ -218,11 +219,11 @@
 }
 
 .mobile-filter-section-header:hover {
-    text-shadow: 0 0 10px var(--color-primary-60);
+    text-shadow: 0 0 10px var(--color-primary-70);
 }
 
 .mobile-filter-section-header:focus {
-    text-shadow: 0 0 10px var(--color-primary-60);
+    text-shadow: 0 0 10px var(--color-primary-70);
 }
 
 .mobile-filter-section-title {
@@ -339,7 +340,7 @@
     appearance: none;
     width: 24px;
     height: 24px;
-    background: var(--color-primary);
+    background: var(--color-primary-70);
     border-radius: 50%;
     cursor: pointer;
     box-shadow: 0 2px 8px rgba(22, 255, 228, 0.3);
@@ -351,7 +352,7 @@
 .mobile-range-slider::-moz-range-thumb {
     width: 24px;
     height: 24px;
-    background: var(--color-primary);
+    background: var(--color-primary-70);
     border-radius: 50%;
     cursor: pointer;
     border: 2px solid var(--color-background);
@@ -381,7 +382,7 @@
 .mobile-price-range-value {
     font-size: 1rem;
     font-weight: 600;
-    color: var(--color-primary);
+    color: var(--color-primary-70);
 }
 
 .mobile-price-inputs {

@@ -4,6 +4,24 @@
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { ChevronDownIcon, ChevronUpIcon, SearchIcon, SlidersHorizontalIcon } from 'lucide-react';
+import CustomDropdown from '@/components/ui/CustomDropdown';
+
+// Debounce hook to prevent excessive API calls
+function useDebounce<T>(value: T, delay: number): T {
+    const [debouncedValue, setDebouncedValue] = useState<T>(value);
+
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            setDebouncedValue(value);
+        }, delay);
+
+        return () => {
+            clearTimeout(handler);
+        };
+    }, [value, delay]);
+
+    return debouncedValue;
+}
 
 // Types
 interface FilterOptions {
@@ -103,21 +121,20 @@ function SelectFilter({
     onChange: (value: string) => void;
     placeholder?: string;
 }): React.JSX.Element {
+    const dropdownOptions = [
+        { value: "", label: placeholder },
+        ...options.map(option => ({ value: option, label: option }))
+    ];
+
     return (
         <div className="select-filter">
-            <label className="filter-label">{title}</label>
-            <select
+            <CustomDropdown
                 value={value}
-                onChange={(e) => onChange(e.target.value)}
-                className="filter-select"
-            >
-                <option value="">{placeholder}</option>
-                {options.map((option) => (
-                    <option key={option} value={option}>
-                        {option}
-                    </option>
-                ))}
-            </select>
+                onChange={onChange}
+                options={dropdownOptions}
+                label={title}
+                className="filter-dropdown"
+            />
         </div>
     );
 }
@@ -132,21 +149,20 @@ function AuthorFilter({
     value: string;
     onChange: (value: string) => void;
 }): React.JSX.Element {
+    const dropdownOptions = [
+        { value: "", label: "Всички художници" },
+        ...authors.map(author => ({ value: author.name, label: author.name }))
+    ];
+
     return (
         <div className="select-filter">
-            <label className="filter-label">Художник</label>
-            <select
+            <CustomDropdown
                 value={value}
-                onChange={(e) => onChange(e.target.value)}
-                className="filter-select"
-            >
-                <option value="">Всички художници</option>
-                {authors.map((author) => (
-                    <option key={author.id} value={author.name}>
-                        {author.name}
-                    </option>
-                ))}
-            </select>
+                onChange={onChange}
+                options={dropdownOptions}
+                label="Художник"
+                className="filter-dropdown"
+            />
         </div>
     );
 }
@@ -168,18 +184,33 @@ function PriceFilter({
     const [sliderMin, setSliderMin] = useState(minValue);
     const [sliderMax, setSliderMax] = useState(maxValue);
 
+    // Debounce the slider values to prevent excessive API calls
+    const debouncedMin = useDebounce(sliderMin, 500);
+    const debouncedMax = useDebounce(sliderMax, 500);
+
     useEffect(() => {
         setSliderMin(minValue);
         setSliderMax(maxValue);
     }, [minValue, maxValue]);
 
+    // Update parent component only when debounced values change
+    useEffect(() => {
+        if (debouncedMin !== minValue) {
+            onMinChange(debouncedMin);
+        }
+    }, [debouncedMin, minValue, onMinChange]);
+
+    useEffect(() => {
+        if (debouncedMax !== maxValue) {
+            onMaxChange(debouncedMax);
+        }
+    }, [debouncedMax, maxValue, onMaxChange]);
+
     const handleSliderChange = (type: 'min' | 'max', value: number): void => {
         if (type === 'min') {
             setSliderMin(value);
-            onMinChange(value);
         } else {
             setSliderMax(value);
-            onMaxChange(value);
         }
     };
 
@@ -192,14 +223,14 @@ function PriceFilter({
                 <input
                     type="range"
                     min={priceRange.min}
-                    max={priceRange.max}
+                    max={priceRange.max / 2}
                     value={sliderMin}
                     onChange={(e) => handleSliderChange('min', parseInt(e.target.value))}
                     className="range-slider range-slider-min"
                 />
                 <input
                     type="range"
-                    min={priceRange.min}
+                    min={priceRange.max / 2}
                     max={priceRange.max}
                     value={sliderMax}
                     onChange={(e) => handleSliderChange('max', parseInt(e.target.value))}
