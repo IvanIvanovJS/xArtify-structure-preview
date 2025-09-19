@@ -71,7 +71,7 @@
     max-width: 380px;
     background-image: url("/darkest.png");
     background-size: cover;
-    background-position: auto;
+    background-position: center;
     background-repeat: no-repeat;
     border-left: 1px solid rgba(22, 255, 228, 0.3);
     z-index: 9999;
