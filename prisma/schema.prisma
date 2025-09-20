@@ -53,7 +53,7 @@ model User {
   passwordResetTokens  PasswordResetToken[] 
   artistProfile ArtistProfile?
   subscriptions Subscription[]
-  enrollments   Enrollment[] 
+  enrollments   Enrollment[]
 }
 model PasswordResetToken {
   id        String   @id @default(cuid())

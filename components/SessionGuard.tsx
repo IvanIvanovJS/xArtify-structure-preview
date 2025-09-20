@@ -6,7 +6,7 @@ export default function SessionGuard({ children }: { children: React.ReactNode }
     const { data: session } = useSession();
 
     useEffect(() => {
-        if (Date.parse(Date()) > Date.parse(session?.expires as string)) {
+        if (session?.expires && new Date() > new Date(session.expires)) {
             signOut();
         }
     }, [session]);

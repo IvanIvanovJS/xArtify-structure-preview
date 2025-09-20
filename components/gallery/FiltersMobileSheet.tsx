@@ -381,8 +381,8 @@ function MobileSizeFilter({
                     <input
                         type="number"
                         placeholder="От"
-                        min={sizeRange.widthMin}
-                        max={sizeRange.widthMax}
+                        min={sizeRange?.widthMin || 0}
+                        max={sizeRange?.widthMax || 1000}
                         value={localWidthMin || ''}
                         onChange={(e) => setLocalWidthMin(parseInt(e.target.value) || 0)}
                         className="mobile-size-input"
@@ -391,8 +391,8 @@ function MobileSizeFilter({
                     <input
                         type="number"
                         placeholder="До"
-                        min={sizeRange.widthMin}
-                        max={sizeRange.widthMax}
+                        min={sizeRange?.widthMin || 0}
+                        max={sizeRange?.widthMax || 1000}
                         value={localWidthMax || ''}
                         onChange={(e) => setLocalWidthMax(parseInt(e.target.value) || 0)}
                         className="mobile-size-input"
@@ -407,8 +407,8 @@ function MobileSizeFilter({
                     <input
                         type="number"
                         placeholder="От"
-                        min={sizeRange.heightMin}
-                        max={sizeRange.heightMax}
+                        min={sizeRange?.heightMin || 0}
+                        max={sizeRange?.heightMax || 1000}
                         value={localHeightMin || ''}
                         onChange={(e) => setLocalHeightMin(parseInt(e.target.value) || 0)}
                         className="mobile-size-input"
@@ -417,8 +417,8 @@ function MobileSizeFilter({
                     <input
                         type="number"
                         placeholder="До"
-                        min={sizeRange.heightMin}
-                        max={sizeRange.heightMax}
+                        min={sizeRange?.heightMin || 0}
+                        max={sizeRange?.heightMax || 1000}
                         value={localHeightMax || ''}
                         onChange={(e) => setLocalHeightMax(parseInt(e.target.value) || 0)}
                         className="mobile-size-input"

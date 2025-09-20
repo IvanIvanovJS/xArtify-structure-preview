@@ -310,8 +310,8 @@ function SizeFilter({
                     <input
                         type="number"
                         placeholder="От"
-                        min={sizeRange.widthMin}
-                        max={sizeRange.widthMax}
+                        min={sizeRange?.widthMin || 0}
+                        max={sizeRange?.widthMax || 1000}
                         value={widthMin || ''}
                         onChange={(e) => onWidthMinChange(parseInt(e.target.value) || 0)}
                         className="size-input"
@@ -320,8 +320,8 @@ function SizeFilter({
                     <input
                         type="number"
                         placeholder="До"
-                        min={sizeRange.widthMin}
-                        max={sizeRange.widthMax}
+                        min={sizeRange?.widthMin || 0}
+                        max={sizeRange?.widthMax || 1000}
                         value={widthMax || ''}
                         onChange={(e) => onWidthMaxChange(parseInt(e.target.value) || 0)}
                         className="size-input"
@@ -336,8 +336,8 @@ function SizeFilter({
                     <input
                         type="number"
                         placeholder="От"
-                        min={sizeRange.heightMin}
-                        max={sizeRange.heightMax}
+                        min={sizeRange?.heightMin || 0}
+                        max={sizeRange?.heightMax || 1000}
                         value={heightMin || ''}
                         onChange={(e) => onHeightMinChange(parseInt(e.target.value) || 0)}
                         className="size-input"
@@ -346,8 +346,8 @@ function SizeFilter({
                     <input
                         type="number"
                         placeholder="До"
-                        min={sizeRange.heightMin}
-                        max={sizeRange.heightMax}
+                        min={sizeRange?.heightMin || 0}
+                        max={sizeRange?.heightMax || 1000}
                         value={heightMax || ''}
                         onChange={(e) => onHeightMaxChange(parseInt(e.target.value) || 0)}
                         className="size-input"

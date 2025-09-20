@@ -58,10 +58,34 @@ export async function POST(req: Request): Promise<NextResponse> {
     // Хеширане на парола
     const passwordHash = await hash(password, 12);
 
-    // Създаване на потребителя
-    const user = await prisma.user.create({
-      data: { name, email, password: passwordHash, emailVerified: null },
-      select: { id: true, email: true },
+    // Създаване на потребителя и Account записа в transaction
+    const result = await prisma.$transaction(async (tx) => {
+      // Създаване на потребителя
+      const user = await tx.user.create({
+        data: { name, email, password: passwordHash, emailVerified: null },
+        select: { id: true, email: true },
+      });
+
+      // Създаване на Account запис за credentials provider
+      const account = await tx.account.create({
+        data: {
+          userId: user.id,
+          type: 'credentials',
+          provider: 'credentials',
+          providerAccountId: user.id,
+        }
+      });
+
+      return { user, account };
+    });
+
+    const { user, account } = result;
+
+    console.log('✅ User and Account created successfully:', {
+      userId: user.id,
+      email: user.email,
+      accountId: account.id,
+      accountProvider: account.provider
     });
 
     // Токен за верификация

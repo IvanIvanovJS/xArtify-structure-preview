@@ -2,13 +2,11 @@ import { type NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import FacebookProvider from "next-auth/providers/facebook";
-import type { Adapter } from "next-auth/adapters";
-import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcrypt";
 
 export const authOptions: NextAuthOptions = {
-    adapter: PrismaAdapter(prisma) as Adapter,
+    // adapter: PrismaAdapter(prisma) as Adapter, // Disabled for JWT strategy
     providers: [
         CredentialsProvider({
             name: "Credentials",
@@ -18,18 +16,24 @@ export const authOptions: NextAuthOptions = {
                 remember_me: { label: "Remember Me", type: "checkbox" },
             },
             async authorize(credentials) {
-                if (!credentials?.email || !credentials?.password) return null;
+                if (!credentials?.email || !credentials?.password) {
+                    return null;
+                }
 
                 const user = await prisma.user.findUnique({
                     where: { email: credentials.email },
                 });
 
-                if (!user || !user.password) return null;
+                if (!user || !user.password) {
+                    return null;
+                }
 
                 const isValid = await bcrypt.compare(credentials.password, user.password);
-                if (!isValid) return null;
 
-                // 🔑 връщаме remember_me към user-а
+                if (!isValid) {
+                    return null;
+                }
+
                 return {
                     id: user.id,
                     email: user.email,
@@ -50,50 +54,34 @@ export const authOptions: NextAuthOptions = {
     ],
 
     callbacks: {
-        async jwt({ token, user, account }) {
+        async jwt({ token, user }) {
+            // If user is provided (during sign in), add user data to token
             if (user) {
                 token.id = user.id;
                 token.role = user.role;
-
-                // ✅ унифицираме remember_me:
-                // - идва от credentials (user.remember_me)
-                // - или от query параметър при Google/Facebook
-                const rememberParam = account?.remember_me;
-                const rememberMe =
-                    user.remember_me === true || rememberParam === "true";
-
-                token.remember_me = rememberMe;
-
-                const artistProfile = await prisma.artistProfile.findUnique({
-                    where: { userId: user.id },
-                    select: { id: true },
-                });
-                token.artistProfile = artistProfile ? { id: artistProfile.id } : null;
-
-                token.maxAge = rememberMe
-                    ? 60 * 60 * 24 * 30 // 30 дни
-                    : 60 * 60; // 1 час
-
-                token.expires = new Date(Date.now() + (token.maxAge as number) * 1000);
+                token.artistProfile = user.artistProfile;
             }
-
             return token;
         },
         async session({ session, token }) {
-            if (session.user) {
+            // Send properties to the client
+            if (token) {
                 session.user.id = token.id as string;
                 session.user.role = token.role as string;
                 session.user.artistProfile = token.artistProfile as { id: string } | null;
             }
-            if (token.maxAge) {
-                session.expires = token.expires as string;
-            }
-
             return session;
+        },
+        async signIn() {
+            // Allow all sign-ins - validation happens in authorize function for credentials
+            // and NextAuth handles OAuth providers automatically
+            return true;
         },
     },
     session: {
         strategy: "jwt",
+        maxAge: 60 * 60 * 24 * 7, // 7 дни
+        updateAge: 60 * 60 * 24, // 1 ден
     },
     secret: process.env.NEXTAUTH_SECRET,
 };
