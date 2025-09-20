@@ -1,7 +1,6 @@
 "use client";
 
-import { useSession, signOut } from "next-auth/react";
-import Link from "next/link";
+import { useSession } from "next-auth/react";
 import BannerVideo from "@/components/home/BannerVideo";
 import HomeHero from "@/components/home/HomeHero";
 import CoursesAdv from "@/components/home/CoursesAdv";

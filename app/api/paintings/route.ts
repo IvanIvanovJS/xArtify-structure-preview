@@ -268,7 +268,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         const body = await request.json();
         const validatedData = CreatePaintingSchema.parse(body);
 
-        // Authorization check - only artists and admins can create paintings
+        // Get user with artist profile (RLS will handle authorization)
         const user = await prisma.user.findUnique({
             where: { id: userId },
             include: { artistProfile: true },
@@ -278,22 +278,14 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             return NextResponse.json({ error: 'User not found' }, { status: 404 });
         }
 
-        const isAuthorized = user.artistProfile || user.role === 'ADMIN';
-        if (!isAuthorized) {
-            return NextResponse.json({
-                error: 'Only artists and admins can create paintings'
-            }, { status: 403 });
-        }
-
-        // For ADMIN users without artist profile, we need to create one or use a default
+        // For ADMIN users without artist profile, create one
         let artistId = user.artistProfile?.id;
         if (!artistId && user.role === 'ADMIN') {
-            // Create a temporary artist profile for admin
             const adminArtistProfile = await prisma.artistProfile.create({
                 data: {
                     userId: user.id,
                     bio: 'Admin user',
-                    phoneNumber: '+359000000000', // Default phone for admin
+                    phoneNumber: '+359000000000',
                 },
             });
             artistId = adminArtistProfile.id;
@@ -386,3 +378,4 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         }, { status: 500 });
     }
 }
+

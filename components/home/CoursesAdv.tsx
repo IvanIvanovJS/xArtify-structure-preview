@@ -31,12 +31,12 @@ export type CoursesAdvProps = {
 };
 
 const CoursesAdv: FC<CoursesAdvProps> = ({
-    title = "500K",
-    subtitle = "най-голямата и активна образователна общност в България",
+    title = "Базов курс",
+    subtitle = "Курса е подходящ за начинаещи, които искат да научат основите на изобразителното изкуство.",
     image1Url = "/test.jpg",
     image2Url = "/test2.jpg",
     buttonUrl = "/courses",
-    buttonText = "ЗАПИШИ СЕ СЕГА",
+    buttonText = "Научи повече",
     revealPersistMs = 5000,
     nudgeDelayMs = 2000,
     className,
