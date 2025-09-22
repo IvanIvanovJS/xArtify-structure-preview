@@ -1,0 +1,170 @@
+/* Logout Confirmation Modal Styles */
+.logout-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: 1rem;
+}
+
+.logout-modal {
+    background: var(--color-background);
+    border: 1px solid var(--color-primary-60);
+    border-radius: 1.25rem;
+    padding: 2rem;
+    max-width: 400px;
+    width: 100%;
+    box-shadow:
+        0 20px 25px -5px rgba(0, 0, 0, 0.1),
+        0 10px 10px -5px rgba(0, 0, 0, 0.04),
+        0 0 0 1px rgba(22, 255, 228, 0.1);
+    animation: logoutModalIn 0.2s ease-out;
+}
+
+@keyframes logoutModalIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.logout-header {
+    margin-bottom: 1.5rem;
+}
+
+.logout-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--color-white-8);
+    margin: 0;
+    text-align: center;
+}
+
+.logout-content {
+    margin-bottom: 2rem;
+}
+
+.logout-message {
+    color: var(--color-white-6);
+    font-size: 0.875rem;
+    line-height: 1.5;
+    margin: 0;
+    text-align: center;
+}
+
+.logout-actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+}
+
+.logout-cancel-btn,
+.logout-confirm-btn {
+    flex: 1;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+    min-height: 44px;
+    touch-action: manipulation;
+}
+
+.logout-cancel-btn {
+    background: transparent;
+    color: var(--color-white-6);
+    border-color: var(--color-white-2);
+}
+
+.logout-cancel-btn:hover {
+    background: var(--color-white-1);
+    color: var(--color-white-8);
+    border-color: var(--color-white-3);
+}
+
+.logout-cancel-btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--color-primary-60);
+}
+
+.logout-confirm-btn {
+    background: linear-gradient(135deg, var(--color-red-300), var(--color-red-400));
+    color: var(--color-background);
+    border-color: var(--color-white-3);
+}
+
+.logout-confirm-btn:hover {
+    background: linear-gradient(135deg, var(--color-red-400), var(--color-red-500));
+    box-shadow:
+        0 0 20px rgba(255, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 0, 0, 0.1);
+}
+
+.logout-confirm-btn:focus {
+    background: linear-gradient(135deg, var(--color-red-400), var(--color-red-500));
+    box-shadow:
+        0 0 20px rgba(255, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 0, 0, 0.1);
+}
+
+.logout-confirm-btn:active {
+    transform: translateY(1px);
+}
+
+/* Mobile optimizations */
+@media (max-width: 640px) {
+    .logout-modal {
+        margin: 1rem;
+        padding: 1.5rem;
+    }
+
+    .logout-actions {
+        flex-direction: column;
+    }
+
+    .logout-cancel-btn,
+    .logout-confirm-btn {
+        width: 100%;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .logout-modal {
+        border-width: 2px;
+    }
+
+    .logout-cancel-btn {
+        border-width: 2px;
+    }
+
+    .logout-confirm-btn {
+        border-width: 2px;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .logout-modal {
+        animation: none;
+    }
+
+    .logout-cancel-btn,
+    .logout-confirm-btn {
+        transition: none;
+    }
+}

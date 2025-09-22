@@ -7,6 +7,11 @@ import bcrypt from "bcrypt";
 
 export const authOptions: NextAuthOptions = {
     // adapter: PrismaAdapter(prisma) as Adapter, // Disabled for JWT strategy
+    pages: {
+        signIn: '/login',
+        signOut: '/login',
+        error: '/login',
+    },
     providers: [
         CredentialsProvider({
             name: "Credentials",
@@ -72,9 +77,97 @@ export const authOptions: NextAuthOptions = {
             }
             return session;
         },
-        async signIn() {
-            // Allow all sign-ins - validation happens in authorize function for credentials
-            // and NextAuth handles OAuth providers automatically
+        async signIn({ user, account }) {
+            // Handle OAuth sign-ins with account linking
+            if (account?.provider === 'google' || account?.provider === 'facebook') {
+                if (!user.email) {
+                    return false; // Reject if no email
+                }
+
+                try {
+                    // Check if user already exists with this email
+                    const existingUser = await prisma.user.findUnique({
+                        where: { email: user.email },
+                        include: { accounts: true }
+                    });
+
+                    if (existingUser) {
+                        // Check if this OAuth provider is already linked
+                        const existingAccount = existingUser.accounts.find(
+                            acc => acc.provider === account.provider
+                        );
+
+                        if (!existingAccount) {
+                            // Link the OAuth account to existing user
+                            await prisma.account.create({
+                                data: {
+                                    userId: existingUser.id,
+                                    type: account.type,
+                                    provider: account.provider,
+                                    providerAccountId: account.providerAccountId,
+                                    access_token: account.access_token,
+                                    refresh_token: account.refresh_token,
+                                    expires_at: account.expires_at,
+                                    token_type: account.token_type,
+                                    scope: account.scope,
+                                    id_token: account.id_token,
+                                    session_state: account.session_state,
+                                }
+                            });
+
+                            // Update user data with OAuth info if needed
+                            await prisma.user.update({
+                                where: { id: existingUser.id },
+                                data: {
+                                    name: user.name || existingUser.name,
+                                    image: user.image || existingUser.image,
+                                }
+                            });
+                        }
+
+                        // Always use existing user's data for the session
+                        user.id = existingUser.id;
+                        user.role = existingUser.role;
+                        user.name = existingUser.name;
+                        user.email = existingUser.email;
+                        user.image = existingUser.image;
+                    } else {
+                        // Create new user for OAuth
+                        const newUser = await prisma.user.create({
+                            data: {
+                                name: user.name,
+                                email: user.email,
+                                image: user.image,
+                                emailVerified: new Date(),
+                            }
+                        });
+
+                        // Create account record
+                        await prisma.account.create({
+                            data: {
+                                userId: newUser.id,
+                                type: account.type,
+                                provider: account.provider,
+                                providerAccountId: account.providerAccountId,
+                                access_token: account.access_token,
+                                refresh_token: account.refresh_token,
+                                expires_at: account.expires_at,
+                                token_type: account.token_type,
+                                scope: account.scope,
+                                id_token: account.id_token,
+                                session_state: account.session_state,
+                            }
+                        });
+
+                        user.id = newUser.id;
+                        user.role = newUser.role;
+                    }
+                } catch (error) {
+                    console.error('OAuth sign-in error:', error);
+                    return false;
+                }
+            }
+
             return true;
         },
     },

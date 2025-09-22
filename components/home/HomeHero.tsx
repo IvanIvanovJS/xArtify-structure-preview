@@ -3,9 +3,12 @@
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { LogIn, LogOut } from "lucide-react";
+import { useState } from "react";
+import LogoutConfirmation from "../ui/LogoutConfirmation";
 
 export default function HomeHero() {
     const { data: session } = useSession();
+    const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
     return (
         <section className="x-hero">
@@ -25,9 +28,12 @@ export default function HomeHero() {
                     </div>
                     <div>
                         {session ? (
-                            <Link href="/api/auth/signout" className="footer-link inline-flex items-center gap-2">
+                            <button
+                                onClick={() => setShowLogoutConfirm(true)}
+                                className="footer-link inline-flex items-center gap-2"
+                            >
                                 <LogOut size={18} /> Изход
-                            </Link>
+                            </button>
                         ) : (
                             <Link href="/login" className="footer-link inline-flex items-center gap-2">
                                 <LogIn size={18} /> Вход
@@ -36,6 +42,12 @@ export default function HomeHero() {
                     </div>
                 </div>
             </div>
+
+            {/* Logout Confirmation Modal */}
+            <LogoutConfirmation
+                isOpen={showLogoutConfirm}
+                onClose={() => setShowLogoutConfirm(false)}
+            />
         </section>
     );
 }
