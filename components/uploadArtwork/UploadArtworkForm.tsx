@@ -16,13 +16,12 @@ import './styles/upload-form.css';
 const UploadArtworkSchema = z.object({
     title: z.string().min(1, 'Заглавието е задължително').max(140, 'Заглавието не може да бъде повече от 140 символа'),
     description: z.string().max(1000, 'Описанието не може да бъде повече от 1000 символа').optional(),
-    dimensions: z.string().max(100, 'Размерите не могат да бъдат повече от 100 символа').optional(),
     materials: z.string().max(200, 'Материалите не могат да бъдат повече от 200 символа').optional(),
     price: z.number().positive('Цената трябва да бъде положително число').max(100000, 'Цената не може да бъде повече от 100,000 лв'),
     technique: z.string().min(1, 'Техниката е задължителна'),
     subject: z.string().min(1, 'Темата е задължителна'),
     style: z.string().min(1, 'Стилът е задължителен'),
-    tags: z.array(z.string()).min(1, 'Поне един таг е задължителен').max(10, 'Максимум 10 тага'),
+    tags: z.array(z.string().regex(/^[a-zA-Zа-яА-Я0-9#\s]+$/, 'Разрешени са само букви, цифри и символ #')).min(1, 'Поне един таг е задължителен').max(10, 'Максимум 10 тага'),
     widthCm: z.number().positive('Ширината трябва да бъде положително число').max(500, 'Ширината не може да бъде повече от 500 см').optional(),
     heightCm: z.number().positive('Височината трябва да бъде положително число').max(500, 'Височината не може да бъде повече от 500 см').optional(),
 });
@@ -95,7 +94,8 @@ const styleOptions = [
     { value: 'Друго', label: 'Друго' },
 ];
 
-const allTags = [
+// Default tags - will be replaced by API data
+const defaultTags = [
     'Цвете', 'Природа', 'Портрет', 'Абстракция', 'Модерно', 'Класическо',
     'Ярко', 'Тъмно', 'Голям размер', 'Малък размер', 'Експресивно', 'Спокойно',
     'Град', 'Море', 'Планини', 'Животни', 'Цветя', 'Архитектура', 'История',
@@ -111,10 +111,18 @@ export default function UploadArtworkForm({ artistId }: { artistId: string }): R
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
     const [showMoreTags, setShowMoreTags] = useState(false);
-    const [availableTags, setAvailableTags] = useState<string[]>(allTags);
+    const [availableTags, setAvailableTags] = useState<string[]>([]);
+    const [isLoadingTags, setIsLoadingTags] = useState(true);
     const [customTagInput, setCustomTagInput] = useState('');
     const [isAddingTag, setIsAddingTag] = useState(false);
     const [tagError, setTagError] = useState<string | null>(null);
+
+    // Validate tag input in real-time
+    const isValidTagInput = (input: string): boolean => {
+        if (!input.trim()) return false;
+        const validTagRegex = /^[a-zA-Zа-яА-Я0-9#\s]+$/;
+        return validTagRegex.test(input.trim());
+    };
 
     const {
         register,
@@ -136,16 +144,28 @@ export default function UploadArtworkForm({ artistId }: { artistId: string }): R
     useEffect(() => {
         const loadTagsFromDatabase = async (): Promise<void> => {
             try {
-                const response = await fetch('/api/paintings/filter-options');
+                setIsLoadingTags(true);
+                const response = await fetch('/api/tags');
                 if (response.ok) {
                     const data = await response.json();
                     if (data.tags && data.tags.length > 0) {
-                        setAvailableTags(data.tags);
+                        const tagNames = data.tags.map((tag: { name: string }) => tag.name);
+                        setAvailableTags(tagNames);
+                    } else {
+                        // If no tags exist, use default tags
+                        setAvailableTags(defaultTags);
                     }
+                } else {
+                    console.error('Failed to load tags:', response.statusText);
+                    // Fallback to default tags if API fails
+                    setAvailableTags(defaultTags);
                 }
             } catch (error) {
                 console.error('Error loading tags from database:', error);
-                // Keep default tags if database fails
+                // Fallback to default tags if API fails
+                setAvailableTags(defaultTags);
+            } finally {
+                setIsLoadingTags(false);
             }
         };
 
@@ -159,6 +179,13 @@ export default function UploadArtworkForm({ artistId }: { artistId: string }): R
         }
 
         const tagName = customTagInput.trim();
+
+        // Check for valid characters (letters, numbers, #, and spaces)
+        const validTagRegex = /^[a-zA-Zа-яА-Я0-9#\s]+$/;
+        if (!validTagRegex.test(tagName)) {
+            setTagError('Разрешени са само букви, цифри и символ #');
+            return;
+        }
 
         // Check if tag already exists
         if (availableTags.includes(tagName) || watchedTags?.includes(tagName)) {
@@ -190,8 +217,15 @@ export default function UploadArtworkForm({ artistId }: { artistId: string }): R
                 throw new Error(errorData.error || 'Неуспешно създаване на таг');
             }
 
-            // Add tag to available tags
-            setAvailableTags(prev => [...prev, tagName]);
+            // Reload all tags from API to get proper sorting
+            const reloadResponse = await fetch('/api/tags');
+            if (reloadResponse.ok) {
+                const reloadData = await reloadResponse.json();
+                if (reloadData.tags && reloadData.tags.length > 0) {
+                    const tagNames = reloadData.tags.map((tag: { name: string }) => tag.name);
+                    setAvailableTags(tagNames);
+                }
+            }
 
             // Add tag to selected tags
             const currentTags = watchedTags || [];
@@ -397,65 +431,69 @@ export default function UploadArtworkForm({ artistId }: { artistId: string }): R
                         )}
                     </div>
 
+
                     <div className="form-row">
                         <div className="form-group">
-                            <label htmlFor="price" className="form-label">
-                                Цена (лв) *
+                            <label htmlFor="widthCm" className="form-label">
+                                Ширина (см)
                             </label>
                             <input
-                                {...register('price', { valueAsNumber: true })}
+                                {...register('widthCm', { valueAsNumber: true })}
                                 type="number"
-                                step="0.01"
-                                id="price"
-                                className={`form-input ${errors.price ? 'form-input-error' : ''}`}
-                                placeholder="0.00"
+                                step="0.1"
+                                id="widthCm"
+                                className={`form-input ${errors.widthCm ? 'form-input-error' : ''}`}
+                                placeholder="80"
                             />
-                            {errors.price && (
+                            {errors.widthCm && (
                                 <span className="form-error">
                                     <AlertCircle size={16} />
-                                    {errors.price.message}
+                                    {errors.widthCm.message}
                                 </span>
                             )}
                         </div>
 
                         <div className="form-group">
-                            <label htmlFor="dimensions" className="form-label">
-                                Размери
+                            <label htmlFor="heightCm" className="form-label">
+                                Височина (см)
                             </label>
                             <input
-                                {...register('dimensions')}
-                                type="text"
-                                id="dimensions"
-                                className={`form-input ${errors.dimensions ? 'form-input-error' : ''}`}
-                                placeholder="напр. 80x60 см"
+                                {...register('heightCm', { valueAsNumber: true })}
+                                type="number"
+                                step="0.1"
+                                id="heightCm"
+                                className={`form-input ${errors.heightCm ? 'form-input-error' : ''}`}
+                                placeholder="60"
                             />
-                            {errors.dimensions && (
+                            {errors.heightCm && (
                                 <span className="form-error">
                                     <AlertCircle size={16} />
-                                    {errors.dimensions.message}
+                                    {errors.heightCm.message}
                                 </span>
                             )}
                         </div>
                     </div>
 
                     <div className="form-group">
-                        <label htmlFor="materials" className="form-label">
-                            Материали
+                        <label htmlFor="price" className="form-label">
+                            Цена (лв) *
                         </label>
                         <input
-                            {...register('materials')}
-                            type="text"
-                            id="materials"
-                            className={`form-input ${errors.materials ? 'form-input-error' : ''}`}
-                            placeholder="напр. Маслени бои върху платно"
+                            {...register('price', { valueAsNumber: true })}
+                            type="number"
+                            step="0.01"
+                            id="price"
+                            className={`form-input ${errors.price ? 'form-input-error' : ''}`}
+                            placeholder="0.00"
                         />
-                        {errors.materials && (
+                        {errors.price && (
                             <span className="form-error">
                                 <AlertCircle size={16} />
-                                {errors.materials.message}
+                                {errors.price.message}
                             </span>
                         )}
                     </div>
+
                 </div>
 
                 {/* Classification */}
@@ -517,41 +555,20 @@ export default function UploadArtworkForm({ artistId }: { artistId: string }): R
                         </div>
 
                         <div className="form-group">
-                            <label htmlFor="widthCm" className="form-label">
-                                Ширина (см)
+                            <label htmlFor="materials" className="form-label">
+                                Материали
                             </label>
                             <input
-                                {...register('widthCm', { valueAsNumber: true })}
-                                type="number"
-                                step="0.1"
-                                id="widthCm"
-                                className={`form-input ${errors.widthCm ? 'form-input-error' : ''}`}
-                                placeholder="80"
+                                {...register('materials')}
+                                type="text"
+                                id="materials"
+                                className={`form-input ${errors.materials ? 'form-input-error' : ''}`}
+                                placeholder="напр. Маслени бои върху платно"
                             />
-                            {errors.widthCm && (
+                            {errors.materials && (
                                 <span className="form-error">
                                     <AlertCircle size={16} />
-                                    {errors.widthCm.message}
-                                </span>
-                            )}
-                        </div>
-
-                        <div className="form-group">
-                            <label htmlFor="heightCm" className="form-label">
-                                Височина (см)
-                            </label>
-                            <input
-                                {...register('heightCm', { valueAsNumber: true })}
-                                type="number"
-                                step="0.1"
-                                id="heightCm"
-                                className={`form-input ${errors.heightCm ? 'form-input-error' : ''}`}
-                                placeholder="60"
-                            />
-                            {errors.heightCm && (
-                                <span className="form-error">
-                                    <AlertCircle size={16} />
-                                    {errors.heightCm.message}
+                                    {errors.materials.message}
                                 </span>
                             )}
                         </div>
@@ -568,7 +585,15 @@ export default function UploadArtworkForm({ artistId }: { artistId: string }): R
                                 <input
                                     type="text"
                                     value={customTagInput}
-                                    onChange={(e) => setCustomTagInput(e.target.value)}
+                                    onChange={(e) => {
+                                        const value = e.target.value;
+                                        setCustomTagInput(value);
+
+                                        // Clear error when user starts typing valid characters
+                                        if (tagError && isValidTagInput(value)) {
+                                            setTagError(null);
+                                        }
+                                    }}
                                     placeholder="Добави нов таг..."
                                     className="custom-tag-input"
                                     maxLength={50}
@@ -582,7 +607,7 @@ export default function UploadArtworkForm({ artistId }: { artistId: string }): R
                                 <button
                                     type="button"
                                     onClick={addCustomTag}
-                                    disabled={isAddingTag || !customTagInput.trim()}
+                                    disabled={isAddingTag || !customTagInput.trim() || !isValidTagInput(customTagInput)}
                                     className="add-tag-button"
                                 >
                                     {isAddingTag ? (
@@ -592,6 +617,14 @@ export default function UploadArtworkForm({ artistId }: { artistId: string }): R
                                     )}
                                 </button>
                             </div>
+
+                            {/* Character validation message */}
+                            <div className="tag-validation-info">
+                                <span className="validation-text">
+                                    Разрешени символи: букви (a-z, A-Z, а-я, А-Я), цифри (0-9), символ # и интервали
+                                </span>
+                            </div>
+
                             {tagError && (
                                 <span className="form-error">
                                     <AlertCircle size={16} />
@@ -601,17 +634,27 @@ export default function UploadArtworkForm({ artistId }: { artistId: string }): R
                         </div>
 
                         {/* Available Tags */}
-                        <div className="tags-container">
-                            {(showMoreTags ? availableTags : availableTags.slice(0, 10)).map(tag => (
-                                <button
-                                    key={tag}
-                                    type="button"
-                                    onClick={() => toggleTag(tag)}
-                                    className={`tag-button ${watchedTags?.includes(tag) ? 'tag-selected' : ''}`}
-                                >
-                                    {tag}
-                                </button>
-                            ))}
+                        <div className="tags-section">
+                            <h3 className="tags-section-title">Последно използвани тагове</h3>
+                            <div className="tags-container">
+                                {isLoadingTags ? (
+                                    <div className="loading-tags">
+                                        <div className="loading-spinner-small" />
+                                        <span>Зареждане на тагове...</span>
+                                    </div>
+                                ) : (
+                                    (showMoreTags ? availableTags : availableTags.slice(0, 10)).map(tag => (
+                                        <button
+                                            key={tag}
+                                            type="button"
+                                            onClick={() => toggleTag(tag)}
+                                            className={`tag-button ${watchedTags?.includes(tag) ? 'tag-selected' : ''}`}
+                                        >
+                                            {tag}
+                                        </button>
+                                    ))
+                                )}
+                            </div>
                         </div>
 
                         {availableTags.length > 10 && (

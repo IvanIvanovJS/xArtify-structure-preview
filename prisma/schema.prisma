@@ -110,6 +110,7 @@ model ArtistProfile {
   user         User      @relation(fields: [userId], references: [id]) // Релация обратно към User
   phoneNumber  String?
   paintings    Painting[]
+  tags         Tag[]     // Релация към таговете на автора
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 }
@@ -167,6 +168,20 @@ model Content {
   image2Url String?  // URL на второто изображение
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// Модел за тагове на авторите
+model Tag {
+  id           String    @id @default(cuid())
+  name         String    // Името на тага
+  artistId     String    // ID на автора, който създава тага
+  artist       ArtistProfile @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  
+  @@unique([name, artistId]) // Един автор не може да има два еднакви тага
+  @@index([artistId])
+  @@index([createdAt])
 }
 
 // Добавяме enum за ролите на потребителите

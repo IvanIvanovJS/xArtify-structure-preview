@@ -12,7 +12,7 @@ const CreateTagSchema = z.object({
     name: z.string()
         .min(1, 'Tag name is required')
         .max(50, 'Tag name too long')
-        .regex(/^[a-zA-Zа-яА-Я0-9\s\-_]+$/, 'Tag name contains invalid characters')
+        .regex(/^[a-zA-Zа-яА-Я0-9#\s]+$/, 'Разрешени са само букви, цифри и символ #')
         .transform(val => val.trim()), // Trim whitespace
 });
 
@@ -23,13 +23,11 @@ const tagLimiter = {
         const window = 10 * 60 * 1000; // 10 minutes in milliseconds
 
         try {
-            // This is a simplified rate limiting implementation
-            // In production, you might want to use Redis or a more sophisticated solution
             const now = Date.now();
             const windowStart = now - window;
 
             // Get recent tag creations for this user
-            const recentTags = await prisma.painting.findMany({
+            const recentTags = await prisma.tag.count({
                 where: {
                     artist: {
                         user: {
@@ -39,22 +37,10 @@ const tagLimiter = {
                     createdAt: {
                         gte: new Date(windowStart)
                     }
-                },
-                select: {
-                    tags: true,
-                    createdAt: true
                 }
             });
 
-            // Count unique tags created in the window
-            const uniqueTags = new Set();
-            recentTags.forEach(painting => {
-                painting.tags.forEach(tag => uniqueTags.add(tag));
-            });
-
-            const currentCount = uniqueTags.size;
-
-            if (currentCount >= limit) {
+            if (recentTags >= limit) {
                 return {
                     success: false,
                     remaining: 0,
@@ -64,7 +50,7 @@ const tagLimiter = {
 
             return {
                 success: true,
-                remaining: limit - currentCount - 1,
+                remaining: limit - recentTags - 1,
                 reset: now + window
             };
         } catch (error) {
@@ -121,21 +107,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
         const tagName = validatedData.name;
 
-        // Check if tag already exists in any painting
-        const existingTag = await prisma.painting.findFirst({
-            where: {
-                tags: {
-                    has: tagName
-                }
-            }
-        });
-
-        if (existingTag) {
-            return NextResponse.json({
-                error: 'Tag already exists'
-            }, { status: 409 });
-        }
-
         // Check if user has artist profile or is admin
         const user = await prisma.user.findUnique({
             where: { id: userId },
@@ -173,27 +144,47 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             }, { status: 400 });
         }
 
-        // Create a temporary painting with the new tag to "register" it
-        // This is a workaround since we don't have a separate tags table
-        // In a real application, you'd want a proper tags table
-        const tempPainting = await prisma.painting.create({
-            data: {
-                title: `TEMP_TAG_${tagName}_${Date.now()}`,
-                description: 'Temporary painting for tag registration',
-                price: 0,
-                images: [],
-                technique: 'Друго',
-                subject: 'Друго',
-                style: 'Друго',
-                tags: [tagName],
-                artistId: artistId,
-                slug: `temp-tag-${tagName.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}`,
-            },
+        // Check if tag already exists for this artist
+        const existingTag = await prisma.tag.findUnique({
+            where: {
+                name_artistId: {
+                    name: tagName,
+                    artistId: artistId
+                }
+            }
         });
 
-        // Immediately delete the temporary painting
-        await prisma.painting.delete({
-            where: { id: tempPainting.id }
+        if (existingTag) {
+            return NextResponse.json({
+                error: 'Tag already exists for this artist'
+            }, { status: 409 });
+        }
+
+        // Get current tag count for this artist
+        const currentTagCount = await prisma.tag.count({
+            where: { artistId }
+        });
+
+        // If we have 30 or more tags, delete the oldest one
+        if (currentTagCount >= 30) {
+            const oldestTag = await prisma.tag.findFirst({
+                where: { artistId },
+                orderBy: { createdAt: 'asc' }
+            });
+
+            if (oldestTag) {
+                await prisma.tag.delete({
+                    where: { id: oldestTag.id }
+                });
+            }
+        }
+
+        // Create the new tag
+        const newTag = await prisma.tag.create({
+            data: {
+                name: tagName,
+                artistId: artistId
+            }
         });
 
         // Log successful tag creation
@@ -201,7 +192,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
         return NextResponse.json({
             message: 'Tag created successfully',
-            tag: tagName,
+            tag: {
+                id: newTag.id,
+                name: newTag.name,
+                createdAt: newTag.createdAt
+            },
             remaining: rateLimitResult.remaining
         }, { status: 201 });
 
