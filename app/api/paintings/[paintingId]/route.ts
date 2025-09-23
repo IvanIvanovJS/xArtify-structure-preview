@@ -45,6 +45,7 @@ export async function PUT(req: NextRequest) {
 
         const paintingData = JSON.parse(paintingDataRaw) as {
             title?: string;
+            urlTitle?: string;
             dimensions?: string;
             materials?: string;
             description?: string;
