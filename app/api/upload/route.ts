@@ -3,7 +3,7 @@ import type { UploadApiErrorResponse, UploadApiResponse } from 'cloudinary';
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import sharp from 'sharp';
-import { z } from 'zod';
+
 
 import { authOptions } from '@/lib/authOptions';
 import { limiterPublic, rateKey } from '@/lib/rateLimit';

@@ -7,7 +7,7 @@ import { formatPriceBGN, formatPriceEUR, calculatePromotionPrice, calculateDisco
 import ImageGallery from '@/components/ImageGallery';
 import AddToCartButton from "@/components/cart/AddToCartButton";
 import { prisma } from "@/lib/prisma";
-import { PaintingWithArtist } from "@/components/uploadArtwork/types";
+
 
 export const runtime = "nodejs";
 
