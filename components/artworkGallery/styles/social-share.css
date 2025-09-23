@@ -2,28 +2,36 @@
 
 .social-share-buttons {
     position: relative;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
-.social-share-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 0.75rem;
+.social-share-simple {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    align-items: center;
+    flex-direction: row;
 }
 
 .social-share-button {
     display: flex;
-    flex-direction: column;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.75rem;
     background: transparent;
     border: 1px solid var(--color-primary-60);
     color: var(--color-foreground);
-    padding: 1rem 0.75rem;
-    border-radius: 1rem;
+    padding: 0.875rem 1.5rem;
+    border-radius: 1.25rem;
     cursor: pointer;
     transition: all 0.3s ease;
     text-decoration: none;
-    min-height: 80px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    min-height: 48px;
+
 }
 
 .social-share-button:hover {
@@ -33,6 +41,33 @@
     transform: translateY(-2px);
 }
 
+.social-share-button--primary {
+    background: transparent;
+    color: var(--color-foreground);
+    border-color: var(--color-primary);
+}
+
+.social-share-button--primary:hover {
+    background: var(--color-primary-55);
+    color: var(--color-background);
+    border-color: var(--color-primary-70);
+    box-shadow:
+        inset 0 0px 4px 0px var(--color-primary-80),
+        0 0px 12px 0px var(--color-primary-80);
+}
+
+.social-share-button--secondary {
+    background: transparent;
+    color: var(--color-foreground);
+    border-color: var(--color-muted-foreground);
+}
+
+.social-share-button--secondary:hover {
+    background: var(--color-muted);
+    border-color: var(--color-primary-60);
+    color: var(--color-primary);
+}
+
 .social-share-button.copied {
     background: var(--color-primary);
     color: var(--color-background);
@@ -40,8 +75,8 @@
 }
 
 .social-share-icon {
-    width: 24px;
-    height: 24px;
+    width: 20px;
+    height: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -52,46 +87,9 @@
     transform: scale(1.1);
 }
 
-.social-share-icon--facebook {
-    color: #1877F2;
-}
-
-.social-share-icon--twitter {
-    color: #1DA1F2;
-}
-
-.social-share-icon--instagram {
-    color: #E4405F;
-}
-
-.social-share-icon--pinterest {
-    color: #BD081C;
-}
-
-.social-share-icon--linkedin {
-    color: #0077B5;
-}
-
-.social-share-icon--whatsapp {
-    color: #25D366;
-}
-
-.social-share-icon--telegram {
-    color: #0088CC;
-}
-
-.social-share-icon--copy {
-    color: var(--color-muted-foreground);
-}
-
-.social-share-button.copied .social-share-icon--copy {
-    color: var(--color-background);
-}
-
 .social-share-label {
-    font-size: 0.75rem;
-    font-weight: 500;
-    text-align: center;
+    font-size: 0.875rem;
+    font-weight: 600;
     line-height: 1.2;
 }
 
@@ -134,37 +132,47 @@
 
 /* Mobile Responsive */
 @media (max-width: 768px) {
-    .social-share-grid {
-        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-        gap: 0.5rem;
+    .social-share-simple {
+        flex-direction: row;
+        gap: 0.75rem;
+        width: 100%;
     }
 
     .social-share-button {
-        padding: 0.75rem 0.5rem;
-        min-height: 70px;
+        flex: 1;
+        justify-content: center;
+        padding: 0.75rem 1rem;
+        min-height: 44px;
     }
 
     .social-share-icon {
-        width: 20px;
-        height: 20px;
+        width: 18px;
+        height: 18px;
     }
 
     .social-share-label {
-        font-size: 0.6875rem;
+        font-size: 0.8125rem;
     }
 }
 
 @media (max-width: 480px) {
-    .social-share-grid {
-        grid-template-columns: repeat(4, 1fr);
+    .social-share-simple {
+        flex-direction: row;
+        gap: 0.5rem;
     }
 
     .social-share-button {
-        padding: 0.5rem 0.25rem;
-        min-height: 60px;
+        flex: 1;
+        padding: 0.625rem 0.875rem;
+        min-height: 40px;
+    }
+
+    .social-share-icon {
+        width: 16px;
+        height: 16px;
     }
 
     .social-share-label {
-        font-size: 0.625rem;
+        font-size: 0.75rem;
     }
 }

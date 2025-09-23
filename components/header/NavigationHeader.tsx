@@ -249,7 +249,7 @@ export default function NavigationHeader(): JSX.Element {
                                 </Link>
                             )}
                             <Link
-                                href={session ? "/profile" : "/login"}
+                                href={session ? "/my-profile" : "/login"}
                                 aria-label="Моят профил"
                                 className="x-icon-btn"
                                 onTouchStart={handleTouchStart}
@@ -314,7 +314,7 @@ export default function NavigationHeader(): JSX.Element {
                             )}
 
                             <Link
-                                href={session ? "/profile" : "/login"}
+                                href={session ? "/my-profile" : "/login"}
                                 aria-label="Моят профил"
                                 className="x-icon-btn"
                                 title="Моят профил"

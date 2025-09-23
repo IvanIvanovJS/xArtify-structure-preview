@@ -1,0 +1,151 @@
+/* Painting Features Styles */
+
+.painting-features {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--color-muted);
+}
+
+.painting-features-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.painting-feature {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0;
+    background: transparent;
+    border: none;
+    transition: none;
+}
+
+.painting-feature:hover {
+    background: transparent;
+    border: none;
+    transform: none;
+    box-shadow: none;
+}
+
+.painting-feature-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    background: transparent;
+    border-radius: 0;
+    color: var(--color-foreground);
+    flex-shrink: 0;
+    transition: none;
+}
+
+.painting-feature:hover .painting-feature-icon {
+    background: transparent;
+    color: var(--color-foreground);
+    transform: none;
+}
+
+.painting-feature-return-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    background: transparent;
+    border-radius: 50%;
+    color: var(--color-foreground);
+    flex-shrink: 0;
+    transition: none;
+    border: 1px solid var(--color-foreground);
+}
+
+.painting-feature-return-number {
+    font-size: 0.875rem;
+    font-weight: 400;
+    color: var(--color-foreground);
+}
+
+.painting-feature:hover .painting-feature-return-icon {
+    background: transparent;
+    border-color: var(--color-foreground);
+}
+
+.painting-feature:hover .painting-feature-return-number {
+    color: var(--color-foreground);
+}
+
+.painting-feature-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    flex: 1;
+}
+
+.painting-feature-text {
+    font-size: 0.875rem;
+    font-weight: 400;
+    color: var(--color-foreground);
+    line-height: 1.2;
+}
+
+.painting-feature-description {
+    display: none;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .painting-features {
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+    }
+
+    .painting-features-grid {
+        gap: 1.25rem;
+    }
+
+    .painting-feature {
+        gap: 0.875rem;
+    }
+
+    .painting-feature-icon,
+    .painting-feature-return-icon {
+        width: 20px;
+        height: 20px;
+    }
+
+    .painting-feature-return-number {
+        font-size: 0.75rem;
+    }
+
+    .painting-feature-text {
+        font-size: 0.8125rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .painting-features-grid {
+        gap: 1rem;
+    }
+
+    .painting-feature {
+        gap: 0.75rem;
+    }
+
+    .painting-feature-icon,
+    .painting-feature-return-icon {
+        width: 18px;
+        height: 18px;
+    }
+
+    .painting-feature-return-number {
+        font-size: 0.6875rem;
+    }
+
+    .painting-feature-text {
+        font-size: 0.75rem;
+    }
+}

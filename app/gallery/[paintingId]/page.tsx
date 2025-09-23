@@ -26,6 +26,7 @@ export default async function GalleryPaintingPage({ params }: { params: Promise<
                         select: {
                             name: true,
                             email: true,
+                            image: true,
                         },
                     },
                 },

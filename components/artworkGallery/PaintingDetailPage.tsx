@@ -10,6 +10,8 @@ import AddToCartButton from '@/components/cart/AddToCartButton';
 import SocialShareButtons from '@/components/artworkGallery/SocialShareButtons';
 import FavoriteButton from '@/components/artworkGallery/FavoriteButton';
 import ImageGallery from '@/components/artworkGallery/ImageGallery';
+import PaintingFeatures from '@/components/artworkGallery/PaintingFeatures';
+import MeetTheArtist from '@/components/artworkGallery/MeetTheArtist';
 import "./styles/painting-detail.css";
 
 interface PaintingDetailPageProps {
@@ -273,18 +275,26 @@ export default function PaintingDetailPage({
                         </div>
                     </div>
 
+                    {/* Painting Features */}
+                    <PaintingFeatures />
+
                     {/* Social Sharing */}
                     <div className="painting-detail-sharing">
-                        <h3 className="painting-detail-sharing-title">Сподели</h3>
                         <SocialShareButtons
                             title={painting.title}
                             description={painting.description || ''}
-                            image={currentImage}
                             url={`${window.location.origin}/gallery/${painting.urlTitle || painting.id}`}
                         />
                     </div>
+
                 </div>
             </div>
+
+            {/* Meet The Artist - Full Width */}
+            <MeetTheArtist
+                artist={painting.artist}
+                paintingTitle={painting.title}
+            />
         </div>
     );
 }
