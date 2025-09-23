@@ -49,34 +49,39 @@ export default async function PaintingModalPage({ params }: PaintingModalPagePro
     }
 
     // Transform to PaintingWithArtist type
-    const paintingData: PaintingWithArtist = {
-        id: painting.id,
-        title: painting.title,
-        description: painting.description,
-        dimensions: painting.dimensions,
-        materials: painting.materials,
-        images: painting.images,
-        price: painting.price,
-        isSold: painting.isSold,
-        artistId: painting.artist.id,
-        widthCm: painting.widthCm,
-        heightCm: painting.heightCm,
-        slug: painting.slug,
-        technique: painting.technique,
-        subject: painting.subject,
-        tags: painting.tags,
-        style: painting.style,
-        createdAt: painting.createdAt,
-        updatedAt: painting.updatedAt,
-        artist: {
-            id: painting.artist.id,
-            bio: null,
-            user: {
-                name: painting.artist.user.name,
-                email: painting.artist.user.email,
-            },
-        },
-    };
+    // const paintingData: PaintingWithArtist = {
+    //     id: painting.id,
+    //     title: painting.title,
+    //     urlTitle: painting.urlTitle,
+    //     description: painting.description,
+    //     dimensions: painting.dimensions,
+    //     materials: painting.materials,
+    //     images: painting.images,
+    //     price: painting.price,
+    //     isSold: painting.isSold,
+    //     artistId: painting.artist.id,
+    //     widthCm: painting.widthCm,
+    //     heightCm: painting.heightCm,
+    //     slug: painting.slug,
+    //     technique: painting.technique,
+    //     subject: painting.subject,
+    //     tags: painting.tags,
+    //     style: painting.style,
+    //     isOnSale: painting.isOnSale,
+    //     salePercentage: painting.salePercentage,
+    //     finalPrice: painting.finalPrice,
+    //     originalPrice: painting.originalPrice,
+    //     createdAt: painting.createdAt,
+    //     updatedAt: painting.updatedAt,
+    //     artist: {
+    //         id: painting.artist.id,
+    //         bio: null,
+    //         user: {
+    //             name: painting.artist.user.name,
+    //             email: painting.artist.user.email,
+    //         },
+    //     },
+    // };
 
     const isOwner = session && session.user.id === painting.artist.userId;
 

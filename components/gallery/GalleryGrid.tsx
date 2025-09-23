@@ -5,7 +5,6 @@ import { useTransition } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import ArtworkCard from '@/components/artworkCard/ArtworkCard';
-import OptimizedImage from '@/components/ui/OptimizedImage';
 import SkeletonLoader from '@/components/ui/SkeletonLoader';
 
 // Import the type from uploadArtwork types

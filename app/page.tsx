@@ -6,7 +6,7 @@ import HomeHero from "@/components/home/HomeHero";
 import CoursesAdv from "@/components/home/CoursesAdv";
 
 export default function HomePage() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const cloudName = process.env.CLOUDINARY_CLOUD_NAME ?? "dqrjc4pwr";
 
   if (status === "loading") {

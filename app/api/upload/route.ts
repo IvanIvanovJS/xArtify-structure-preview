@@ -31,9 +31,7 @@ const MAX_PIXELS = 20_000_000; // 20MP pixel-bomb guard
 const MAX_SIDE = 4000;
 
 // Validation schema
-const UploadSchema = z.object({
-    file: z.instanceof(File, { message: 'Invalid file' }),
-});
+
 
 interface UploadResult {
     imageUrl: string;

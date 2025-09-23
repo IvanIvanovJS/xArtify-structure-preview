@@ -11,7 +11,7 @@ export const runtime = 'nodejs';
  * Извлича последните 30 тага за текущия потребител (автор)
  * Сортирани от най-новия към най-стария
  */
-export async function GET(request: NextRequest): Promise<NextResponse> {
+export async function GET(): Promise<NextResponse> {
     try {
         // Authentication check
         const session = await getServerSession(authOptions);
