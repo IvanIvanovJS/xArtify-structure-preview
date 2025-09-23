@@ -54,6 +54,7 @@ model User {
   artistProfile ArtistProfile?
   subscriptions Subscription[]
   enrollments   Enrollment[]
+  favorites     Favorite[]
 }
 model PasswordResetToken {
   id        String   @id @default(cuid())
@@ -101,6 +102,9 @@ model Painting {
   
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
+  
+  // Relations
+  favorites    Favorite[]
   
   @@index([technique])
   @@index([subject])
@@ -193,6 +197,21 @@ model Tag {
   @@unique([name, artistId]) // Един автор не може да има два еднакви тага
   @@index([artistId])
   @@index([createdAt])
+}
+
+// Модел за любими картини
+model Favorite {
+  id         String   @id @default(cuid())
+  userId     String
+  paintingId String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  painting   Painting @relation(fields: [paintingId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+  
+  @@unique([userId, paintingId])
+  @@index([userId])
+  @@index([paintingId])
+  @@map("favorites")
 }
 
 // Добавяме enum за ролите на потребителите

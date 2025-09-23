@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { v2 as cloudinary } from "cloudinary";
+import { generateUrlTitle } from "@/lib/slug";
 
 export const runtime = "nodejs"; // Prisma/Cloudinary need Node runtime
 
@@ -88,10 +89,31 @@ export async function PUT(req: NextRequest) {
             }
         }
 
+        // Generate new URL title if title or urlTitle changed
+        let urlTitle = painting.urlTitle;
+        const titleChanged = paintingData.title && paintingData.title !== painting.title;
+        const urlTitleChanged = paintingData.urlTitle && paintingData.urlTitle !== painting.urlTitle;
+
+        if (titleChanged || urlTitleChanged) {
+            // Use urlTitle field if provided, otherwise use title
+            const sourceText = paintingData.urlTitle || paintingData.title || painting.title;
+            urlTitle = generateUrlTitle(sourceText, paintingIdValue);
+
+            // Check if new urlTitle already exists
+            let uniqueUrlTitle = urlTitle;
+            let urlCounter = 1;
+            while (await prisma.painting.findUnique({ where: { urlTitle: uniqueUrlTitle } })) {
+                uniqueUrlTitle = `${urlTitle.split('-').slice(0, -1).join('-')}-${urlCounter}`;
+                urlCounter++;
+            }
+            urlTitle = uniqueUrlTitle;
+        }
+
         const updated = await prisma.painting.update({
             where: { id: paintingIdValue },
             data: {
                 title: paintingData.title,
+                urlTitle: urlTitle,
                 dimensions: paintingData.dimensions,
                 materials: paintingData.materials,
                 description: paintingData.description,

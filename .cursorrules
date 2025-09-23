@@ -80,6 +80,11 @@ export async function GET(): Promise<NextResponse> {
 - **RLS Policy Location**: ALL RLS policies MUST be stored in `@supabasePolicies/` directory
 - **Policy Discovery**: When checking existing RLS policies, ALWAYS look in `@supabasePolicies/` folder first
 - **New Policy Creation**: When creating new RLS policies, save them in `@supabasePolicies/` directory with descriptive filename
+- **CRITICAL: Schema Validation**: ALWAYS check `prisma/schema.prisma` before creating SQL policies to ensure:
+  - Correct table names (check `@@map` directives)
+  - Correct column names (camelCase vs snake_case)
+  - Proper relationships and foreign keys
+  - Model field types and constraints
 - Include the SQL policies as `.sql` files or code blocks for direct database injection
 - Example pattern for every protected resource:
 
@@ -184,6 +189,7 @@ export default function MobileOptimizedComponent(): JSX.Element {
 - **Primary**: `#16ffe4` (neon cyan accent)
 - **Muted**: `#1a1a20` (subtle gray)
 - **Muted Foreground**: `#9ca3af` (secondary text)
+- **Promotion/Discount**: `#ff7016` (orange for sales and discounts)
 
 ### Typography
 - **Font**: Inter (Google Fonts)
@@ -263,6 +269,12 @@ export default function BadComponent(): JSX.Element {
 - When creating new models or refactoring existing ones, provide complete SQL policy set
 - **RLS Policy Storage**: Save all RLS policies in `@supabasePolicies/` directory
 - **Policy Reference**: Always check `@supabasePolicies/` folder for existing policies before creating new ones
+- **SCHEMA VALIDATION MANDATORY**: Before writing ANY SQL policy, ALWAYS:
+  1. Read `prisma/schema.prisma` to verify table and column names
+  2. Check for `@@map` directives that change table names
+  3. Verify column naming conventions (camelCase in Prisma = camelCase in DB)
+  4. Confirm foreign key relationships and field types
+  5. Test the policy syntax matches the actual database schema
 - Include policies for SELECT, INSERT, UPDATE, DELETE operations
 - Test policies with different user roles and scenarios
 - Document policy logic and access patterns
@@ -617,6 +629,7 @@ logger.critical('Security violation', { userId, action: 'unauthorized_access', i
 - [ ] Mobile-first responsive design implemented
 - [ ] Security validations (auth, rate limiting, CSP)
 - [ ] **RLS policies provided for ALL CRUD operations requiring authorization**
+- [ ] **Schema validation completed before creating SQL policies**
 - [ ] **Documentation (.md files) created for ALL new/refactored functionality**
 - [ ] Error handling with retries and fallbacks
 - [ ] Stripe SCA compliance for payments

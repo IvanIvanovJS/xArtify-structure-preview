@@ -69,10 +69,9 @@ export default function ArtworkCard({ painting, showSold = false, onCardClick }:
         if (onCardClick) {
             onCardClick(painting);
         } else {
-            // Default behavior - navigate to painting page
-            // On desktop, this will trigger the intercept route for modal
-            const slug = painting.slug || painting.id;
-            router.push(`/gallery/${slug}`);
+            // Default behavior - navigate to painting page using urlTitle
+            const urlTitle = painting.urlTitle || painting.id;
+            router.push(`/gallery/${urlTitle}`);
         }
     };
 

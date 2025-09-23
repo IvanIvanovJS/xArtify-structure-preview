@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/authOptions';
 import { prisma } from "@/lib/prisma";
 import { z } from 'zod';
+import { generateUrlTitle } from '@/lib/slug';
 
 export const runtime = "nodejs";
 
@@ -308,37 +309,23 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             }, { status: 400 });
         }
 
-        // Generate slug from title
-        const slug = validatedData.title
-            .toLowerCase()
-            .replace(/[^a-z0-9\s-]/g, '')
-            .replace(/\s+/g, '-')
-            .replace(/-+/g, '-')
-            .trim();
+        // Generate unique ID for the painting first
+        const tempId = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-        // Check if slug already exists and make it unique
-        let uniqueSlug = slug;
-        let counter = 1;
-        while (await prisma.painting.findUnique({ where: { slug: uniqueSlug } })) {
-            uniqueSlug = `${slug}-${counter}`;
-            counter++;
-        }
-
-        // Generate urlTitle if not provided
-        const urlTitle = validatedData.urlTitle || validatedData.title
-            .toLowerCase()
-            .replace(/[^a-z0-9\s-]/g, '')
-            .replace(/\s+/g, '-')
-            .replace(/-+/g, '-')
-            .trim();
+        // Generate SEO-friendly URL title from urlTitle field if provided, otherwise from title
+        const sourceText = validatedData.urlTitle || validatedData.title;
+        const urlTitle = generateUrlTitle(sourceText, tempId);
 
         // Check if urlTitle already exists and make it unique
         let uniqueUrlTitle = urlTitle;
         let urlCounter = 1;
         while (await prisma.painting.findUnique({ where: { urlTitle: uniqueUrlTitle } })) {
-            uniqueUrlTitle = `${urlTitle}-${urlCounter}`;
+            uniqueUrlTitle = `${urlTitle.split('-').slice(0, -1).join('-')}-${urlCounter}`;
             urlCounter++;
         }
+
+        // Generate slug from urlTitle (for backward compatibility)
+        const slug = uniqueUrlTitle;
 
         // Create painting with transaction for data consistency
         const newPainting = await prisma.$transaction(async (tx) => {
@@ -357,7 +344,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
                     tags: validatedData.tags,
                     widthCm: validatedData.widthCm,
                     heightCm: validatedData.heightCm,
-                    slug: uniqueSlug,
+                    slug: slug,
                     artistId: artistId,
                     isOnSale: validatedData.isOnSale || false,
                     salePercentage: validatedData.salePercentage || null,
