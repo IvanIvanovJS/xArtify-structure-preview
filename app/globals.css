@@ -19,6 +19,7 @@
 @import "../components/gallery/styles/filters-sidebar.css";
 @import "../components/gallery/styles/filters-mobile-sheet.css";
 @import "../components/ui/styles/custom-dropdown.css";
+@import "../components/artworkCard/styles/artwork-card.css";
 
 
 /* 1) Color tokens */
@@ -114,6 +115,15 @@
   --color-warning-rgb: 255 193 7;
   --color-warning-1: rgba(255, 193, 7, 0.1);
   --color-warning-3: rgba(255, 193, 7, 0.3);
+
+  /* Promotion colors */
+  --color-promotion-rgb: 255 112 22;
+  --color-promotion: #ff7016;
+  --color-promotion-10: rgba(255, 112, 22, 0.1);
+  --color-promotion-20: rgba(255, 112, 22, 0.2);
+  --color-promotion-30: rgba(255, 112, 22, 0.3);
+  --color-promotion-60: rgba(255, 112, 22, 0.6);
+  --color-promotion-80: rgba(255, 112, 22, 0.8);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -204,6 +214,15 @@
     --color-warning-rgb: 255 193 7;
     --color-warning-1: rgba(255, 193, 7, 0.1);
     --color-warning-3: rgba(255, 193, 7, 0.3);
+
+    /* Promotion colors */
+    --color-promotion-rgb: 255 112 22;
+    --color-promotion: #ff7016;
+    --color-promotion-10: rgba(255, 112, 22, 0.1);
+    --color-promotion-20: rgba(255, 112, 22, 0.2);
+    --color-promotion-30: rgba(255, 112, 22, 0.3);
+    --color-promotion-60: rgba(255, 112, 22, 0.6);
+    --color-promotion-80: rgba(255, 112, 22, 0.8);
   }
 }
 

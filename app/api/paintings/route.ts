@@ -22,6 +22,7 @@ interface PagedResult<T> {
 interface PaintingWithArtist {
     id: string;
     title: string;
+    urlTitle: string;
     description: string | null;
     dimensions: string | null;
     materials: string | null;
@@ -36,6 +37,10 @@ interface PaintingWithArtist {
     subject: string | null;
     tags: string[];
     style: string | null;
+    isOnSale: boolean;
+    salePercentage: number | null;
+    finalPrice: number | null;
+    originalPrice: number | null;
     createdAt: Date;
     updatedAt: Date;
     artist: {
@@ -43,6 +48,7 @@ interface PaintingWithArtist {
         bio: string | null;
         user: {
             name: string | null;
+            email: string | null;
         };
     };
 }
@@ -239,6 +245,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 // Validation schema for painting creation
 const CreatePaintingSchema = z.object({
     title: z.string().min(1, 'Title is required').max(140, 'Title too long'),
+    urlTitle: z.string().min(1, 'URL title is required').max(100, 'URL title too long').regex(/^[a-zA-Zа-яА-Я0-9-]+$/, 'URL title can only contain letters, numbers and hyphens').optional(),
     description: z.string().max(1000, 'Description too long').optional(),
     dimensions: z.string().max(100, 'Dimensions too long').optional(),
     materials: z.string().max(200, 'Materials too long').optional(),
@@ -248,8 +255,12 @@ const CreatePaintingSchema = z.object({
     subject: z.string().min(1, 'Subject is required'),
     style: z.string().min(1, 'Style is required'),
     tags: z.array(z.string()).min(1, 'At least one tag required').max(10, 'Maximum 10 tags allowed'),
-    widthCm: z.number().positive('Width must be positive').max(500, 'Width too large').optional(),
-    heightCm: z.number().positive('Height must be positive').max(500, 'Height too large').optional(),
+    widthCm: z.number().positive('Width must be positive').max(500, 'Width too large'),
+    heightCm: z.number().positive('Height must be positive').max(500, 'Height too large'),
+    isOnSale: z.boolean().optional(),
+    salePercentage: z.number().min(1, 'Sale percentage must be at least 1%').max(100, 'Sale percentage cannot exceed 100%').optional(),
+    finalPrice: z.number().positive('Final price must be positive').optional(),
+    originalPrice: z.number().positive('Original price must be positive').optional(),
 });
 
 // POST /api/paintings - Create new painting (artists and admins only)
@@ -313,11 +324,28 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             counter++;
         }
 
+        // Generate urlTitle if not provided
+        const urlTitle = validatedData.urlTitle || validatedData.title
+            .toLowerCase()
+            .replace(/[^a-z0-9\s-]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/-+/g, '-')
+            .trim();
+
+        // Check if urlTitle already exists and make it unique
+        let uniqueUrlTitle = urlTitle;
+        let urlCounter = 1;
+        while (await prisma.painting.findUnique({ where: { urlTitle: uniqueUrlTitle } })) {
+            uniqueUrlTitle = `${urlTitle}-${urlCounter}`;
+            urlCounter++;
+        }
+
         // Create painting with transaction for data consistency
         const newPainting = await prisma.$transaction(async (tx) => {
             const painting = await tx.painting.create({
                 data: {
                     title: validatedData.title,
+                    urlTitle: uniqueUrlTitle,
                     description: validatedData.description,
                     dimensions: validatedData.dimensions,
                     materials: validatedData.materials,
@@ -331,6 +359,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
                     heightCm: validatedData.heightCm,
                     slug: uniqueSlug,
                     artistId: artistId,
+                    isOnSale: validatedData.isOnSale || false,
+                    salePercentage: validatedData.salePercentage || null,
+                    finalPrice: validatedData.finalPrice || null,
+                    originalPrice: validatedData.originalPrice || null,
                 },
                 include: {
                     artist: {

@@ -4,55 +4,23 @@
 import { useTransition } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-// import PaintingCard from '@/components/PaintingCard'; // Not used in this component
+import ArtworkCard from '@/components/artworkCard/ArtworkCard';
 import OptimizedImage from '@/components/ui/OptimizedImage';
 import SkeletonLoader from '@/components/ui/SkeletonLoader';
 
-// Types
-interface PaintingWithArtist {
-    id: string;
-    title: string;
-    description: string | null;
-    dimensions: string | null;
-    materials: string | null;
-    images: string[];
-    price: number;
-    isSold: boolean;
-    artistId: string;
-    widthCm: number | null;
-    heightCm: number | null;
-    slug: string | null;
-    technique: string | null;
-    subject: string | null;
-    tags: string[];
-    style: string | null;
-    createdAt: Date;
-    updatedAt: Date;
-    artist: {
-        id: string;
-        bio: string | null;
-        user: {
-            name: string | null;
-        };
-    };
-}
+// Import the type from uploadArtwork types
+import { PaintingWithArtist } from '@/components/uploadArtwork/types';
 
 interface GalleryGridProps {
     paintings: PaintingWithArtist[];
     hasNext: boolean;
     currentPage: number;
     totalPages: number;
+    showSold?: boolean;
 }
 
-// Enhanced Painting Card for Gallery
-function GalleryPaintingCard({ painting }: { painting: PaintingWithArtist }): React.JSX.Element {
-    const router = useRouter();
-
-    const handleClick = (): void => {
-        const slug = painting.slug || painting.id;
-        router.push(`/gallery/${slug}`);
-    };
-
+// Enhanced Painting Card for Gallery using new ArtworkCard
+function GalleryPaintingCard({ painting, showSold }: { painting: PaintingWithArtist; showSold?: boolean }): React.JSX.Element {
     return (
         <motion.div
             layout
@@ -61,56 +29,11 @@ function GalleryPaintingCard({ painting }: { painting: PaintingWithArtist }): Re
             exit={{ opacity: 0, scale: 0.9 }}
             transition={{ duration: 0.3 }}
             whileHover={{ y: -5 }}
-            className="gallery-painting-card"
         >
-            <div className="painting-card-container" onClick={handleClick}>
-                {/* Image */}
-                <div className="painting-image-container">
-                    <OptimizedImage
-                        src={painting.images[0] || '/placeholder-painting.jpg'}
-                        alt={painting.title}
-                        width={300}
-                        height={400}
-                        className="painting-image"
-                        priority={false}
-                    />
-                    {painting.isSold && (
-                        <div className="sold-overlay">
-                            <span className="sold-text">Продадена</span>
-                        </div>
-                    )}
-                </div>
-
-                {/* Content */}
-                <div className="painting-content">
-                    <h3 className="painting-title">{painting.title}</h3>
-                    <p className="painting-artist">{painting.artist.user.name || 'Неизвестен художник'}</p>
-
-                    {/* Dimensions */}
-                    {painting.dimensions && (
-                        <p className="painting-dimensions">{painting.dimensions}</p>
-                    )}
-
-                    {/* Tags */}
-                    {painting.tags && painting.tags.length > 0 && (
-                        <div className="painting-tags">
-                            {painting.tags.slice(0, 3).map((tag) => (
-                                <span key={tag} className="painting-tag">
-                                    {tag}
-                                </span>
-                            ))}
-                            {painting.tags.length > 3 && (
-                                <span className="painting-tag-more">+{painting.tags.length - 3}</span>
-                            )}
-                        </div>
-                    )}
-
-                    {/* Price */}
-                    <div className="painting-price">
-                        <span className="price-amount">{painting.price.toFixed(2)} лв.</span>
-                    </div>
-                </div>
-            </div>
+            <ArtworkCard
+                painting={painting}
+                showSold={showSold}
+            />
         </motion.div>
     );
 }
@@ -138,7 +61,8 @@ export default function GalleryGrid({
     paintings,
     hasNext,
     currentPage,
-    totalPages
+    totalPages,
+    showSold = false
 }: GalleryGridProps): React.JSX.Element {
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -199,7 +123,11 @@ export default function GalleryGrid({
             <div className="gallery-grid">
                 <AnimatePresence mode="popLayout">
                     {paintings.map((painting) => (
-                        <GalleryPaintingCard key={painting.id} painting={painting} />
+                        <GalleryPaintingCard
+                            key={painting.id}
+                            painting={painting}
+                            showSold={showSold}
+                        />
                     ))}
                 </AnimatePresence>
             </div>

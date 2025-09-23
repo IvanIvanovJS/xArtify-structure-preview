@@ -15,15 +15,25 @@ import './styles/upload-form.css';
 // Validation schema
 const UploadArtworkSchema = z.object({
     title: z.string().min(1, 'Заглавието е задължително').max(140, 'Заглавието не може да бъде повече от 140 символа'),
+    urlTitle: z.string()
+        .min(1, 'URL-заглавието е задължително')
+        .max(100, 'URL-заглавието не може да бъде повече от 100 символа')
+        .regex(/^[a-zA-Zа-яА-Я0-9\s-]+$/, 'URL-заглавието може да съдържа само букви, цифри, интервали и тирета')
+        .refine((val) => {
+            const words = val.trim().split(/\s+/).filter(word => word.length > 0);
+            return words.length >= 1 && words.length <= 10;
+        }, 'URL-заглавието трябва да съдържа между 1 и 10 думи'),
     description: z.string().max(1000, 'Описанието не може да бъде повече от 1000 символа').optional(),
     materials: z.string().max(200, 'Материалите не могат да бъдат повече от 200 символа').optional(),
     price: z.number().positive('Цената трябва да бъде положително число').max(100000, 'Цената не може да бъде повече от 100,000 лв'),
+    isOnSale: z.boolean().optional(),
+    salePercentage: z.number().min(1, 'Процентът трябва да бъде поне 1%').max(100, 'Процентът не може да бъде повече от 100%').optional(),
     technique: z.string().min(1, 'Техниката е задължителна'),
     subject: z.string().min(1, 'Темата е задължителна'),
     style: z.string().min(1, 'Стилът е задължителен'),
     tags: z.array(z.string().regex(/^[a-zA-Zа-яА-Я0-9#\s]+$/, 'Разрешени са само букви, цифри и символ #')).min(1, 'Поне един таг е задължителен').max(10, 'Максимум 10 тага'),
-    widthCm: z.number().positive('Ширината трябва да бъде положително число').max(500, 'Ширината не може да бъде повече от 500 см').optional(),
-    heightCm: z.number().positive('Височината трябва да бъде положително число').max(500, 'Височината не може да бъде повече от 500 см').optional(),
+    widthCm: z.number().positive('Ширината трябва да бъде положително число').max(500, 'Ширината не може да бъде повече от 500 см'),
+    heightCm: z.number().positive('Височината трябва да бъде положително число').max(500, 'Височината не може да бъде повече от 500 см'),
 });
 
 type UploadArtworkFormData = z.infer<typeof UploadArtworkSchema>;
@@ -116,12 +126,50 @@ export default function UploadArtworkForm({ artistId }: { artistId: string }): R
     const [customTagInput, setCustomTagInput] = useState('');
     const [isAddingTag, setIsAddingTag] = useState(false);
     const [tagError, setTagError] = useState<string | null>(null);
+    const [isOnSale, setIsOnSale] = useState(false);
+    const [salePercentage, setSalePercentage] = useState<number>(0);
 
     // Validate tag input in real-time
     const isValidTagInput = (input: string): boolean => {
         if (!input.trim()) return false;
         const validTagRegex = /^[a-zA-Zа-яА-Я0-9#\s]+$/;
         return validTagRegex.test(input.trim());
+    };
+
+    // Calculate original price from sale price and percentage
+    const calculateOriginalPrice = (salePrice: number, percentage: number): number => {
+        // If sale price is 500 and discount is 15%, original price = 500 / (1 - 0.15) = 500 / 0.85 = 588.24
+        return salePrice / (1 - percentage / 100);
+    };
+
+    // Convert URL title to URL-friendly format (replace spaces with hyphens)
+    const convertToUrlFormat = (title: string): string => {
+        return title.trim().toLowerCase().replace(/\s+/g, '-');
+    };
+
+    // Check if all required fields are filled
+    const areRequiredFieldsFilled = (): boolean => {
+        const formData = watch();
+        return !!(
+            formData.title &&
+            formData.urlTitle &&
+            formData.technique &&
+            formData.subject &&
+            formData.style &&
+            formData.tags &&
+            formData.tags.length > 0 &&
+            formData.widthCm &&
+            formData.heightCm &&
+            formData.price &&
+            uploadedFiles.length >= 2
+        );
+    };
+
+    // Handle button click when disabled
+    const handleButtonClick = (): void => {
+        if (!areRequiredFieldsFilled()) {
+            setError('Моля, попълнете всички задължителни * полета');
+        }
     };
 
     const {
@@ -139,6 +187,15 @@ export default function UploadArtworkForm({ artistId }: { artistId: string }): R
     });
 
     const watchedTags = watch('tags');
+
+    // Auto-generate urlTitle from title
+    useEffect(() => {
+        const title = watch('title');
+        const urlTitle = watch('urlTitle');
+        if (title && !urlTitle) {
+            setValue('urlTitle', convertToUrlFormat(title));
+        }
+    }, [watch, setValue]);
 
     // Load tags from database on component mount
     useEffect(() => {
@@ -271,17 +328,15 @@ export default function UploadArtworkForm({ artistId }: { artistId: string }): R
             });
         }
 
-        if (newFiles.length < 2) {
-            setError('Моля, изберете поне 2 изображения');
+        // Check total number of files (existing + new)
+        const totalFiles = uploadedFiles.length + newFiles.length;
+
+        if (totalFiles > 5) {
+            setError('Максимум 5 изображения са разрешени общо');
             return;
         }
 
-        if (newFiles.length > 5) {
-            setError('Максимум 5 изображения са разрешени');
-            return;
-        }
-
-        setUploadedFiles(newFiles);
+        setUploadedFiles(prevFiles => [...prevFiles, ...newFiles]);
         setError(null);
     };
 
@@ -309,6 +364,11 @@ export default function UploadArtworkForm({ artistId }: { artistId: string }): R
     const onSubmit = async (data: UploadArtworkFormData): Promise<void> => {
         if (uploadedFiles.length < 2) {
             setError('Моля, изберете поне 2 изображения');
+            return;
+        }
+
+        if (uploadedFiles.length > 5) {
+            setError('Максимум 5 изображения са разрешени');
             return;
         }
 
@@ -344,8 +404,13 @@ export default function UploadArtworkForm({ artistId }: { artistId: string }): R
             // Create painting record
             const paintingData = {
                 ...data,
+                urlTitle: convertToUrlFormat(data.urlTitle), // Convert to URL-friendly format
                 images: imageUrls,
                 artistId,
+                isOnSale: isOnSale,
+                salePercentage: isOnSale ? salePercentage : 0,
+                finalPrice: isOnSale && salePercentage > 0 ? data.price : data.price, // Final price is the price user entered
+                originalPrice: isOnSale && salePercentage > 0 ? calculateOriginalPrice(data.price, salePercentage) : data.price,
             };
 
             setUploadProgress(75);
@@ -413,6 +478,30 @@ export default function UploadArtworkForm({ artistId }: { artistId: string }): R
                     </div>
 
                     <div className="form-group">
+                        <label htmlFor="urlTitle" className="form-label">
+                            URL-заглавие *
+                        </label>
+                        <input
+                            {...register('urlTitle')}
+                            type="text"
+                            id="urlTitle"
+                            className={`form-input ${errors.urlTitle ? 'form-input-error' : ''}`}
+                            placeholder="твоето URL заглавие тук"
+                        />
+                        {errors.urlTitle && (
+                            <span className="form-error">
+                                <AlertCircle size={16} />
+                                {errors.urlTitle.message}
+                            </span>
+                        )}
+                        <div className="url-preview">
+                            <small>
+                                URL ще изглежда така: <span className="url-example">xartify.com/gallery/{watch('urlTitle') ? convertToUrlFormat(watch('urlTitle')) : 'твоето-url-заглавие-тук'}</span>
+                            </small>
+                        </div>
+                    </div>
+
+                    <div className="form-group">
                         <label htmlFor="description" className="form-label">
                             Описание
                         </label>
@@ -435,7 +524,7 @@ export default function UploadArtworkForm({ artistId }: { artistId: string }): R
                     <div className="form-row">
                         <div className="form-group">
                             <label htmlFor="widthCm" className="form-label">
-                                Ширина (см)
+                                Ширина (см) *
                             </label>
                             <input
                                 {...register('widthCm', { valueAsNumber: true })}
@@ -455,7 +544,7 @@ export default function UploadArtworkForm({ artistId }: { artistId: string }): R
 
                         <div className="form-group">
                             <label htmlFor="heightCm" className="form-label">
-                                Височина (см)
+                                Височина (см) *
                             </label>
                             <input
                                 {...register('heightCm', { valueAsNumber: true })}
@@ -493,6 +582,71 @@ export default function UploadArtworkForm({ artistId }: { artistId: string }): R
                             </span>
                         )}
                     </div>
+
+                    {/* Sale Toggle */}
+                    <div className="form-group">
+                        <div className="sale-toggle-container">
+                            <label htmlFor="isOnSale" className="sale-toggle-label">
+                                Намаление
+                            </label>
+                            <div className="sale-toggle-wrapper">
+                                <input
+                                    type="checkbox"
+                                    id="isOnSale"
+                                    checked={isOnSale}
+                                    onChange={(e) => {
+                                        setIsOnSale(e.target.checked);
+                                        if (!e.target.checked) {
+                                            setSalePercentage(0);
+                                        }
+                                    }}
+                                    className="sale-toggle-input"
+                                />
+                                <label htmlFor="isOnSale" className="sale-toggle-slider">
+                                    <span className="sale-toggle-slider-button"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Sale Percentage */}
+                    {isOnSale && (
+                        <div className="form-group">
+                            <label htmlFor="salePercentage" className="form-label">
+                                Процент намаление (1-100%)
+                            </label>
+                            <input
+                                type="number"
+                                min="1"
+                                max="100"
+                                onChange={(e) => setSalePercentage(Number(e.target.value))}
+                                id="salePercentage"
+                                className="form-input"
+                                placeholder="0"
+                            />
+                        </div>
+                    )}
+
+                    {/* Price Preview */}
+                    {isOnSale && salePercentage > 0 && (
+                        <div className="price-preview">
+                            <div className="price-preview-item">
+                                <span className="price-label">Оригинална цена:</span>
+                                <span className="price-value original">
+                                    {Math.round(calculateOriginalPrice(watch('price') || 0, salePercentage))} лв
+                                </span>
+                            </div>
+                            <div className="price-preview-item">
+                                <span className="price-label">Намалена цена:</span>
+                                <span className="price-value sale">
+                                    {Math.round(watch('price') || 0)} лв
+                                </span>
+                            </div>
+                            <div className="price-preview-note">
+                                * Потребителите ще видят намалената цена като промоция
+                            </div>
+                        </div>
+                    )}
 
                 </div>
 
@@ -758,7 +912,8 @@ export default function UploadArtworkForm({ artistId }: { artistId: string }): R
                 {/* Submit Button */}
                 <button
                     type="submit"
-                    disabled={isSubmitting || isUploading || uploadedFiles.length < 2}
+                    disabled={isSubmitting || isUploading || !areRequiredFieldsFilled()}
+                    onClick={handleButtonClick}
                     className="submit-button"
                 >
                     {isSubmitting || isUploading ? 'Добавяне...' : 'Добави картина'}

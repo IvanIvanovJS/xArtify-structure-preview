@@ -74,6 +74,7 @@ model VerificationToken {
 model Painting {
   id           String    @id @default(cuid())
   title        String
+  urlTitle     String    @unique // SEO-friendly URL title for better crawling
   description  String?
   dimensions   String?   // Например: "80x60 cm"
   materials    String?   // Например: "Маслени бои върху платно"
@@ -84,13 +85,19 @@ model Painting {
   artist       ArtistProfile @relation(fields: [artistId], references: [id])
   
   // Enhanced fields for filtering
-  widthCm      Float?    // Width in centimeters
-  heightCm     Float?    // Height in centimeters
+  widthCm      Float     // Width in centimeters (required)
+  heightCm     Float     // Height in centimeters (required)
   slug         String?   @unique // SEO-friendly URL slug
   technique    String?   // Painting technique (oil, acrylic, watercolor, etc.)
   subject      String?   // Subject matter (portrait, landscape, abstract, etc.)
   tags         String[]  // Array of tag strings for filtering
   style        String?   // Art style (realism, impressionism, abstract, etc.)
+  
+  // Sale fields
+  isOnSale     Boolean   @default(false)  // Whether the painting is on sale
+  salePercentage Float?  // Sale percentage (1-100)
+  finalPrice   Float?    // Final price after sale calculation (price user wants to receive)
+  originalPrice Float?   // Original price before discount (calculated from final price and percentage)
   
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
@@ -101,6 +108,10 @@ model Painting {
   @@index([price])
   @@index([createdAt])
   @@index([widthCm, heightCm])
+  @@index([isOnSale])
+  @@index([finalPrice])
+  @@index([originalPrice])
+  @@index([urlTitle])
 }
 
 model ArtistProfile {

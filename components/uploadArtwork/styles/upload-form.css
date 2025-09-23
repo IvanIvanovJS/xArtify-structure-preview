@@ -223,6 +223,146 @@
     line-height: 1.4;
 }
 
+/* Sale Toggle Styles */
+.sale-toggle-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.sale-toggle-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-foreground);
+    margin: 0;
+}
+
+.sale-toggle-wrapper {
+    position: relative;
+}
+
+.sale-toggle-input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.sale-toggle-slider {
+    position: relative;
+    display: inline-block;
+    width: 3rem;
+    height: 1.5rem;
+    background-color: var(--color-muted);
+    border-radius: 1.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 1px solid var(--color-primary-20);
+}
+
+.sale-toggle-slider:hover {
+    border-color: var(--color-primary-40);
+}
+
+.sale-toggle-slider-button {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 1.25rem;
+    height: 1.25rem;
+    background-color: var(--color-foreground);
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.sale-toggle-input:checked+.sale-toggle-slider {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+.sale-toggle-input:checked+.sale-toggle-slider .sale-toggle-slider-button {
+    transform: translateX(1.5rem);
+    background-color: white;
+}
+
+/* Price Preview Styles */
+.price-preview {
+    background: var(--color-muted);
+    border: 1px solid var(--color-primary-20);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    margin-top: 0.5rem;
+}
+
+.price-preview-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.price-preview-item:last-of-type {
+    margin-bottom: 0;
+}
+
+.price-label {
+    font-size: 0.875rem;
+    color: var(--color-muted-foreground);
+    font-weight: 500;
+}
+
+.price-value {
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.price-value.original {
+    color: var(--color-muted-foreground);
+    text-decoration: line-through;
+}
+
+.price-value.sale {
+    color: var(--color-primary);
+    font-size: 1rem;
+}
+
+.price-preview-note {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--color-primary-20);
+    font-size: 0.75rem;
+    color: var(--color-muted-foreground);
+    font-style: italic;
+    text-align: center;
+}
+
+/* URL Preview Styles */
+.url-preview {
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    background: var(--color-muted);
+    border-radius: 0.5rem;
+    border: 1px solid var(--color-primary-20);
+}
+
+.url-preview small {
+    color: var(--color-muted-foreground);
+    font-size: 0.75rem;
+    line-height: 1.4;
+}
+
+.url-example {
+    color: var(--color-primary);
+    font-weight: 600;
+    font-family: monospace;
+    background: var(--color-background);
+    padding: 0.125rem 0.25rem;
+    border-radius: 0.25rem;
+    border: 1px solid var(--color-primary-20);
+}
+
 .custom-tag-input-wrapper {
     display: flex;
     gap: 0.5rem;
