@@ -69,6 +69,7 @@ export interface PaginatedResponse<T> {
 export interface PaintingWithArtist {
     id: string;
     title: string;
+    urlTitle: string;
     description: string | null;
     dimensions: string | null;
     materials: string | null;

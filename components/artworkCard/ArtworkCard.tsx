@@ -9,40 +9,7 @@ import {
     formatPriceBGN,
     formatPriceEUR
 } from "@/lib/currency";
-// Define the interface locally to match API response
-interface PaintingWithArtist {
-    id: string;
-    title: string;
-    urlTitle: string;
-    description: string | null;
-    dimensions: string | null;
-    materials: string | null;
-    images: string[];
-    price: number;
-    isSold: boolean;
-    artistId: string;
-    widthCm: number | null;
-    heightCm: number | null;
-    slug: string | null;
-    technique: string | null;
-    subject: string | null;
-    tags: string[];
-    style: string | null;
-    isOnSale: boolean;
-    salePercentage: number | null;
-    finalPrice: number | null;
-    originalPrice: number | null;
-    createdAt: Date;
-    updatedAt: Date;
-    artist: {
-        id: string;
-        bio: string | null;
-        user: {
-            name: string | null;
-            email: string | null;
-        };
-    };
-}
+import { PaintingWithArtist } from "@/components/uploadArtwork/types";
 import "./styles/artwork-card.css";
 
 interface ArtworkCardProps {
