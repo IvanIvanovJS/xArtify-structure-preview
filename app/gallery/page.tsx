@@ -24,6 +24,7 @@ interface PagedResult<T> {
 interface PaintingWithArtist {
     id: string;
     title: string;
+    urlTitle: string;
     description: string | null;
     dimensions: string | null;
     materials: string | null;
@@ -38,6 +39,10 @@ interface PaintingWithArtist {
     subject: string | null;
     tags: string[];
     style: string | null;
+    isOnSale: boolean;
+    salePercentage: number | null;
+    finalPrice: number | null;
+    originalPrice: number | null;
     createdAt: Date;
     updatedAt: Date;
     artist: {
@@ -45,6 +50,7 @@ interface PaintingWithArtist {
         bio: string | null;
         user: {
             name: string | null;
+            email: string | null;
         };
     };
 }
