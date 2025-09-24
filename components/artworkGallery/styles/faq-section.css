@@ -3,9 +3,9 @@
 .faq-section {
     width: 100%;
     margin: 4rem 0;
-    padding: 0 1rem;
+    padding: 2rem 1rem;
     position: relative;
-    overflow: hidden;
+    overflow: visible;
 }
 
 .faq-container {
@@ -26,17 +26,17 @@
     background:
         radial-gradient(2px 2px at 20px 30px, rgba(255, 255, 255, 0.8), transparent),
         radial-gradient(2px 2px at 40px 70px, rgba(255, 255, 255, 0.6), transparent),
-        radial-gradient(1px 1px at 90px 40px, rgba(255, 255, 255, 0.9), transparent),
+        radial-gradient(3px 3px at 90px 40px, rgba(255, 255, 255, 0.9), transparent),
         radial-gradient(1px 1px at 130px 80px, rgba(255, 255, 255, 0.7), transparent),
         radial-gradient(2px 2px at 160px 30px, rgba(255, 255, 255, 0.5), transparent),
-        radial-gradient(1px 1px at 200px 60px, rgba(255, 255, 255, 0.8), transparent),
+        radial-gradient(3px 3px at 200px 60px, rgba(255, 255, 255, 0.8), transparent),
         radial-gradient(2px 2px at 240px 20px, rgba(255, 255, 255, 0.6), transparent),
         radial-gradient(1px 1px at 280px 70px, rgba(255, 255, 255, 0.9), transparent),
         radial-gradient(2px 2px at 320px 40px, rgba(255, 255, 255, 0.7), transparent),
         radial-gradient(1px 1px at 360px 80px, rgba(255, 255, 255, 0.5), transparent);
     background-repeat: repeat;
     background-size: 400px 100px;
-    animation: twinkle 20s linear infinite;
+    animation: twinkle 3s linear infinite;
     z-index: 1;
 }
 
@@ -65,15 +65,15 @@
     flex-shrink: 0;
     width: 60px;
     height: 60px;
-    background: linear-gradient(135deg, var(--color-primary), #ff7016);
+    background: linear-gradient(135deg, var(--color-primary), #31413f);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
     box-shadow:
-        0 0 20px rgba(22, 255, 228, 0.6),
-        0 0 40px rgba(22, 255, 228, 0.3);
+        0 0 10px rgba(22, 255, 228, 0.6),
+        0 10px 20px rgba(22, 255, 228, 0.1);
     position: relative;
 }
 
@@ -84,7 +84,7 @@
     left: -2px;
     right: -2px;
     bottom: -2px;
-    background: linear-gradient(135deg, var(--color-primary), #ff7016);
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-20));
     border-radius: 50%;
     z-index: -1;
     filter: blur(8px);
@@ -232,7 +232,7 @@
 @media (max-width: 767px) {
     .faq-section {
         margin: 3.5rem 0;
-        padding: 0 1rem;
+        padding: 1.5rem 1rem;
     }
 
     .faq-header {
@@ -279,7 +279,7 @@
 /* Tablet */
 @media (min-width: 768px) and (max-width: 1023px) {
     .faq-section {
-        padding: 0 2rem;
+        padding: 2rem 2rem;
     }
 
     .faq-header {
@@ -298,7 +298,7 @@
 /* Desktop */
 @media (min-width: 1024px) {
     .faq-section {
-        padding: 0 2rem;
+        padding: 2rem 2rem;
     }
 
     .faq-header {
@@ -342,7 +342,7 @@
 /* Large Desktop */
 @media (min-width: 1440px) {
     .faq-section {
-        padding: 0 3rem;
+        padding: 2rem 3rem;
     }
 
     .faq-items {

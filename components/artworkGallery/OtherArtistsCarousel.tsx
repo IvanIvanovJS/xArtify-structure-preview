@@ -21,6 +21,7 @@ export default function OtherArtistsCarousel({
     const [currentIndex, setCurrentIndex] = useState(0);
     const [touchStart, setTouchStart] = useState<number | null>(null);
     const [touchEnd, setTouchEnd] = useState<number | null>(null);
+    const [isMobile, setIsMobile] = useState(false);
     const carouselRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -51,6 +52,18 @@ export default function OtherArtistsCarousel({
         fetchRandomPaintings();
     }, [excludeArtistId, excludePaintingId]);
 
+    // Check if mobile
+    useEffect(() => {
+        const checkMobile = () => {
+            setIsMobile(window.innerWidth <= 767);
+        };
+
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
+
     // Touch handling for mobile swipe
     const handleTouchStart = (e: React.TouchEvent) => {
         setTouchEnd(null);
@@ -65,7 +78,7 @@ export default function OtherArtistsCarousel({
         if (!touchStart || !touchEnd) return;
 
         const distance = touchStart - touchEnd;
-        const isLeftSwipe = distance > 50;
+        const isLeftSwipe = distance > 50; // Reduced threshold for more responsive swiping
         const isRightSwipe = distance < -50;
 
         if (isLeftSwipe && currentIndex < paintings.length - 1) {
@@ -148,7 +161,7 @@ export default function OtherArtistsCarousel({
                 <div
                     className="other-artists-carousel-track"
                     style={{
-                        transform: `translateX(-${currentIndex * (100 / Math.min(4, paintings.length))}%)`
+                        transform: `translateX(-${currentIndex * (isMobile ? 76.92 : 100 / Math.min(4, paintings.length))}%)`
                     }}
                 >
                     {paintings.map((painting) => (
