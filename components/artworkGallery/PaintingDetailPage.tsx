@@ -12,6 +12,7 @@ import FavoriteButton from '@/components/artworkGallery/FavoriteButton';
 import ImageGallery from '@/components/artworkGallery/ImageGallery';
 import PaintingFeatures from '@/components/artworkGallery/PaintingFeatures';
 import MeetTheArtist from '@/components/artworkGallery/MeetTheArtist';
+import ArtistCarousel from '@/components/artworkGallery/ArtistCarousel';
 import "./styles/painting-detail.css";
 
 interface PaintingDetailPageProps {
@@ -28,6 +29,8 @@ export default function PaintingDetailPage({
     const router = useRouter();
     const [mounted, setMounted] = useState(false);
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+    const [touchStart, setTouchStart] = useState<number | null>(null);
+    const [touchEnd, setTouchEnd] = useState<number | null>(null);
 
     useEffect(() => {
         setMounted(true);
@@ -91,6 +94,31 @@ export default function PaintingDetailPage({
         router.back();
     };
 
+    // Touch handling for main image swipe
+    const handleMainImageTouchStart = (e: React.TouchEvent) => {
+        setTouchEnd(null);
+        setTouchStart(e.targetTouches[0].clientX);
+    };
+
+    const handleMainImageTouchMove = (e: React.TouchEvent) => {
+        setTouchEnd(e.targetTouches[0].clientX);
+    };
+
+    const handleMainImageTouchEnd = () => {
+        if (!touchStart || !touchEnd || painting.images.length <= 1) return;
+
+        const distance = touchStart - touchEnd;
+        const isLeftSwipe = distance > 50;
+        const isRightSwipe = distance < -50;
+
+        if (isLeftSwipe && selectedImageIndex < painting.images.length - 1) {
+            setSelectedImageIndex(selectedImageIndex + 1);
+        }
+        if (isRightSwipe && selectedImageIndex > 0) {
+            setSelectedImageIndex(selectedImageIndex - 1);
+        }
+    };
+
     const currentImage = painting.images[selectedImageIndex] || painting.images[0] || "/placeholder-painting.jpg";
 
     return (
@@ -112,7 +140,12 @@ export default function PaintingDetailPage({
             <div className="painting-detail-container">
                 {/* Image Section */}
                 <div className="painting-detail-image-section">
-                    <div className="painting-detail-main-image">
+                    <div
+                        className="painting-detail-main-image"
+                        onTouchStart={handleMainImageTouchStart}
+                        onTouchMove={handleMainImageTouchMove}
+                        onTouchEnd={handleMainImageTouchEnd}
+                    >
                         <Image
                             src={currentImage}
                             alt={painting.title}
@@ -294,6 +327,12 @@ export default function PaintingDetailPage({
             <MeetTheArtist
                 artist={painting.artist}
                 paintingTitle={painting.title}
+            />
+
+            {/* Artist Carousel - More works from the artist */}
+            <ArtistCarousel
+                artistId={painting.artistId}
+                excludePaintingId={painting.id}
             />
         </div>
     );
