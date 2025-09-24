@@ -13,6 +13,7 @@ import ImageGallery from '@/components/artworkGallery/ImageGallery';
 import PaintingFeatures from '@/components/artworkGallery/PaintingFeatures';
 import MeetTheArtist from '@/components/artworkGallery/MeetTheArtist';
 import ArtistCarousel from '@/components/artworkGallery/ArtistCarousel';
+import OtherArtistsCarousel from '@/components/artworkGallery/OtherArtistsCarousel';
 import "./styles/painting-detail.css";
 
 interface PaintingDetailPageProps {
@@ -332,6 +333,12 @@ export default function PaintingDetailPage({
             {/* Artist Carousel - More works from the artist */}
             <ArtistCarousel
                 artistId={painting.artistId}
+                excludePaintingId={painting.id}
+            />
+
+            {/* Other Artists Carousel - Random paintings from other artists */}
+            <OtherArtistsCarousel
+                excludeArtistId={painting.artistId}
                 excludePaintingId={painting.id}
             />
         </div>

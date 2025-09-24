@@ -10,7 +10,9 @@
     "postinstall": "prisma generate",
     "migrate:deploy": "prisma migrate deploy",
     "migrate:url-titles": "tsx scripts/migrate-url-titles.ts",
-    "check:url-titles": "tsx scripts/check-url-titles.ts"
+    "check:url-titles": "tsx scripts/check-url-titles.ts",
+    "create:mock-paintings": "tsx scripts/create-mock-paintings.ts",
+    "delete:mock-paintings": "tsx scripts/delete-mock-paintings.ts"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.7",

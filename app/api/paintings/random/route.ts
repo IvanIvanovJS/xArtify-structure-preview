@@ -38,40 +38,38 @@ interface PaintingWithArtist {
     };
 }
 
-// GET /api/paintings/artist/[artistId] - Get paintings by artist ID
-export async function GET(
-    request: NextRequest,
-    { params }: { params: Promise<{ artistId: string }> }
-): Promise<NextResponse> {
+// GET /api/paintings/random - Get random paintings from other artists
+export async function GET(request: NextRequest): Promise<NextResponse> {
     try {
-        const { artistId } = await params;
         const { searchParams } = new URL(request.url);
-        const excludeId = searchParams.get('exclude');
+        const excludeArtistId = searchParams.get('excludeArtistId');
+        const excludePaintingId = searchParams.get('excludePaintingId');
         const limit = parseInt(searchParams.get('limit') || '8');
 
-        if (!artistId) {
-            return NextResponse.json({ error: 'Artist ID is required' }, { status: 400 });
-        }
-
         // Build where clause
-        const where: Prisma.PaintingWhereInput = {
-            artistId: artistId
-        };
+        const where: Prisma.PaintingWhereInput = {};
 
-        // Exclude specific painting if provided
-        if (excludeId) {
-            where.id = {
-                not: excludeId
+        // Exclude specific artist if provided
+        if (excludeArtistId) {
+            where.artistId = {
+                not: excludeArtistId
             };
         }
 
-        // Fetch paintings with random order for variety
+        // Exclude specific painting if provided
+        if (excludePaintingId) {
+            where.id = {
+                not: excludePaintingId
+            };
+        }
+
+        // Fetch random paintings from other artists
         const paintings = await prisma.painting.findMany({
             where,
             orderBy: {
                 createdAt: 'desc'
             },
-            take: limit,
+            take: limit * 2, // Get more than needed to ensure we have enough after filtering
             include: {
                 artist: {
                     select: {
@@ -91,12 +89,15 @@ export async function GET(
         // Shuffle the results for random display
         const shuffledPaintings = paintings.sort(() => Math.random() - 0.5);
 
-        return NextResponse.json(shuffledPaintings as PaintingWithArtist[]);
+        // Take only the requested limit
+        const limitedPaintings = shuffledPaintings.slice(0, limit);
+
+        return NextResponse.json(limitedPaintings as PaintingWithArtist[]);
 
     } catch (error) {
-        console.error('Error fetching artist paintings:', error);
+        console.error('Error fetching random paintings:', error);
         return NextResponse.json(
-            { message: 'Error fetching artist paintings', error: error instanceof Error ? error.message : 'Unknown error' },
+            { message: 'Error fetching random paintings', error: error instanceof Error ? error.message : 'Unknown error' },
             { status: 500 }
         );
     }
