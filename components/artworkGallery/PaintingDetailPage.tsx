@@ -14,6 +14,7 @@ import PaintingFeatures from '@/components/artworkGallery/PaintingFeatures';
 import MeetTheArtist from '@/components/artworkGallery/MeetTheArtist';
 import ArtistCarousel from '@/components/artworkGallery/ArtistCarousel';
 import OtherArtistsCarousel from '@/components/artworkGallery/OtherArtistsCarousel';
+import FAQSection from '@/components/artworkGallery/FAQSection';
 import "./styles/painting-detail.css";
 
 interface PaintingDetailPageProps {
@@ -341,6 +342,9 @@ export default function PaintingDetailPage({
                 excludeArtistId={painting.artistId}
                 excludePaintingId={painting.id}
             />
+
+            {/* FAQ Section */}
+            <FAQSection />
         </div>
     );
 }
