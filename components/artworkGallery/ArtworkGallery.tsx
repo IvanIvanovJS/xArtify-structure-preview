@@ -71,14 +71,16 @@ export default function ArtworkGallery({
         );
     }
 
+    // Filter out sold paintings if not showing sold items
+    const filteredPaintings = showSold ? paintings : paintings.filter(painting => !painting.isSold);
+
     return (
         <div className={`artwork-gallery ${className}`}>
             <div className="artwork-gallery-grid">
-                {paintings.map((painting) => (
+                {filteredPaintings.map((painting) => (
                     <ArtworkCard
                         key={painting.id}
                         painting={painting}
-                        showSold={showSold}
                         onCardClick={onPaintingClick}
                     />
                 ))}

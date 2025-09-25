@@ -20,6 +20,17 @@ interface GalleryGridProps {
 
 // Enhanced Painting Card for Gallery using new ArtworkCard
 function GalleryPaintingCard({ painting, showSold }: { painting: PaintingWithArtist; showSold?: boolean }): React.JSX.Element {
+    // Debug logging
+    if (painting.isSold) {
+        console.log(`GalleryPaintingCard: Painting "${painting.title}" is sold, showSold: ${showSold}`);
+    }
+
+    // Don't render sold paintings if showSold is false
+    if (painting.isSold && !showSold) {
+        console.log(`GalleryPaintingCard: Hiding sold painting "${painting.title}"`);
+        return <></>;
+    }
+
     return (
         <motion.div
             layout
@@ -31,7 +42,6 @@ function GalleryPaintingCard({ painting, showSold }: { painting: PaintingWithArt
         >
             <ArtworkCard
                 painting={painting}
-                showSold={showSold}
             />
         </motion.div>
     );
@@ -63,6 +73,10 @@ export default function GalleryGrid({
     totalPages,
     showSold = false
 }: GalleryGridProps): React.JSX.Element {
+    // Debug logging
+    console.log(`GalleryGrid: showSold = ${showSold}, total paintings: ${paintings.length}`);
+    const soldCount = paintings.filter(p => p.isSold).length;
+    console.log(`GalleryGrid: sold paintings count: ${soldCount}`);
     const router = useRouter();
     const searchParams = useSearchParams();
     const [isLoading, startTransition] = useTransition();

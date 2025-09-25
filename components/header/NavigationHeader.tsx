@@ -293,7 +293,7 @@ export default function NavigationHeader(): JSX.Element {
                             className="inline-block"
                             onClick={scrollToTop}
                         >
-                            <Image src="/xArtify-logo9.svg" alt="xArtify" width={220} height={60} priority />
+                            <Image src="/xArtify-logo13.svg" alt="xArtify" width={220} height={60} priority />
                         </Link>
                     </div>
                     {/* ДЯСНО */}

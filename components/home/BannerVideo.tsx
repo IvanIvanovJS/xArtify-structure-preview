@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import type {
     FC,
     KeyboardEventHandler,
@@ -17,12 +18,8 @@ export type BannerVideoProps = {
     widthHint?: number;
     className?: string;
     preload?: "none" | "metadata" | "auto";
-    /** Разкриване само при целеви действие (CTA/мишена) */
+    /** Разкриване само при целеви действие (CTA) */
     revealOnTap?: boolean;
-    /** Колко дълго да стои цветно след активиране (ms) */
-    revealPersistMs?: number;
-    /** След колко ms видимост да покажем подсказката (само мобилни) */
-    nudgeDelayMs?: number;
 };
 
 const buildCldVideoSrc = (
@@ -52,8 +49,6 @@ const BannerVideo: FC<BannerVideoProps> = ({
     className,
     preload = "metadata",
     revealOnTap = true,
-    revealPersistMs = 5000,
-    nudgeDelayMs = 2000,
 }): ReactElement => {
     const useCloudinary: boolean = Boolean(cloudName && publicId);
     const vRef = useRef<HTMLVideoElement | null>(null);
@@ -62,12 +57,8 @@ const BannerVideo: FC<BannerVideoProps> = ({
 
     // Състояния
     const [isHover, setIsHover] = useState<boolean>(false); // само за desktop (mouse)
-    const [isTapActive, setIsTapActive] = useState<boolean>(false); // активира се само от CTA/мишена
-    const [showNudge, setShowNudge] = useState<boolean>(false); // подсказка след 5s видимост
-
-    // Таймери
-    const hideTimerRef = useRef<number | null>(null);
-    const nudgeTimerRef = useRef<number | null>(null);
+    const [isTapActive, setIsTapActive] = useState<boolean>(false); // активира се само от CTA
+    const [showNudge, setShowNudge] = useState<boolean>(false); // подсказка след 2s видимост
 
     const mp4Src: string = useCloudinary
         ? buildCldVideoSrc(cloudName as string, publicId as string, "mp4", widthHint)
@@ -105,13 +96,9 @@ const BannerVideo: FC<BannerVideoProps> = ({
         return () => { v.removeEventListener("canplay", onCanPlay); };
     }, []);
 
-    // Cleanup таймери
-    useEffect(() => () => {
-        if (hideTimerRef.current !== null) window.clearTimeout(hideTimerRef.current);
-        if (nudgeTimerRef.current !== null) window.clearTimeout(nudgeTimerRef.current);
-    }, []);
 
-    // Показване на подсказката: секцията видима ≥50% за nudgeDelayMs и НЕ е активно
+
+    // Показване на подсказката: секцията видима ≥50% за 2s и НЕ е активно
     useEffect(() => {
         const el = sectionRef.current;
         if (!el) return;
@@ -121,13 +108,12 @@ const BannerVideo: FC<BannerVideoProps> = ({
                 const entry = entries[0];
                 const visible = entry.isIntersecting && entry.intersectionRatio > 0.5;
                 if (visible && !isTapActive) {
-                    if (nudgeTimerRef.current !== null) window.clearTimeout(nudgeTimerRef.current);
-                    nudgeTimerRef.current = window.setTimeout(() => {
+                    const timer = window.setTimeout(() => {
                         const isHoverNone = typeof window !== "undefined" && window.matchMedia && window.matchMedia("(hover: none)").matches;
                         if (isHoverNone) setShowNudge(true);
-                    }, nudgeDelayMs);
+                    }, 2000);
+                    return () => window.clearTimeout(timer);
                 } else {
-                    if (nudgeTimerRef.current !== null) window.clearTimeout(nudgeTimerRef.current);
                     setShowNudge(false);
                 }
             },
@@ -136,7 +122,7 @@ const BannerVideo: FC<BannerVideoProps> = ({
 
         observer.observe(el);
         return () => observer.disconnect();
-    }, [nudgeDelayMs, isTapActive]);
+    }, [isTapActive]);
 
     // --- Глобален outside-click: ако кликнеш ИЗВЪН секцията → връщаме grayscale ---
     useEffect(() => {
@@ -146,7 +132,6 @@ const BannerVideo: FC<BannerVideoProps> = ({
             const target = e.target as Node | null;
             if (target && !sec.contains(target)) {
                 setIsTapActive(false);
-                if (hideTimerRef.current !== null) { window.clearTimeout(hideTimerRef.current); hideTimerRef.current = null; }
                 // ако е мобилно устройство – покажи подсказката веднага
                 const isHoverNone = typeof window !== "undefined" && window.matchMedia && window.matchMedia("(hover: none)").matches;
                 if (isHoverNone) setShowNudge(true);
@@ -164,26 +149,14 @@ const BannerVideo: FC<BannerVideoProps> = ({
         if (e.pointerType === "mouse") setIsHover(false);
     };
 
-    const startHideTimer = (): void => {
-        if (hideTimerRef.current !== null) window.clearTimeout(hideTimerRef.current);
-        hideTimerRef.current = window.setTimeout(() => {
-            setIsTapActive(false);
-            hideTimerRef.current = null;
-            // мигновено връщаме подсказката на мобилни, щом цветът угасне
-            const isHoverNone = typeof window !== "undefined" && window.matchMedia && window.matchMedia("(hover: none)").matches;
-            if (isHoverNone) setShowNudge(true);
-        }, revealPersistMs);
-    };
-
-    // Активиране САМО от CTA или мишената
+    // Активиране САМО от CTA или логото
     const activateTap = (): void => {
         if (!revealOnTap) return;
         setIsTapActive(true);
         setShowNudge(false);
-        startHideTimer();
     };
 
-    // Клик вътре в секцията, но ИЗВЪН медията/CTA/мишената → връщаме grayscale
+    // Клик вътре в секцията, но ИЗВЪН медията/CTA/логото → връщаме grayscale
     const onSectionPointerDownCapture: PointerEventHandler<HTMLElement> = (e) => {
         const target = e.target as Node;
         const mediaEl = mediaRef.current;
@@ -197,7 +170,6 @@ const BannerVideo: FC<BannerVideoProps> = ({
         const insideMedia = !!(mediaEl && mediaEl.contains(target));
         if (!insideMedia) {
             setIsTapActive(false);
-            if (hideTimerRef.current !== null) { window.clearTimeout(hideTimerRef.current); hideTimerRef.current = null; }
             const isHoverNone = typeof window !== "undefined" && window.matchMedia && window.matchMedia("(hover: none)").matches;
             if (isHoverNone) setShowNudge(true);
         }
@@ -206,8 +178,8 @@ const BannerVideo: FC<BannerVideoProps> = ({
     // CTA: активира на pointerdown, без да пречим на навигацията
     const onCtaPointerDown: PointerEventHandler<HTMLAnchorElement> = () => { activateTap(); };
 
-    // Мишена: активира само при тап по ТОЧКАТА, не по целия бутон
-    const onNudgeDotPointerDown: PointerEventHandler<HTMLSpanElement> = (e) => {
+    // Лого: активира само при тап по логото
+    const onNudgeLogoPointerDown: PointerEventHandler<HTMLButtonElement> = (e) => {
         e.preventDefault();
         e.stopPropagation(); // да не стига до section capture
         activateTap();
@@ -268,11 +240,23 @@ const BannerVideo: FC<BannerVideoProps> = ({
                         ЗАПИШИ СЕ СЕГА
                     </Link>
 
-                    {/* Подсказка: показва се само когато НЕ е активно и след nudgeDelayMs на мобилни */}
+                    {/* Подсказка: показва се само когато НЕ е активно и след 2s на мобилни */}
                     {showNudge && !isTapActive && (
                         <button type="button" className="hero-nudge-btn" aria-label="Покажи цветовете">
-                            <span className="hero-nudge-bubble" aria-hidden="true">{`Нарисувай ме =>`}</span>
-                            <span className="hero-nudge-dot" aria-hidden="true" onPointerDown={onNudgeDotPointerDown} />
+                            <span className="hero-nudge-bubble" aria-hidden="true">Нарисувай ме =&gt;</span>
+                            <button
+                                type="button"
+                                className="hero-nudge-logo"
+                                onPointerDown={onNudgeLogoPointerDown}
+                                aria-label="Покажи цветовете"
+                            >
+                                <Image
+                                    src="/web-logo.svg"
+                                    width={20}
+                                    height={20}
+                                    alt="xArtify Logo"
+                                />
+                            </button>
                         </button>
                     )}
                 </div>

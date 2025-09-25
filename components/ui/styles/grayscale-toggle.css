@@ -1,0 +1,117 @@
+/* ================================
+   Grayscale Toggle Component
+   Reusable grayscale effect with logo toggle
+   ================================ */
+
+/* Base grayscale effect */
+.grayscale-toggle {
+    position: relative;
+}
+
+.grayscale-toggle .grayscale-image {
+    filter: grayscale(100%);
+    transition: filter 0.3s ease;
+    will-change: filter;
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+
+/* Desktop hover effect */
+@media (hover: hover) {
+    .grayscale-toggle:hover .grayscale-image {
+        filter: grayscale(0%);
+    }
+}
+
+/* Active state (when logo is clicked on mobile) */
+.grayscale-toggle.is-active .grayscale-image {
+    filter: grayscale(0%);
+}
+
+/* Logo toggle button - positioned inline */
+.grayscale-toggle-logo {
+    width: 28px;
+    height: 28px;
+    background: var(--color-black-8);
+    backdrop-filter: blur(8px);
+    box-shadow: 0 0 10px 1px var(--color-primary);
+    border-radius: 0.5rem;
+    border: 1px solid var(--color-white-1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    opacity: 0.8;
+    flex-shrink: 0;
+}
+
+.grayscale-toggle-logo:hover {
+    opacity: 1;
+    background: var(--color-black-9);
+    border-color: var(--color-primary-30);
+}
+
+.grayscale-toggle-logo:active {
+    transform: scale(0.95);
+}
+
+/* Logo image inside the button */
+.grayscale-toggle-logo img {
+    width: 20px;
+    height: 20px;
+    filter: brightness(0) invert(1);
+    opacity: 0.8;
+    transition: opacity 0.2s ease;
+}
+
+.grayscale-toggle-logo:hover img {
+    opacity: 1;
+}
+
+/* Mobile only - hide logo on desktop */
+@media (min-width: 769px) {
+    .grayscale-toggle-logo {
+        display: none;
+    }
+}
+
+/* Mobile specific styles */
+@media (max-width: 768px) {
+    .grayscale-toggle-logo {
+        width: 24px;
+        height: 24px;
+    }
+
+    .grayscale-toggle-logo img {
+        width: 16px;
+        height: 16px;
+    }
+}
+
+/* Accessibility */
+.grayscale-toggle-logo:focus {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+.grayscale-toggle-logo:focus:not(:focus-visible) {
+    outline: none;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .grayscale-toggle .grayscale-image {
+        transition: none;
+    }
+
+    .grayscale-toggle-logo {
+        transition: none;
+    }
+
+    .grayscale-toggle-logo img {
+        transition: none;
+    }
+}

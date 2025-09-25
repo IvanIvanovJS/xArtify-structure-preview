@@ -219,6 +219,40 @@
         -webkit-text-fill-color: transparent;
 
         margin-right: 6px;
+    }
 
+    .hero-nudge-logo {
+        width: 24px;
+        height: 24px;
+        background: var(--color-black-8);
+        backdrop-filter: blur(8px);
+        box-shadow: 0 0 10px 1px var(--color-primary);
+        border-radius: 0.5rem;
+        border: 1px solid var(--color-white-1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        opacity: 0.8;
+        pointer-events: auto;
+    }
+
+    .hero-nudge-logo:hover {
+        opacity: 1;
+        background: var(--color-black-9);
+        border-color: var(--color-primary-30);
+    }
+
+    .hero-nudge-logo img {
+        width: 16px;
+        height: 16px;
+        filter: brightness(0) invert(1);
+        opacity: 0.8;
+        transition: opacity 0.2s ease;
+    }
+
+    .hero-nudge-logo:hover img {
+        opacity: 1;
     }
 }

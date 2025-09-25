@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import type { FC, KeyboardEventHandler, PointerEventHandler, ReactElement } from "react";
 import { useEffect, useRef, useState } from "react";
 import { FolderOpen, Upload } from "lucide-react";
@@ -184,8 +185,8 @@ const CoursesAdv: FC<CoursesAdvProps> = ({
     // CTA: активира на pointerdown, без да пречим на навигацията
     const onCtaPointerDown: PointerEventHandler<HTMLAnchorElement> = () => { activateTap(); };
 
-    // Мишена: активира само при тап по ТОЧКАТА, не по целия бутон
-    const onNudgeDotPointerDown: PointerEventHandler<HTMLSpanElement> = (e) => {
+    // Лого: активира само при тап по логото
+    const onNudgeLogoPointerDown: PointerEventHandler<HTMLButtonElement> = (e) => {
         e.preventDefault();
         e.stopPropagation();
         activateTap();
@@ -508,7 +509,19 @@ const CoursesAdv: FC<CoursesAdvProps> = ({
                 {/* Подсказка: показва се само когато НЕ е активно и след nudgeDelayMs на мобилни */}
                 {showNudge && !isTapActive && (
                     <button type="button" className="courses-nudge-btn mb-4" aria-label="Покажи цветовете">
-                        <span className="courses-nudge-dot" aria-hidden="true" onPointerDown={onNudgeDotPointerDown} />
+                        <button
+                            type="button"
+                            className="courses-nudge-logo"
+                            onPointerDown={onNudgeLogoPointerDown}
+                            aria-label="Покажи цветовете"
+                        >
+                            <Image
+                                src="/web-logo.svg"
+                                width={20}
+                                height={20}
+                                alt="xArtify Logo"
+                            />
+                        </button>
                     </button>
                 )}
             </div>

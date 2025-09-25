@@ -11,6 +11,7 @@ import {
 } from "@/lib/currency";
 import { PaintingWithArtist } from "@/components/uploadArtwork/types";
 import "./styles/artwork-card.css";
+import "@/components/ui/styles/grayscale-toggle.css";
 
 interface ArtworkCardProps {
     painting: PaintingWithArtist;
@@ -18,11 +19,12 @@ interface ArtworkCardProps {
     onCardClick?: (painting: PaintingWithArtist) => void;
 }
 
-export default function ArtworkCard({ painting, showSold = false, onCardClick }: ArtworkCardProps): React.JSX.Element {
+export default function ArtworkCard({ painting, onCardClick }: ArtworkCardProps): React.JSX.Element {
     const router = useRouter();
     const cardRef = useRef<HTMLDivElement>(null);
     const [isSelected, setIsSelected] = useState(false);
     const [isHovered, setIsHovered] = useState(false);
+    const [isGrayscaleActive, setIsGrayscaleActive] = useState(false);
 
     // Check if painting is new (uploaded in last 10 days)
     const isNew = () => {
@@ -52,7 +54,7 @@ export default function ArtworkCard({ painting, showSold = false, onCardClick }:
     };
 
     const getFinalPrice = () => {
-        return getPromotionPrice() || painting.price;
+        return getPromotionPrice() || painting.price || 0;
     };
 
     const getDimensions = () => {
@@ -83,11 +85,12 @@ export default function ArtworkCard({ painting, showSold = false, onCardClick }:
         setIsSelected(false);
     };
 
-    // Handle click outside to deselect
+    // Handle click outside to deselect and reset grayscale
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (cardRef.current && !cardRef.current.contains(event.target as Node)) {
                 setIsSelected(false);
+                setIsGrayscaleActive(false);
             }
         };
 
@@ -97,19 +100,30 @@ export default function ArtworkCard({ painting, showSold = false, onCardClick }:
         };
     }, []);
 
-    // Don't render if sold and not showing sold items
-    if (painting.isSold && !showSold) {
-        return <></>;
-    }
+    // Handle logo click to toggle grayscale
+    const handleLogoClick = (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsGrayscaleActive(true);
+    };
 
-    const primaryImage = painting.images[0] || "/placeholder-painting.jpg";
-    const thumbnailImage = painting.images[1] || primaryImage;
-    const additionalImagesCount = painting.images.length - 1;
+    // Note: Sold paintings filtering is now handled in ArtworkGallery component
+
+    // Better image handling with fallbacks
+    const hasImages = painting.images && painting.images.length > 0;
+    const primaryImage = hasImages ? painting.images[0] : "/test.jpg"; // Use existing test image as fallback
+    const thumbnailImage = hasImages && painting.images.length > 1 ? painting.images[1] : primaryImage;
+    const additionalImagesCount = hasImages ? painting.images.length - 1 : 0;
+
+    // Debug logging for missing images
+    if (!hasImages) {
+        console.warn(`ArtworkCard: No images found for painting "${painting.title}" (ID: ${painting.id})`);
+    }
 
     return (
         <div
             ref={cardRef}
-            className={`artwork-card ${isSelected ? 'selected' : ''} ${isHovered ? 'hovered' : ''}`}
+            className={`artwork-card grayscale-toggle ${isSelected ? 'selected' : ''} ${isHovered ? 'hovered' : ''} ${isGrayscaleActive ? 'is-active' : ''}`}
             onClick={handleCardClick}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
@@ -123,29 +137,29 @@ export default function ArtworkCard({ painting, showSold = false, onCardClick }:
             <div className="artwork-image-container">
                 <Image
                     src={primaryImage}
-                    alt={painting.title}
+                    alt={painting.title || 'Artwork'}
                     fill
-                    className="artwork-main-image"
+                    className="artwork-main-image grayscale-image"
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     priority={false}
+                    onError={(e) => {
+                        // Fallback to test image if primary image fails
+                        const target = e.target as HTMLImageElement;
+                        if (target.src !== "/test.jpg") {
+                            target.src = "/test.jpg";
+                        }
+                    }}
                 />
 
-                {/* Sold Overlay */}
-                {painting.isSold && (
-                    <div className="artwork-sold-overlay">
-                        <span className="artwork-sold-text">Продадено</span>
-                    </div>
-                )}
+                {/* Sold Overlay - Removed, using small tag instead */}
 
                 {/* Tags */}
-                <div className="artwork-tags">
-                    {isNew() && !painting.isSold && (
-                        <span className="artwork-tag artwork-tag--new">Ново</span>
-                    )}
-                    {painting.isSold && (
-                        <span className="artwork-tag artwork-tag--sold">Продадено</span>
-                    )}
-                </div>
+                {isNew() && !painting.isSold && (
+                    <span className="artwork-tag artwork-tag--new">Ново</span>
+                )}
+                {painting.isSold && (
+                    <span className="artwork-tag artwork-tag--sold">Продадено</span>
+                )}
 
                 {/* Thumbnail Counter */}
                 {additionalImagesCount > 0 && (
@@ -156,24 +170,32 @@ export default function ArtworkCard({ painting, showSold = false, onCardClick }:
                             width={24}
                             height={24}
                             className="artwork-thumbnail"
+                            onError={(e) => {
+                                // Fallback to test image if thumbnail fails
+                                const target = e.target as HTMLImageElement;
+                                if (target.src !== "/test.jpg") {
+                                    target.src = "/test.jpg";
+                                }
+                            }}
                         />
                         <span className="artwork-image-count">+{additionalImagesCount}</span>
                     </div>
                 )}
+
             </div>
 
             {/* Content */}
             <div className="artwork-content">
-                <h3 className="artwork-title">{painting.title}</h3>
+                <h3 className="artwork-title">{painting.title || 'Без заглавие'}</h3>
 
                 <p className="artwork-artist">
                     от{" "}
                     <Link
-                        href={`/artists/${painting.artistId}`}
+                        href={`/artists/${painting.artistId || 'unknown'}`}
                         className="artwork-artist-link"
                         onClick={(e) => e.stopPropagation()}
                     >
-                        {painting.artist.user.name || 'Неизвестен художник'}
+                        {painting.artist?.user?.name || 'Неизвестен художник'}
                     </Link>
                 </p>
 
@@ -198,9 +220,25 @@ export default function ArtworkCard({ painting, showSold = false, onCardClick }:
                         )}
                     </div>
 
-                    <p className="artwork-price-eur">
-                        {formatPriceEUR(getFinalPrice())}
-                    </p>
+                    <div className="artwork-price-eur-container">
+                        <p className="artwork-price-eur">
+                            {formatPriceEUR(getFinalPrice())}
+                        </p>
+                        {/* Logo Toggle Button - Mobile Only */}
+                        <button
+                            type="button"
+                            className="grayscale-toggle-logo"
+                            onClick={handleLogoClick}
+                            aria-label="Покажи цветовете на картината"
+                        >
+                            <Image
+                                src="/web-logo.svg"
+                                width={20}
+                                height={20}
+                                alt="xArtify Logo"
+                            />
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
