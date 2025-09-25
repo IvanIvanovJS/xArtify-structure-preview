@@ -42,7 +42,7 @@ export default async function RootLayout({
             position: "fixed",
             inset: 0,
             background: "#000",
-            zIndex: 100000
+            zIndex: 2147483647
           }}
         />
         {/* Splash Screen - първото нещо което се показва */}

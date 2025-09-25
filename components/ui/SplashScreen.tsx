@@ -14,6 +14,7 @@ export default function SplashScreen({ onComplete }: SplashScreenProps): React.J
     const [fadeStarted, setFadeStarted] = useState(false);
     const [showLoading, setShowLoading] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
+    // no state needed; we only hide the SSR cover on first frame
     const videoRef = useRef<HTMLVideoElement>(null);
 
     useEffect(() => {
@@ -44,34 +45,25 @@ export default function SplashScreen({ onComplete }: SplashScreenProps): React.J
         }
     }, []);
 
-    // When splash is going to be shown, remove the SSR cover only after splash is mounted
+    // When splash is going to be shown, keep scroll locked
     useLayoutEffect(() => {
         if (!isVisible) return;
-        const splashEl = document.querySelector('.splash-screen');
-        if (splashEl) {
-            // Keep scroll locked while splash visible
-            document.body.style.overflow = 'hidden';
-            // Hide the SSR cover after splash has been committed and is ready to paint
-            const cover = document.getElementById('splash-ssr-cover');
-            if (cover) {
-                // Delay hiding to next paint to avoid any flash
-                requestAnimationFrame(() => {
-                    requestAnimationFrame(() => {
-                        cover.classList.add('hidden');
-                    });
-                });
-            }
-        }
+        document.body.style.overflow = 'hidden';
     }, [isVisible]);
 
+    // Hide SSR cover strictly when the video is ready to paint first frame
+    const onVideoLoadedData = (): void => {
+        const cover = document.getElementById('splash-ssr-cover');
+        if (cover) cover.classList.add('hidden');
+    };
+
     const handleVideoEnd = () => {
-        console.log("Video ended - starting fade and loading");
 
         // Start fade immediately when video ends
         setFadeStarted(true);
         setShowLoading(true);
 
-        // Wait for loading bar to complete (1.2s) + extra time for visibility
+        // Wait for loading bar to complete (1.5s) + extra time for visibility
         setTimeout(() => {
             setIsVisible(false);
             onComplete();
@@ -79,7 +71,7 @@ export default function SplashScreen({ onComplete }: SplashScreenProps): React.J
             const cover = document.getElementById('splash-ssr-cover');
             if (cover) cover.classList.add('hidden');
             document.body.style.overflow = '';
-        }, 1500); // Reduced to 1.5s for better timing
+        }, 1800); // Increased by 300ms to sync with longer animations
     };
 
     // Manage body overflow
@@ -106,7 +98,7 @@ export default function SplashScreen({ onComplete }: SplashScreenProps): React.J
                             opacity: 0
                         }}
                         transition={{
-                            duration: 0.8,
+                            duration: 1.1,
                             ease: "easeInOut"
                         }}
                         className="splash-screen"
@@ -119,6 +111,8 @@ export default function SplashScreen({ onComplete }: SplashScreenProps): React.J
                                 autoPlay
                                 muted
                                 playsInline
+                                preload="auto"
+                                onLoadedData={onVideoLoadedData}
                                 onEnded={handleVideoEnd}
                             >
                                 <source
@@ -156,7 +150,7 @@ export default function SplashScreen({ onComplete }: SplashScreenProps): React.J
                                             scale: 0.9
                                         }}
                                         transition={{
-                                            duration: 0.4,
+                                            duration: 0.7,
                                             ease: [0.4, 0, 0.2, 1],
                                             delay: 0.1
                                         }}
@@ -170,7 +164,7 @@ export default function SplashScreen({ onComplete }: SplashScreenProps): React.J
                                                     initial={{ width: "0%" }}
                                                     animate={{ width: "100%" }}
                                                     transition={{
-                                                        duration: 1.2,
+                                                        duration: 1.5,
                                                         ease: "easeInOut",
                                                         delay: 0.05
                                                     }}
