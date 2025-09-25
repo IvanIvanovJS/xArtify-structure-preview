@@ -19,6 +19,8 @@
 @import "../components/gallery/styles/filters-sidebar.css";
 @import "../components/gallery/styles/filters-mobile-sheet.css";
 @import "../components/ui/styles/custom-dropdown.css";
+@import "../components/ui/styles/grayscale-toggle.css";
+@import "../components/ui/styles/splash-screen.css";
 @import "../components/artworkCard/styles/artwork-card.css";
 
 

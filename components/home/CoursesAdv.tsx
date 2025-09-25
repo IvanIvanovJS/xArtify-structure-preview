@@ -508,7 +508,7 @@ const CoursesAdv: FC<CoursesAdvProps> = ({
 
                 {/* Подсказка: показва се само когато НЕ е активно и след nudgeDelayMs на мобилни */}
                 {showNudge && !isTapActive && (
-                    <button type="button" className="courses-nudge-btn mb-4" aria-label="Покажи цветовете">
+                    <div className="courses-nudge-btn mb-4" aria-label="Покажи цветовете">
                         <button
                             type="button"
                             className="courses-nudge-logo"
@@ -522,7 +522,7 @@ const CoursesAdv: FC<CoursesAdvProps> = ({
                                 alt="xArtify Logo"
                             />
                         </button>
-                    </button>
+                    </div>
                 )}
             </div>
         </section>

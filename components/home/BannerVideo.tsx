@@ -242,7 +242,7 @@ const BannerVideo: FC<BannerVideoProps> = ({
 
                     {/* Подсказка: показва се само когато НЕ е активно и след 2s на мобилни */}
                     {showNudge && !isTapActive && (
-                        <button type="button" className="hero-nudge-btn" aria-label="Покажи цветовете">
+                        <div className="hero-nudge-btn" aria-label="Покажи цветовете">
                             <span className="hero-nudge-bubble" aria-hidden="true">Нарисувай ме =&gt;</span>
                             <button
                                 type="button"
@@ -257,7 +257,7 @@ const BannerVideo: FC<BannerVideoProps> = ({
                                     alt="xArtify Logo"
                                 />
                             </button>
-                        </button>
+                        </div>
                     )}
                 </div>
             </div>
