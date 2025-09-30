@@ -1,39 +1,44 @@
-// app/create-painting/page.tsx
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/authOptions";
+import { Metadata } from 'next';
+import { getServerSession } from 'next-auth';
 import { redirect } from 'next/navigation';
-import CreatePaintingForm from '@/components/UploadArtwork'; // Ще създадем този компонент
-import { prisma } from "@/lib/prisma";
-export const runtime = "nodejs";
 
-// Server Component за проверка на правата
-export default async function CreatePaintingPage() {
+import { authOptions } from '@/lib/authOptions';
+import { prisma } from '@/lib/prisma';
+import UploadArtwork from '@/components/uploadArtwork/UploadArtwork';
+
+export const runtime = 'nodejs';
+
+export const metadata: Metadata = {
+    title: 'Качи картина | xArtify',
+    description: 'Сподели творбите си с света и присъедини се към нашата общност от художници',
+    openGraph: {
+        title: 'Качи картина | xArtify',
+        description: 'Сподели творбите си с света и присъедини се към нашата общност от художници',
+    },
+};
+
+export default async function UploadArtworkPage(): Promise<React.JSX.Element> {
     const session = await getServerSession(authOptions);
 
-    // 1. Проверка дали потребителят е влязъл
-    if (!session || !session.user || !session.user.id) {
-        redirect('/'); // Пренасочваме към начална страница
+    // Check if user is authenticated
+    if (!session?.user?.id) {
+        redirect('/login?callbackUrl=/upload-artwork');
     }
 
     const userId = session.user.id;
+    const userRole = session.user.role;
 
-    // 2. Проверка дали потребителят има профил на артист
+    // Check if user has artist profile or is admin
     const artistProfile = await prisma.artistProfile.findUnique({
         where: { userId },
+        select: { id: true },
     });
 
-    if (!artistProfile) {
-        // Пренасочваме към страницата за създаване на артист профил
-        redirect('/create-artist-profile');
+    const isAuthorized = artistProfile || userRole === 'ADMIN';
+
+    if (!isAuthorized) {
+        redirect('/create-artist-profile?message=artist-profile-required');
     }
 
-    // Ако всички проверки са успешни, рендираме формата за създаване
-    return (
-        <div className="flex bg-transparent items-center justify-center min-h-screen p-8">
-            <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-2xl">
-                <h2 className="text-3xl font-bold text-center font-serif mb-6 text-gray-800">Добавяне на нова картина</h2>
-                <CreatePaintingForm artistId={userId} />
-            </div>
-        </div>
-    );
+    return <UploadArtwork />;
 }

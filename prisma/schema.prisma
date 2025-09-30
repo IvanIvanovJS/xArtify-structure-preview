@@ -53,7 +53,8 @@ model User {
   passwordResetTokens  PasswordResetToken[] 
   artistProfile ArtistProfile?
   subscriptions Subscription[]
-  enrollments   Enrollment[] 
+  enrollments   Enrollment[]
+  favorites     Favorite[]
 }
 model PasswordResetToken {
   id        String   @id @default(cuid())
@@ -74,6 +75,7 @@ model VerificationToken {
 model Painting {
   id           String    @id @default(cuid())
   title        String
+  urlTitle     String    @unique // SEO-friendly URL title for better crawling
   description  String?
   dimensions   String?   // Например: "80x60 cm"
   materials    String?   // Например: "Маслени бои върху платно"
@@ -82,8 +84,38 @@ model Painting {
   isSold       Boolean   @default(false)
   artistId     String
   artist       ArtistProfile @relation(fields: [artistId], references: [id])
+  
+  // Enhanced fields for filtering
+  widthCm      Float     // Width in centimeters (required)
+  heightCm     Float     // Height in centimeters (required)
+  slug         String?   @unique // SEO-friendly URL slug
+  technique    String?   // Painting technique (oil, acrylic, watercolor, etc.)
+  subject      String?   // Subject matter (portrait, landscape, abstract, etc.)
+  tags         String[]  // Array of tag strings for filtering
+  style        String?   // Art style (realism, impressionism, abstract, etc.)
+  
+  // Sale fields
+  isOnSale     Boolean   @default(false)  // Whether the painting is on sale
+  salePercentage Float?  // Sale percentage (1-100)
+  finalPrice   Float?    // Final price after sale calculation (price user wants to receive)
+  originalPrice Float?   // Original price before discount (calculated from final price and percentage)
+  
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
+  
+  // Relations
+  favorites    Favorite[]
+  
+  @@index([technique])
+  @@index([subject])
+  @@index([style])
+  @@index([price])
+  @@index([createdAt])
+  @@index([widthCm, heightCm])
+  @@index([isOnSale])
+  @@index([finalPrice])
+  @@index([originalPrice])
+  @@index([urlTitle])
 }
 
 model ArtistProfile {
@@ -93,6 +125,7 @@ model ArtistProfile {
   user         User      @relation(fields: [userId], references: [id]) // Релация обратно към User
   phoneNumber  String?
   paintings    Painting[]
+  tags         Tag[]     // Релация към таговете на автора
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 }
@@ -150,6 +183,35 @@ model Content {
   image2Url String?  // URL на второто изображение
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// Модел за тагове на авторите
+model Tag {
+  id           String    @id @default(cuid())
+  name         String    // Името на тага
+  artistId     String    // ID на автора, който създава тага
+  artist       ArtistProfile @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  
+  @@unique([name, artistId]) // Един автор не може да има два еднакви тага
+  @@index([artistId])
+  @@index([createdAt])
+}
+
+// Модел за любими картини
+model Favorite {
+  id         String   @id @default(cuid())
+  userId     String
+  paintingId String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  painting   Painting @relation(fields: [paintingId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+  
+  @@unique([userId, paintingId])
+  @@index([userId])
+  @@index([paintingId])
+  @@map("favorites")
 }
 
 // Добавяме enum за ролите на потребителите

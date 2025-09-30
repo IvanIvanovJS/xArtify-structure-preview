@@ -11,6 +11,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { EyeIcon } from "@/components/ui/EyeIcon";
 import { EyeOffIcon } from "@/components/ui/EyeOffIcon";
+import ErrorHandler from "./ErrorHandler";
 
 
 // 1. Дефиниране на схемата за валидация
@@ -36,6 +37,28 @@ export default function LoginForm() {
         },
     });
 
+    const handleOAuthSignIn = async (provider: "google" | "facebook"): Promise<void> => {
+        setError(null);
+        const callbackUrl = searchParams.get("callbackUrl") || "/";
+
+        try {
+            const res = await signIn(provider, {
+                callbackUrl,
+                redirect: false
+            });
+
+            if (res?.error) {
+                setError("Възникна грешка при вход с " + (provider === "google" ? "Google" : "Facebook") + ". Моля, опитайте отново.");
+            } else if (res?.ok) {
+                router.push(callbackUrl);
+                router.refresh();
+            }
+        } catch (error) {
+            console.error("OAuth sign-in error:", error);
+            setError("Възникна грешка при вход с " + (provider === "google" ? "Google" : "Facebook") + ". Моля, опитайте отново.");
+        }
+    };
+
     const onSubmit = async (data: z.infer<typeof formSchema>) => {
         setError(null);
         const callbackUrl = searchParams.get("callbackUrl") || "/";
@@ -47,6 +70,7 @@ export default function LoginForm() {
             password: data.password,
             callbackUrl,
             remember_me: rememberMe, // Добавено!
+            redirect: false
         });
 
         if (res?.error) {
@@ -54,8 +78,9 @@ export default function LoginForm() {
                 type: "manual",
                 message: "Невалиден имейл или парола."
             });
-        } else {
+        } else if (res?.ok) {
             router.push(callbackUrl);
+            router.refresh();
         }
 
     };
@@ -68,6 +93,7 @@ export default function LoginForm() {
 
     return (
         <div className="login-container">
+            <ErrorHandler onError={setError} />
             <div className="login-header-container">
                 {/* Logo */}
                 <div className="login-logo">
@@ -90,14 +116,14 @@ export default function LoginForm() {
             {/* Бутони за социален вход */}
             <div className="login-social-container">
                 <div
-                    onClick={() => signIn("google", { callbackUrl: "/" })}
+                    onClick={() => handleOAuthSignIn("google")}
                     className="login-social-btn"
                     role="button"
                     tabIndex={0}
                     onKeyDown={(e) => {
                         if (e.key === 'Enter' || e.key === ' ') {
                             e.preventDefault();
-                            signIn("google", { callbackUrl: "/" });
+                            handleOAuthSignIn("google");
                         }
                     }}
                 >
@@ -105,14 +131,14 @@ export default function LoginForm() {
                     Вход с Google
                 </div>
                 <div
-                    onClick={() => signIn("facebook", { callbackUrl: "/" })}
+                    onClick={() => handleOAuthSignIn("facebook")}
                     className="login-social-btn"
                     role="button"
                     tabIndex={0}
                     onKeyDown={(e) => {
                         if (e.key === 'Enter' || e.key === ' ') {
                             e.preventDefault();
-                            signIn("facebook", { callbackUrl: "/" });
+                            handleOAuthSignIn("facebook");
                         }
                     }}
                 >

@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { v2 as cloudinary } from "cloudinary";
+import { generateUrlTitle } from "@/lib/slug";
 
 export const runtime = "nodejs"; // Prisma/Cloudinary need Node runtime
 
@@ -44,6 +45,7 @@ export async function PUT(req: NextRequest) {
 
         const paintingData = JSON.parse(paintingDataRaw) as {
             title?: string;
+            urlTitle?: string;
             dimensions?: string;
             materials?: string;
             description?: string;
@@ -54,9 +56,20 @@ export async function PUT(req: NextRequest) {
         const price = typeof paintingData.price === "string" ? parseFloat(paintingData.price) : paintingData.price ?? 0;
         const images = Array.isArray(paintingData.images) ? paintingData.images : [];
 
-        // ownership check
-        const painting = await prisma.painting.findUnique({ where: { id: paintingIdValue }, include: { artist: true } });
-        if (!painting || painting.artist?.userId !== session.user.id) {
+        // ownership check - allow if user owns the painting or is admin
+        const painting = await prisma.painting.findUnique({
+            where: { id: paintingIdValue },
+            include: { artist: { include: { user: true } } }
+        });
+
+        if (!painting) {
+            return NextResponse.json({ message: "Painting not found" }, { status: 404 });
+        }
+
+        const isOwner = painting.artist?.userId === session.user.id;
+        const isAdmin = session.user.role === 'ADMIN';
+
+        if (!isOwner && !isAdmin) {
             return NextResponse.json({ message: "Forbidden" }, { status: 403 });
         }
 
@@ -77,10 +90,31 @@ export async function PUT(req: NextRequest) {
             }
         }
 
+        // Generate new URL title if title or urlTitle changed
+        let urlTitle = painting.urlTitle;
+        const titleChanged = paintingData.title && paintingData.title !== painting.title;
+        const urlTitleChanged = paintingData.urlTitle && paintingData.urlTitle !== painting.urlTitle;
+
+        if (titleChanged || urlTitleChanged) {
+            // Use urlTitle field if provided, otherwise use title
+            const sourceText = paintingData.urlTitle || paintingData.title || painting.title;
+            urlTitle = generateUrlTitle(sourceText, paintingIdValue);
+
+            // Check if new urlTitle already exists
+            let uniqueUrlTitle = urlTitle;
+            let urlCounter = 1;
+            while (await prisma.painting.findUnique({ where: { urlTitle: uniqueUrlTitle } })) {
+                uniqueUrlTitle = `${urlTitle.split('-').slice(0, -1).join('-')}-${urlCounter}`;
+                urlCounter++;
+            }
+            urlTitle = uniqueUrlTitle;
+        }
+
         const updated = await prisma.painting.update({
             where: { id: paintingIdValue },
             data: {
                 title: paintingData.title,
+                urlTitle: urlTitle,
                 dimensions: paintingData.dimensions,
                 materials: paintingData.materials,
                 description: paintingData.description,
@@ -106,8 +140,19 @@ export async function DELETE(req: NextRequest) {
     }
 
     try {
-        const painting = await prisma.painting.findUnique({ where: { id: paintingId }, include: { artist: true } });
-        if (!painting || painting.artist?.userId !== session.user.id) {
+        const painting = await prisma.painting.findUnique({
+            where: { id: paintingId },
+            include: { artist: { include: { user: true } } }
+        });
+
+        if (!painting) {
+            return NextResponse.json({ message: "Painting not found" }, { status: 404 });
+        }
+
+        const isOwner = painting.artist?.userId === session.user.id;
+        const isAdmin = session.user.role === 'ADMIN';
+
+        if (!isOwner && !isAdmin) {
             return NextResponse.json({ message: "Forbidden" }, { status: 403 });
         }
 

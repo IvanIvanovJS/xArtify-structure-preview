@@ -1,120 +1,133 @@
-# UI Components
+# UI Components Documentation
 
-Този директорий съдържа reusable UI компоненти за подобряване на потребителското изживяване.
+## SplashScreen Component
 
-## Компоненти
+### Overview
+The SplashScreen component provides an elegant introduction animation for first-time visitors to the xArtify platform. It features a 3.5-second video presentation with smooth transitions and loading animations.
 
-### SkeletonLoader
-Skeleton loader компонент за показване на placeholder съдържание докато се зареждат данните.
+### Features
+- **Video Background**: Plays `/entry-splash-screen.mp4` for 3 seconds
+- **Fade Transition**: Starts darkening at 2 seconds, fully dark by 3 seconds
+- **Loading Animation**: Shows loading spinner during transition
+- **Smooth Exit**: Elegant fade-out with scale effect
+- **Session Management**: Only shows on first visit per session
 
-**Props:**
-- `className?: string` - Допълнителни CSS класове
-- `width?: string | number` - Ширина на skeleton-а
-- `height?: string | number` - Височина на skeleton-а
-- `variant?: "text" | "rectangular" | "circular"` - Тип на skeleton-а
-- `lines?: number` - Брой редове за text variant
-- `animation?: "pulse" | "wave" | "none"` - Тип анимация
+### Timing Breakdown
+- **0-2s**: Video plays normally
+- **2-3s**: Gradual fade to black with loading indicator
+- **3-3.5s**: Final transition and content reveal
+- **Total Duration**: 3.5 seconds
 
-**Пример:**
+### Usage
 ```tsx
-<SkeletonLoader
-    className="mb-4"
-    height="2rem"
-    width="60%"
-    variant="text"
-    lines={2}
-    animation="pulse"
-/>
+import SplashScreen from '@/components/ui/SplashScreen';
+
+<SplashScreen onComplete={() => console.log('Splash completed')} />
 ```
 
-### ImageSkeleton
-Специализиран skeleton loader за изображения с blur ефект.
+### Props
+- `onComplete: () => void` - Callback fired when splash screen finishes
 
-**Props:**
-- `className?: string` - Допълнителни CSS класове
-- `width?: string | number` - Ширина
-- `height?: string | number` - Височина
-- `aspectRatio?: "square" | "video" | "portrait" | "landscape" | "auto"` - Съотношение на страните
+### Technical Details
+- Uses Framer Motion for smooth animations
+- Implements `AnimatePresence` for enter/exit transitions
+- Includes fallback gradient for browsers without video support
+- Responsive design with mobile optimizations
+- Accessibility features (reduced motion support)
 
-**Пример:**
+### CSS Classes
+- `.splash-screen` - Main container
+- `.splash-video` - Video element styling
+- `.splash-overlay` - Gradient overlay
+- `.splash-loading` - Loading indicator
+- `.splash-spinner` - Animated spinner
+
+### Browser Support
+- Modern browsers with video support
+- Graceful fallback for older browsers
+- Mobile-optimized with touch-friendly interactions
+
+## AppWrapper Component
+
+### Overview
+The AppWrapper component manages the splash screen lifecycle and main content transitions. It ensures the splash screen only appears for first-time visitors in a session.
+
+### Features
+- **Session Detection**: Uses `sessionStorage` to track visits
+- **Conditional Rendering**: Skips splash for returning users
+- **Smooth Transitions**: Animated content reveal
+- **Performance Optimized**: Minimal re-renders
+
+### Usage
 ```tsx
-<ImageSkeleton
-    className="w-full h-64"
-    aspectRatio="video"
-/>
+import AppWrapper from '@/components/ui/AppWrapper';
+
+<AppWrapper>
+  <YourMainContent />
+</AppWrapper>
 ```
 
-### OptimizedImage
-Оптимизиран Image компонент с blurry placeholder и error handling.
+### Props
+- `children: React.ReactNode` - Main application content
 
-**Props:**
-- `src: string` - URL на изображението
-- `alt: string` - Alt текст
-- `className?: string` - Допълнителни CSS класове
-- `fill?: boolean` - Дали да запълни контейнера
-- `width?: number` - Ширина (ако не е fill)
-- `height?: number` - Височина (ако не е fill)
-- `priority?: boolean` - Дали е приоритетно за зареждане
-- `quality?: number` - Качество на изображението (1-100)
-- `placeholder?: "blur" | "empty"` - Тип placeholder
-- `blurDataURL?: string` - Custom blur placeholder
-- `onLoad?: () => void` - Callback при зареждане
-- `onError?: () => void` - Callback при грешка
+### Session Management
+- Uses `sessionStorage.getItem('xartify-splash-seen')` to track visits
+- Automatically skips splash for same-session returns
+- Resets on new browser session
 
-**Пример:**
+## Integration
+
+### Layout Integration
+The splash screen is integrated at the root level in `app/layout.tsx`:
+
 ```tsx
-<OptimizedImage
-    src="/image.jpg"
-    alt="Описание"
-    fill
-    priority={true}
-    quality={85}
-    placeholder="blur"
-/>
+<AppWrapper>
+  <Header />
+  <MainWrapper>
+    {children}
+  </MainWrapper>
+</AppWrapper>
 ```
 
-## Хукове
-
-### useHomeContent
-SWR hook за кеширане и управление на home page контента.
-
-**Връща:**
-- `data` - Данните от API
-- `error` - Грешка ако има
-- `isLoading` - Дали се зарежда
-- `isAdmin` - Дали потребителят е admin
-- `updateContent` - Функция за обновяване на контента
-- `mutate` - SWR mutate функция
-
-**Пример:**
-```tsx
-const { data, isLoading, isAdmin, updateContent } = useHomeContent();
-
-if (isLoading) {
-    return <SkeletonLoader />;
-}
-
-return <div>{data?.title}</div>;
+### CSS Integration
+Styles are imported in `app/globals.css`:
+```css
+@import "../components/ui/styles/splash-screen.css";
 ```
 
-## SWR Конфигурация
+## Performance Considerations
 
-SWR е конфигуриран глобално в `app/providers.tsx` с:
-- 5-минутно кеширане
-- Автоматично revalidate при връзка с интернет
-- 3 опита при грешка
-- Global error handling
+### Video Optimization
+- Video is auto-played with `muted` and `playsInline` attributes
+- Fallback gradient for browsers without video support
+- Optimized for mobile bandwidth
 
-## CSS Анимации
+### Animation Performance
+- Uses CSS transforms for smooth animations
+- Implements `will-change` for GPU acceleration
+- Respects `prefers-reduced-motion` user preference
 
-Добавени са custom CSS анимации за:
-- `shimmer` - За skeleton loaders
-- `pulse` - За image loading states
-- Smooth transitions за content changes
+### Memory Management
+- Proper cleanup of timers and event listeners
+- Minimal state management
+- Efficient re-render patterns
 
-## Layout Preservation
+## Accessibility
 
-Всички компоненти запазват layout-а чрез:
-- Fixed aspect ratios за изображения
-- Min-height за текстови елементи
-- Smooth transitions между състоянията
+### Features
+- Respects `prefers-reduced-motion` setting
+- High contrast mode support
+- Screen reader friendly
+- Keyboard navigation support
+
+### ARIA Labels
+- Proper `aria-hidden` attributes for decorative elements
+- Loading state announcements
+- Focus management during transitions
+
+## Future Enhancements
+- [ ] Add sound effects option
+- [ ] Implement different splash screens for different user types
+- [ ] Add analytics tracking for splash screen completion
+- [ ] Support for custom video content
+- [ ] A/B testing framework for splash screen variations

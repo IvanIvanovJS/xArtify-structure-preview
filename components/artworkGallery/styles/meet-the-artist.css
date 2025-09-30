@@ -1,0 +1,217 @@
+/* Meet The Artist Styles */
+
+.meet-the-artist {
+    margin-top: 4rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--color-muted);
+}
+
+.meet-the-artist-content {
+    display: flex;
+    align-items: center;
+    gap: 3rem;
+    padding: 2rem;
+    background: transparent;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.meet-the-artist-image-link {
+    flex-shrink: 0;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.meet-the-artist-image-container {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    overflow: hidden;
+    box-shadow:
+        0 0 20px 8px rgba(22, 255, 228, 0.4),
+        0 0 40px 16px rgba(22, 255, 228, 0.2),
+        0 0 60px 24px rgba(22, 255, 228, 0.1);
+    transition: all 0.3s ease;
+}
+
+.meet-the-artist-image-container:hover {
+    transform: scale(1.05);
+    box-shadow:
+        0 0 25px 10px rgba(22, 255, 228, 0.5),
+        0 0 50px 20px rgba(22, 255, 228, 0.3),
+        0 0 75px 30px rgba(22, 255, 228, 0.15);
+}
+
+.meet-the-artist-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.meet-the-artist-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.meet-the-artist-button-section {
+    flex-shrink: 0;
+}
+
+.meet-the-artist-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.meet-the-artist-subtitle {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-muted-foreground);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0;
+}
+
+.meet-the-artist-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-foreground);
+    margin: 0;
+    line-height: 1.2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.meet-the-painting-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-foreground);
+    text-decoration: underline;
+    text-decoration-color: var(--color-primary-70);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 4px;
+    margin: 0;
+    line-height: 1.2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.meet-the-artist-brush-icon {
+    color: var(--color-primary);
+    flex-shrink: 0;
+}
+
+.meet-the-artist-description {
+    flex: 1;
+}
+
+.meet-the-artist-description p {
+    font-size: 0.875rem;
+    color: var(--color-foreground);
+    line-height: 1.6;
+    margin: 0;
+}
+
+.meet-the-artist-description strong {
+    color: var(--color-primary);
+    font-weight: 600;
+}
+
+.meet-the-artist-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.875rem 1.5rem;
+    color: var(--color-foreground);
+    text-decoration: none;
+    border-radius: 1rem;
+    border: 1px solid var(--color-primary);
+    font-size: 0.875rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    align-self: flex-start;
+    cursor: pointer;
+}
+
+.meet-the-artist-button-content {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.meet-the-artist-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(22, 255, 228, 0.6);
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .meet-the-artist {
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+    }
+
+    .meet-the-artist-content {
+        flex-direction: column;
+        text-align: center;
+        gap: 1.5rem;
+        padding: 1.5rem;
+    }
+
+    .meet-the-artist-button-section {
+        align-self: center;
+    }
+
+    .meet-the-artist-image-container {
+        width: 100px;
+        height: 100px;
+    }
+
+    .meet-the-artist-title {
+        font-size: 1.25rem;
+    }
+
+    .meet-the-artist-description p {
+        font-size: 0.8125rem;
+    }
+
+    .meet-the-artist-button {
+        align-self: center;
+        padding: 0.75rem 1.25rem;
+        font-size: 0.8125rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .meet-the-artist-content {
+        padding: 1.25rem;
+        gap: 1.25rem;
+    }
+
+    .meet-the-artist-image-container {
+        width: 80px;
+        height: 80px;
+    }
+
+    .meet-the-artist-title {
+        font-size: 1.125rem;
+    }
+
+    .meet-the-artist-description p {
+        font-size: 0.75rem;
+    }
+
+    .meet-the-artist-button {
+        padding: 0.625rem 1rem;
+        font-size: 0.75rem;
+    }
+}

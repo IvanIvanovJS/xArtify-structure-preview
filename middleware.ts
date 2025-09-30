@@ -1,7 +1,25 @@
 // /middleware.ts — FINAL: nonce-based CSP that works with Next.js dev/prod
 import { NextRequest, NextResponse } from "next/server";
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
+    // 🔒 CRITICAL: Basic session validation for protected routes
+    const { pathname } = request.nextUrl;
+    const protectedRoutes = ['/admin', '/upload-artwork', '/my-profile', '/create-artist-profile'];
+    const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
+
+    if (isProtectedRoute) {
+        // Check for NextAuth session cookie (works with database sessions)
+        const sessionToken = request.cookies.get('next-auth.session-token') ||
+            request.cookies.get('__Secure-next-auth.session-token');
+
+        if (!sessionToken) {
+            // Redirect to login if no session cookie
+            const loginUrl = new URL('/login', request.url);
+            loginUrl.searchParams.set('callbackUrl', pathname);
+            return NextResponse.redirect(loginUrl);
+        }
+    }
+
     // Edge-safe nonce (no Buffer in middleware runtime)
     const nonce = crypto.randomUUID();
     const isDev = process.env.NODE_ENV === "development";

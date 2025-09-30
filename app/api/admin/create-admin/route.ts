@@ -62,29 +62,48 @@ export async function POST(request: NextRequest) {
         const saltRounds = 12;
         const hashedPassword = await bcrypt.hash(validatedData.password, saltRounds);
 
-        // 7. Създаване на admin потребителя
-        const adminUser = await prisma.user.create({
-            data: {
-                email: validatedData.email,
-                password: hashedPassword,
-                name: validatedData.name,
-                role: "ADMIN",
-                emailVerified: new Date() // Автоматично потвърждаваме email-а за admin
-            },
-            select: {
-                id: true,
-                email: true,
-                name: true,
-                role: true,
-                createdAt: true
-            }
+        // 7. Създаване на admin потребителя и Account записа в transaction
+        const result = await prisma.$transaction(async (tx) => {
+            // Създаване на admin потребителя
+            const adminUser = await tx.user.create({
+                data: {
+                    email: validatedData.email,
+                    password: hashedPassword,
+                    name: validatedData.name,
+                    role: "ADMIN",
+                    emailVerified: new Date() // Автоматично потвърждаваме email-а за admin
+                },
+                select: {
+                    id: true,
+                    email: true,
+                    name: true,
+                    role: true,
+                    createdAt: true
+                }
+            });
+
+            // Създаване на Account запис за credentials provider
+            const account = await tx.account.create({
+                data: {
+                    userId: adminUser.id,
+                    type: 'credentials',
+                    provider: 'credentials',
+                    providerAccountId: adminUser.id,
+                }
+            });
+
+            return { adminUser, account };
         });
 
+        const { adminUser, account } = result;
+
         // 8. Логване на създаването
-        console.log("ADMIN CREATED:", {
-            id: adminUser.id,
+        console.log("✅ ADMIN CREATED:", {
+            userId: adminUser.id,
             email: adminUser.email,
             name: adminUser.name,
+            accountId: account.id,
+            accountProvider: account.provider,
             timestamp: new Date(),
             ipAddress: request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown"
         });

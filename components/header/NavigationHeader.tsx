@@ -6,6 +6,7 @@ import { JSX, useEffect, useMemo, useRef, useState } from "react";
 import CartIcon from "../cart/CartIcon";
 import { useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
+import LogoutConfirmation from "../ui/LogoutConfirmation";
 import {
     Search,
     User2,
@@ -89,6 +90,7 @@ export default function NavigationHeader(): JSX.Element {
     const [drawerOpen, setDrawerOpen] = useState<boolean>(false);
     const [searchOpen, setSearchOpen] = useState<boolean>(false);
     const [isMounted, setIsMounted] = useState<boolean>(false);
+    const [showLogoutConfirm, setShowLogoutConfirm] = useState<boolean>(false);
 
     // Скриваме хедъра на login, register и forgotten-password страниците
     const shouldHideHeader = pathname === "/login" || pathname === "/register" || pathname === "/forgotten-password";
@@ -247,7 +249,7 @@ export default function NavigationHeader(): JSX.Element {
                                 </Link>
                             )}
                             <Link
-                                href={session ? "/profile" : "/login"}
+                                href={session ? "/my-profile" : "/login"}
                                 aria-label="Моят профил"
                                 className="x-icon-btn"
                                 onTouchStart={handleTouchStart}
@@ -291,7 +293,7 @@ export default function NavigationHeader(): JSX.Element {
                             className="inline-block"
                             onClick={scrollToTop}
                         >
-                            <Image src="/xArtify-logo9.svg" alt="xArtify" width={220} height={60} priority />
+                            <Image src="/xArtify-logo13.svg" alt="xArtify" width={220} height={60} priority />
                         </Link>
                     </div>
                     {/* ДЯСНО */}
@@ -312,7 +314,7 @@ export default function NavigationHeader(): JSX.Element {
                             )}
 
                             <Link
-                                href={session ? "/profile" : "/login"}
+                                href={session ? "/my-profile" : "/login"}
                                 aria-label="Моят профил"
                                 className="x-icon-btn"
                                 title="Моят профил"
@@ -331,6 +333,20 @@ export default function NavigationHeader(): JSX.Element {
                             >
                                 <Heart size={24} aria-hidden />
                             </Link>
+
+                            {/* Logout button for desktop */}
+                            {session && (
+                                <button
+                                    onClick={() => setShowLogoutConfirm(true)}
+                                    className="x-icon-btn"
+                                    title="Изход"
+                                    onTouchStart={handleTouchStart}
+                                    onTouchEnd={handleTouchEnd}
+                                    aria-label="Изход"
+                                >
+                                    <LogOut size={24} aria-hidden />
+                                </button>
+                            )}
 
                             <CartIcon />
 
@@ -402,7 +418,14 @@ export default function NavigationHeader(): JSX.Element {
 
                         <li className="pt-2">
                             {session ? (
-                                <Link href="/api/auth/signout" className="x-drawer__item"><span className="inline-flex items-center gap-2"><LogOut size={18} /> Изход</span></Link>
+                                <button
+                                    onClick={() => setShowLogoutConfirm(true)}
+                                    className="x-drawer__item w-full text-left"
+                                >
+                                    <span className="inline-flex items-center gap-2">
+                                        <LogOut size={18} /> Изход
+                                    </span>
+                                </button>
                             ) : (
                                 <Link href="/login" className="x-drawer__item"><span className="inline-flex items-center gap-2"><LogIn size={18} /> Вход</span></Link>
                             )}
@@ -416,6 +439,12 @@ export default function NavigationHeader(): JSX.Element {
                 data-open={drawerOpen ? "true" : "false"}
                 aria-hidden={!drawerOpen}
                 onClick={() => setDrawerOpen(false)}
+            />
+
+            {/* Logout Confirmation Modal */}
+            <LogoutConfirmation
+                isOpen={showLogoutConfirm}
+                onClose={() => setShowLogoutConfirm(false)}
             />
         </>
     );

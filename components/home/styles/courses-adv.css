@@ -271,3 +271,85 @@
 .courses-adv__image img[data-loaded="true"] {
     opacity: 1;
 }
+
+/* Nudge Button Styles */
+.courses-nudge-btn {
+    position: absolute;
+    right: 12px;
+    bottom: 12px;
+    z-index: 4;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: none;
+    background: transparent;
+    padding: 6px;
+    border-radius: 9999px;
+    touch-action: manipulation;
+}
+
+.courses-nudge-bubble {
+    font-size: 13px;
+    font-weight: 500;
+    pointer-events: none;
+    background: linear-gradient(to right,
+            rgb(1, 129, 118),
+            /* darkest teal */
+            rgb(1, 155, 140),
+            /* dark teal */
+            rgb(22, 200, 180),
+            /* muted version */
+            rgb(22, 255, 228),
+            /* main color */
+            rgb(120, 255, 240),
+            /* bright aqua */
+            rgb(200, 255, 250)
+            /* lightest shade */
+        );
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-right: 6px;
+}
+
+.courses-nudge-logo {
+    width: 24px;
+    height: 24px;
+    background: var(--color-black-8);
+    backdrop-filter: blur(8px);
+    box-shadow: 0 0 10px 1px var(--color-primary);
+    border-radius: 0.5rem;
+    border: 1px solid var(--color-white-1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    opacity: 0.8;
+    pointer-events: auto;
+}
+
+.courses-nudge-logo:hover {
+    opacity: 1;
+    background: var(--color-black-9);
+    border-color: var(--color-primary-30);
+}
+
+.courses-nudge-logo img {
+    width: 16px;
+    height: 16px;
+    filter: brightness(0) invert(1);
+    opacity: 0.8;
+    transition: opacity 0.2s ease;
+}
+
+.courses-nudge-logo:hover img {
+    opacity: 1;
+}
+
+/* Mobile only - hide nudge on desktop */
+@media (min-width: 769px) {
+    .courses-nudge-btn {
+        display: none;
+    }
+}

@@ -12,6 +12,17 @@
 @import "../components/home/styles/courses-adv.css";
 @import "../components/cart/styles/cart.css";
 @import "../components/credentials/LoginForm/styles/login.css";
+@import "../components/gallery/styles/gallery-page.css";
+@import "../components/gallery/styles/gallery-grid.css";
+@import "../components/gallery/styles/sort-bar.css";
+@import "../components/gallery/styles/active-chips.css";
+@import "../components/gallery/styles/filters-sidebar.css";
+@import "../components/gallery/styles/filters-mobile-sheet.css";
+@import "../components/ui/styles/custom-dropdown.css";
+@import "../components/ui/styles/grayscale-toggle.css";
+@import "../components/ui/styles/splash-screen.css";
+@import "../components/artworkCard/styles/artwork-card.css";
+
 
 /* 1) Color tokens */
 :root {
@@ -106,6 +117,15 @@
   --color-warning-rgb: 255 193 7;
   --color-warning-1: rgba(255, 193, 7, 0.1);
   --color-warning-3: rgba(255, 193, 7, 0.3);
+
+  /* Promotion colors */
+  --color-promotion-rgb: 255 112 22;
+  --color-promotion: #ff7016;
+  --color-promotion-10: rgba(255, 112, 22, 0.1);
+  --color-promotion-20: rgba(255, 112, 22, 0.2);
+  --color-promotion-30: rgba(255, 112, 22, 0.3);
+  --color-promotion-60: rgba(255, 112, 22, 0.6);
+  --color-promotion-80: rgba(255, 112, 22, 0.8);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -196,6 +216,15 @@
     --color-warning-rgb: 255 193 7;
     --color-warning-1: rgba(255, 193, 7, 0.1);
     --color-warning-3: rgba(255, 193, 7, 0.3);
+
+    /* Promotion colors */
+    --color-promotion-rgb: 255 112 22;
+    --color-promotion: #ff7016;
+    --color-promotion-10: rgba(255, 112, 22, 0.1);
+    --color-promotion-20: rgba(255, 112, 22, 0.2);
+    --color-promotion-30: rgba(255, 112, 22, 0.3);
+    --color-promotion-60: rgba(255, 112, 22, 0.6);
+    --color-promotion-80: rgba(255, 112, 22, 0.8);
   }
 }
 
@@ -269,6 +298,8 @@ body {
   /* Базов тъмен фон */
   background-color: #050507;
 
+
+
   /* МЪГЛА (fog): два радиални градиента с неон-цианов оттенък */
   background-image:
     radial-gradient(var(--mist-size) var(--mist-size) at var(--spot1-x) var(--spot1-y),
@@ -284,6 +315,13 @@ body {
   background-repeat: no-repeat;
   background-size: cover, cover, cover;
 
+
+
+
+
+
+
+
   /* НИКАКЪВ grayscale тук – иначе синьото ще изчезне */
   filter: none;
 
@@ -292,6 +330,7 @@ body {
   mask-image: radial-gradient(140% 140% at 50% 50%, rgba(0, 0, 0, 1) 70%, rgba(0, 0, 0, 0.92) 100%);
 }
 
+/* ===== Локални grain петна (2 кръга), НЯМА анимация ===== */
 /* ===== Локални grain петна (2 кръга), НЯМА анимация ===== */
 .bg-stars .grain-spot {
   position: absolute;

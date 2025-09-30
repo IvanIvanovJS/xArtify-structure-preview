@@ -1,0 +1,178 @@
+/* Social Share Buttons Styles */
+
+.social-share-buttons {
+    position: relative;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.social-share-simple {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    align-items: center;
+    flex-direction: row;
+}
+
+.social-share-button {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: transparent;
+    border: 1px solid var(--color-primary-60);
+    color: var(--color-foreground);
+    padding: 0.875rem 1.5rem;
+    border-radius: 1.25rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.875rem;
+    min-height: 48px;
+
+}
+
+.social-share-button:hover {
+    box-shadow:
+        inset 0 0px 4px 0px var(--color-primary-70),
+        0 0px 12px 0px var(--color-primary-70);
+    transform: translateY(-2px);
+}
+
+.social-share-button--primary {
+    background: transparent;
+    color: var(--color-foreground);
+    border-color: var(--color-primary);
+}
+
+.social-share-button--primary:hover {
+    background: var(--color-primary-55);
+    color: var(--color-background);
+    border-color: var(--color-primary-70);
+    box-shadow:
+        inset 0 0px 4px 0px var(--color-primary-80),
+        0 0px 12px 0px var(--color-primary-80);
+}
+
+.social-share-button--secondary {
+    background: transparent;
+    color: var(--color-foreground);
+    border-color: var(--color-muted-foreground);
+}
+
+.social-share-button--secondary:hover {
+    background: var(--color-muted);
+    border-color: var(--color-primary-60);
+    color: var(--color-primary);
+}
+
+.social-share-button.copied {
+    background: var(--color-primary);
+    color: var(--color-background);
+    border-color: var(--color-primary);
+}
+
+.social-share-icon {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s ease;
+}
+
+.social-share-button:hover .social-share-icon {
+    transform: scale(1.1);
+}
+
+.social-share-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.social-share-copied {
+    position: absolute;
+    top: -3rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--color-primary);
+    color: var(--color-background);
+    padding: 0.5rem 1rem;
+    border-radius: 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: 0 4px 12px rgba(22, 255, 228, 0.3);
+    animation: fadeInOut 2s ease-in-out;
+    z-index: 10;
+}
+
+@keyframes fadeInOut {
+    0% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-10px);
+    }
+
+    20%,
+    80% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-10px);
+    }
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .social-share-simple {
+        flex-direction: row;
+        gap: 0.75rem;
+        width: 100%;
+    }
+
+    .social-share-button {
+        flex: 1;
+        justify-content: center;
+        padding: 0.75rem 1rem;
+        min-height: 44px;
+    }
+
+    .social-share-icon {
+        width: 18px;
+        height: 18px;
+    }
+
+    .social-share-label {
+        font-size: 0.8125rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .social-share-simple {
+        flex-direction: row;
+        gap: 0.5rem;
+    }
+
+    .social-share-button {
+        flex: 1;
+        padding: 0.625rem 0.875rem;
+        min-height: 40px;
+    }
+
+    .social-share-icon {
+        width: 16px;
+        height: 16px;
+    }
+
+    .social-share-label {
+        font-size: 0.75rem;
+    }
+}

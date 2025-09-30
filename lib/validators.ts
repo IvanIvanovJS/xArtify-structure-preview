@@ -52,6 +52,7 @@ export const DimensionsSchema = z.object({
 
 export const PaintingBase = z.object({
   title: safeString(1, 140, "Заглавие"),
+  urlTitle: z.string().trim().max(140).optional().describe("URL-friendly title for SEO"),
   description: z.string().trim().max(2000).optional().default(""),
   // Използваме minor units за цена (cents/stotinki) за точност
   priceCents: z.number().int().nonnegative().max(1_000_000_00)

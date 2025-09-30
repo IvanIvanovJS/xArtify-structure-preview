@@ -97,8 +97,8 @@ export async function GET() {
         return NextResponse.json({
             success: true,
             data: {
-                title: content?.title || "500K",
-                subtitle: content?.subtitle || "най-голямата и активна образователна общност в България",
+                title: content?.title || "Базов курс",
+                subtitle: content?.subtitle || "Курса е подходящ за начинаещи, които искат да научат основите на изобразителното изкуство.",
                 image1Url: content?.image1Url || "/test.jpg",
                 image2Url: content?.image2Url || "/test2.jpg",
             },

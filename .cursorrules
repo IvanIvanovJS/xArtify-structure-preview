@@ -74,6 +74,50 @@ export async function GET(): Promise<NextResponse> {
 - Validate all inputs with Zod schemas
 - Use CSRF protection and secure headers
 
+### **CRITICAL: RLS Policy Requirement**
+- **MANDATORY**: When creating or refactoring CRUD functionality requiring authorization, ALWAYS provide corresponding SQL RLS policies
+- This ensures double-layer security: application-level auth + database-level RLS
+- **RLS Policy Location**: ALL RLS policies MUST be stored in `@supabasePolicies/` directory
+- **Policy Discovery**: When checking existing RLS policies, ALWAYS look in `@supabasePolicies/` folder first
+- **New Policy Creation**: When creating new RLS policies, save them in `@supabasePolicies/` directory with descriptive filename
+- **CRITICAL: Schema Validation**: ALWAYS check `prisma/schema.prisma` before creating SQL policies to ensure:
+  - Correct table names (check `@@map` directives)
+  - Correct column names (camelCase vs snake_case)
+  - Proper relationships and foreign keys
+  - Model field types and constraints
+- Include the SQL policies as `.sql` files or code blocks for direct database injection
+- Example pattern for every protected resource:
+
+```sql
+-- Enable RLS on table
+ALTER TABLE table_name ENABLE ROW LEVEL SECURITY;
+
+-- Create policies for each operation
+CREATE POLICY "policy_name_select" ON table_name
+  FOR SELECT USING (auth.uid()::text = user_id);
+
+CREATE POLICY "policy_name_insert" ON table_name
+  FOR INSERT WITH CHECK (auth.uid()::text = user_id);
+
+CREATE POLICY "policy_name_update" ON table_name
+  FOR UPDATE USING (auth.uid()::text = user_id);
+
+CREATE POLICY "policy_name_delete" ON table_name
+  FOR DELETE USING (auth.uid()::text = user_id);
+```
+
+### **MANDATORY: Documentation Requirement**
+- **ALWAYS create `.md` documentation files** when creating or refactoring new functionality
+- Document the complete functionality including:
+  - Purpose and overview
+  - API endpoints and their parameters
+  - Database schema changes
+  - Security considerations and RLS policies
+  - Usage examples and integration patterns
+  - Error handling and edge cases
+- Place documentation in appropriate directories (e.g., `docs/`, component-specific folders)
+- Keep documentation up-to-date with code changes
+
 ### Data Validation
 ```typescript
 // ✅ Always validate with Zod
@@ -145,6 +189,7 @@ export default function MobileOptimizedComponent(): JSX.Element {
 - **Primary**: `#16ffe4` (neon cyan accent)
 - **Muted**: `#1a1a20` (subtle gray)
 - **Muted Foreground**: `#9ca3af` (secondary text)
+- **Promotion/Discount**: `#ff7016` (orange for sales and discounts)
 
 ### Typography
 - **Font**: Inter (Google Fonts)
@@ -154,18 +199,30 @@ export default function MobileOptimizedComponent(): JSX.Element {
 
 ### Component Styling
 ```css
-/* ✅ Use CSS custom properties */
-.btn-neon {
-  position: relative;
-  background: var(--color-primary);
-  color: var(--color-primary-foreground);
+/* ✅ Use CSS custom properties with proper button styling */
+.example {
+  flex: 1;
+  background: transparent;
+  padding: 0.875rem;
+  border-radius: 1.25rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.875rem;
+  color: var(--color-white-8);
+  border: 1px solid var(--color-primary-60);
 }
 
-.btn-neon::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  box-shadow: 0 0 16px rgba(22, 255, 228, 0.18);
+.example:hover {
+  box-shadow:
+    inset 0 0px 4px 0px var(--color-primary-70),
+    0 0px 12px 0px var(--color-primary-70);
+}
+
+.example:focus {
+  box-shadow:
+    inset 0 0px 4px 0px var(--color-primary-70),
+    0 0px 12px 0px var(--color-primary-70);
 }
 ```
 
@@ -176,6 +233,20 @@ export default function MobileOptimizedComponent(): JSX.Element {
 - Follow the existing pattern: `components/ComponentName/styles/component.css`
 - Use CSS custom properties for theme consistency
 - Keep styles organized by component or feature
+
+### Loading Spinner Standards
+- **MANDATORY**: All loading spinners MUST use the same color scheme as admin dashboard
+- **Large spinners**: `border: 4px solid var(--color-primary-20); border-left: 4px solid var(--color-primary);`
+- **Small spinners**: `border: 2px solid var(--color-primary-20); border-left: 2px solid var(--color-primary);`
+- **Animation**: Always use `animation: spin 1s linear infinite;` with standard `@keyframes spin`
+- **Consistency**: Never use `currentColor` or other color variations for spinners
+
+### Dropdown Components
+- **ALWAYS use CustomDropdown** for all dropdown/select functionality
+- Import from `@/components/ui/CustomDropdown`
+- Use proper TypeScript interfaces with `value` and `label` properties
+- Include proper accessibility attributes (`aria-label`, `aria-expanded`)
+- Follow the existing pattern for dropdown options structure
 
 ```typescript
 // ✅ CORRECT: Import CSS file
@@ -192,6 +263,21 @@ export default function BadComponent(): JSX.Element {
 ```
 
 ## Database & Data Modeling
+
+### **MANDATORY: RLS Policy Implementation**
+- **EVERY CRUD operation MUST have corresponding RLS policies**
+- When creating new models or refactoring existing ones, provide complete SQL policy set
+- **RLS Policy Storage**: Save all RLS policies in `@supabasePolicies/` directory
+- **Policy Reference**: Always check `@supabasePolicies/` folder for existing policies before creating new ones
+- **SCHEMA VALIDATION MANDATORY**: Before writing ANY SQL policy, ALWAYS:
+  1. Read `prisma/schema.prisma` to verify table and column names
+  2. Check for `@@map` directives that change table names
+  3. Verify column naming conventions (camelCase in Prisma = camelCase in DB)
+  4. Confirm foreign key relationships and field types
+  5. Test the policy syntax matches the actual database schema
+- Include policies for SELECT, INSERT, UPDATE, DELETE operations
+- Test policies with different user roles and scenarios
+- Document policy logic and access patterns
 
 ### Prisma Schema Patterns with RLS
 ```prisma
@@ -219,7 +305,7 @@ model Painting {
   @@map("paintings")
 }
 
-// ✅ REQUIRED: Enable RLS policies
+// ✅ REQUIRED: Complete RLS policy set for each table
 -- Enable RLS on all tables
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE paintings ENABLE ROW LEVEL SECURITY;
@@ -228,9 +314,27 @@ ALTER TABLE paintings ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can view own data" ON users
   FOR SELECT USING (auth.uid()::text = id);
 
+CREATE POLICY "Users can update own data" ON users
+  FOR UPDATE USING (auth.uid()::text = id);
+
 -- Artists can manage their own paintings
-CREATE POLICY "Artists can manage own paintings" ON paintings
-  FOR ALL USING (artist_id IN (
+CREATE POLICY "Artists can view own paintings" ON paintings
+  FOR SELECT USING (artist_id IN (
+    SELECT id FROM artist_profiles WHERE user_id = auth.uid()::text
+  ));
+
+CREATE POLICY "Artists can insert own paintings" ON paintings
+  FOR INSERT WITH CHECK (artist_id IN (
+    SELECT id FROM artist_profiles WHERE user_id = auth.uid()::text
+  ));
+
+CREATE POLICY "Artists can update own paintings" ON paintings
+  FOR UPDATE USING (artist_id IN (
+    SELECT id FROM artist_profiles WHERE user_id = auth.uid()::text
+  ));
+
+CREATE POLICY "Artists can delete own paintings" ON paintings
+  FOR DELETE USING (artist_id IN (
     SELECT id FROM artist_profiles WHERE user_id = auth.uid()::text
   ));
 ```
@@ -319,7 +423,18 @@ components/
 ├── ui/            # Base UI components
 ├── forms/         # Form components
 └── layout/        # Layout components
+
+docs/              # Documentation files
+├── api/           # API documentation
+├── components/    # Component documentation
+└── features/      # Feature documentation
 ```
+
+### Documentation Structure
+- **Component docs**: `components/ComponentName/README.md`
+- **API docs**: `docs/api/endpoint-name.md`
+- **Feature docs**: `docs/features/feature-name.md`
+- **Database docs**: `docs/database/schema-changes.md`
 
 ### Import Conventions
 ```typescript
@@ -409,7 +524,8 @@ KV_REST_API_TOKEN=
 - **Security**: Authentication, validation, rate limiting, CSP headers
 - **No `any` types**: Strict TypeScript with explicit interfaces
 - **Mobile-first**: Responsive design, touch optimization, performance
-- **RLS**: Row Level Security for database access
+- **RLS Policies**: MANDATORY SQL policies for ALL CRUD operations requiring authorization
+- **Documentation**: MANDATORY `.md` files for ALL new/refactored functionality
 - **Stripe SCA**: Strong Customer Authentication compliance
 
 ### Tier 2 (Strongly Recommended)
@@ -512,6 +628,9 @@ logger.critical('Security violation', { userId, action: 'unauthorized_access', i
 - [ ] All TypeScript types are explicit (no `any`)
 - [ ] Mobile-first responsive design implemented
 - [ ] Security validations (auth, rate limiting, CSP)
+- [ ] **RLS policies provided for ALL CRUD operations requiring authorization**
+- [ ] **Schema validation completed before creating SQL policies**
+- [ ] **Documentation (.md files) created for ALL new/refactored functionality**
 - [ ] Error handling with retries and fallbacks
 - [ ] Stripe SCA compliance for payments
 
@@ -591,4 +710,15 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 - **Reuse patterns**: Follow established codebase conventions
 - **Minimize context**: Focus on essential information only
 
-Remember: Always prioritize Tier 1 requirements (Security, no `any`, mobile-first, RLS, Stripe SCA), maintain strict typing, implement proper security, follow the established patterns in the codebase, and NEVER use inline styles - always create separate CSS files.
+Remember: Always prioritize Tier 1 requirements (Security, no `any`, mobile-first, **RLS policies for ALL CRUD operations**, **Documentation for ALL functionality**, Stripe SCA), maintain strict typing, implement proper security, follow the established patterns in the codebase, and NEVER use inline styles - always create separate CSS files.
+
+**CRITICAL**: Every time you create or refactor CRUD functionality requiring authorization, you MUST provide the corresponding SQL RLS policies for database-level protection. This ensures double-layer security architecture.
+
+**MANDATORY**: Every time you create or refactor new functionality, you MUST create comprehensive `.md` documentation files explaining the complete functionality, including purpose, API endpoints, database changes, security considerations, usage examples, and error handling.
+
+### Documentation Structure Requirements
+- **Component docs**: `components/ComponentName/README.md`
+- **API docs**: `docs/api/endpoint-name.md`
+- **Feature docs**: `docs/features/feature-name.md`
+- **Database docs**: `docs/database/schema-changes.md`
+- **Future Enhancements**: Always include a "Future Enhancements" section in README files with potential improvements, new features, and technical debt items using checkbox format `- [ ] Feature description`

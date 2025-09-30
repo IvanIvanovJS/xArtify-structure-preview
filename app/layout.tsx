@@ -12,6 +12,7 @@ import SessionGuard from "@/components/SessionGuard";
 import SiteBackground from "@/components/background/SiteBackground";
 import { JSX } from "react";
 import MainWrapper from "@/components/MainWrapper";
+import SplashScreenWrapper from "@/components/ui/SplashScreenWrapper";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -32,7 +33,21 @@ export default async function RootLayout({
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       </head>
-      <body className={inter.className}>
+      <body className={inter.className} style={{ overflow: "hidden" }}>
+        {/* SSR Cover to avoid initial flash; removed by SplashScreen on client */}
+        <div
+          id="splash-ssr-cover"
+          aria-hidden="true"
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "#000",
+            zIndex: 2147483647
+          }}
+        />
+        {/* Splash Screen - първото нещо което се показва */}
+        <SplashScreenWrapper />
+
         {/* Фонът трябва да е първи в body, на z-0 */}
         <SiteBackground />
 
