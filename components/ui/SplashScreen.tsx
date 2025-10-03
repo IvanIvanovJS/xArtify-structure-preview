@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef, useLayoutEffect } from "react";
+import { useState, useEffect, useLayoutEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
 import "./styles/splash-screen.css";
 
 interface SplashScreenProps {
@@ -9,176 +10,168 @@ interface SplashScreenProps {
 }
 
 export default function SplashScreen({ onComplete }: SplashScreenProps): React.JSX.Element {
-    // Render nothing on server; on client decide visibility
-    const [isVisible, setIsVisible] = useState<boolean>(false);
-    const [fadeStarted, setFadeStarted] = useState(false);
+    const [isVisible, setIsVisible] = useState<boolean>(true); // Start visible immediately
     const [showLoading, setShowLoading] = useState(false);
-    const [isMobile, setIsMobile] = useState(false);
-    // no state needed; we only hide the SSR cover on first frame
-    const videoRef = useRef<HTMLVideoElement>(null);
+    const [showLogo, setShowLogo] = useState(false);
+    const [showTitle, setShowTitle] = useState(false);
 
     useEffect(() => {
-        // Detect mobile device
-        const checkMobile = () => {
-            setIsMobile(window.innerWidth <= 768);
-        };
-
-        checkMobile();
-        window.addEventListener('resize', checkMobile);
-
-        return () => window.removeEventListener('resize', checkMobile);
-    }, []);
-
-    useEffect(() => {
-        // Decide on client to prevent hydration mismatch
+        // Check if splash should be shown
         const hasSeen = sessionStorage.getItem('xartify-splash-seen');
         const shouldShow = !hasSeen;
-        setIsVisible(shouldShow);
+
         if (shouldShow) {
             sessionStorage.setItem('xartify-splash-seen', 'true');
+            // Hide SSR cover immediately
+            const cover = document.getElementById('splash-ssr-cover');
+            if (cover) cover.classList.add('hidden');
+
+            // Start animation sequence immediately
+            setTimeout(() => setShowLogo(true), 200);
+            setTimeout(() => setShowTitle(true), 400);
+            setTimeout(() => setShowLoading(true), 1000);
+
+            // Complete after 1000ms loading
+            setTimeout(() => {
+                setIsVisible(false);
+                onComplete();
+                document.body.style.overflow = '';
+            }, 2000);
         } else {
-            // No splash this session: hide SSR cover immediately
+            // No splash this session: hide immediately
+            setIsVisible(false);
             const cover = document.getElementById('splash-ssr-cover');
             if (cover) cover.classList.add('hidden');
             // Restore scroll as we skip splash
             document.body.style.overflow = '';
         }
-    }, []);
+    }, [onComplete]);
 
-    // When splash is going to be shown, keep scroll locked
+    // Lock scroll immediately when component mounts
     useLayoutEffect(() => {
-        if (!isVisible) return;
         document.body.style.overflow = 'hidden';
-    }, [isVisible]);
-
-    // Hide SSR cover strictly when the video is ready to paint first frame
-    const onVideoLoadedData = (): void => {
-        const cover = document.getElementById('splash-ssr-cover');
-        if (cover) cover.classList.add('hidden');
-    };
-
-    const handleVideoEnd = () => {
-
-        // Start fade immediately when video ends
-        setFadeStarted(true);
-        setShowLoading(true);
-
-        // Wait for loading bar to complete (1.5s) + extra time for visibility
-        setTimeout(() => {
-            setIsVisible(false);
-            onComplete();
-            // Ensure SSR cover stays hidden and restore scroll
-            const cover = document.getElementById('splash-ssr-cover');
-            if (cover) cover.classList.add('hidden');
-            document.body.style.overflow = '';
-        }, 1800); // Increased by 300ms to sync with longer animations
-    };
-
-    // Manage body overflow
-    useEffect(() => {
-        if (isVisible) {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = 'unset';
-        }
 
         return () => {
             document.body.style.overflow = 'unset';
         };
-    }, [isVisible]);
+    }, []);
+
 
     return (
-        <>
+        <AnimatePresence mode="wait">
+            {isVisible && (
+                <motion.div
+                    initial={{ opacity: 1 }}
+                    exit={{
+                        opacity: 0
+                    }}
+                    transition={{
+                        duration: 1.1,
+                        ease: "easeInOut"
+                    }}
+                    className="splash-screen"
+                >
+                    {/* Background with gradient */}
+                    <div className="splash-background" />
 
-            <AnimatePresence mode="wait">
-                {isVisible && (
+                    {/* Logo with moon shadow */}
                     <motion.div
-                        initial={{ opacity: 1 }}
-                        exit={{
-                            opacity: 0
+                        initial={{ opacity: 0, scale: 0.8, y: -20 }}
+                        animate={{
+                            opacity: showLogo ? 1 : 0,
+                            scale: showLogo ? 1 : 0.8,
+                            y: showLogo ? 0 : -20
                         }}
                         transition={{
-                            duration: 1.1,
-                            ease: "easeInOut"
+                            duration: 0.8,
+                            ease: "easeOut",
+                            delay: 0.2
                         }}
-                        className="splash-screen"
+                        className="splash-logo"
                     >
-                        {/* Video Background */}
-                        <div className="relative w-full h-full overflow-hidden">
-                            <video
-                                ref={videoRef}
-                                className="splash-video"
-                                autoPlay
-                                muted
-                                playsInline
-                                preload="auto"
-                                onLoadedData={onVideoLoadedData}
-                                onEnded={handleVideoEnd}
-                            >
-                                <source
-                                    src={isMobile ? "/entry-splash-screen.mp4" : "/entry-splash-screen.mp4"}
-                                    type="video/mp4"
-                                />
-                                {/* Fallback for browsers that don't support video */}
-                                <div className="w-full h-full bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900" />
-                            </video>
-
-                            {/* Gradient Overlay */}
-                            <div className="splash-overlay" />
-
-                            {/* Fade Overlay - starts when video ends */}
-                            <motion.div
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: fadeStarted ? 1 : 0 }}
-                                transition={{ duration: 1, ease: "easeInOut" }}
-                                className="splash-fade"
-                            />
-
-                            {/* Loading Bar */}
-                            <AnimatePresence>
-                                {showLoading && (
-                                    <motion.div
-                                        initial={{ opacity: 0, y: 30, scale: 0.9 }}
-                                        animate={{
-                                            opacity: 1,
-                                            y: 0,
-                                            scale: 1
-                                        }}
-                                        exit={{
-                                            opacity: 0,
-                                            y: -20,
-                                            scale: 0.9
-                                        }}
-                                        transition={{
-                                            duration: 0.7,
-                                            ease: [0.4, 0, 0.2, 1],
-                                            delay: 0.1
-                                        }}
-                                        className="splash-loading"
-                                    >
-                                        <div className="splash-loading-content">
-                                            <span className="splash-loading-text">Зареждане...</span>
-                                            <div className="splash-loading-bar">
-                                                <motion.div
-                                                    className="splash-loading-progress"
-                                                    initial={{ width: "0%" }}
-                                                    animate={{ width: "100%" }}
-                                                    transition={{
-                                                        duration: 1.5,
-                                                        ease: "easeInOut",
-                                                        delay: 0.05
-                                                    }}
-                                                />
-                                            </div>
-                                        </div>
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
-
-                        </div>
+                        <Image
+                            src="/web-logo.svg"
+                            width={80}
+                            height={80}
+                            alt="xArtify Logo"
+                            className="splash-logo-image"
+                        />
                     </motion.div>
-                )}
-            </AnimatePresence>
-        </>
+
+                    {/* Animated Title */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{
+                            opacity: showTitle ? 1 : 0,
+                            y: showTitle ? 0 : 20
+                        }}
+                        transition={{
+                            duration: 0.8,
+                            ease: "easeOut",
+                            delay: 0.6
+                        }}
+                        className="splash-title"
+                    >
+                        {['x', 'A', 'r', 't', 'i', 'f', 'y'].map((letter, index) => (
+                            <motion.span
+                                key={index}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{
+                                    opacity: showTitle ? 1 : 0,
+                                    y: showTitle ? 0 : 20
+                                }}
+                                transition={{
+                                    duration: 0.6,
+                                    ease: "easeOut",
+                                    delay: 0.6 + (index * 0.1)
+                                }}
+                                className="splash-title-letter"
+                            >
+                                {letter}
+                            </motion.span>
+                        ))}
+                    </motion.div>
+
+                    {/* Loading Bar */}
+                    <AnimatePresence>
+                        {showLoading && (
+                            <motion.div
+                                initial={{ opacity: 0, y: 30 }}
+                                animate={{
+                                    opacity: 1,
+                                    y: 0
+                                }}
+                                exit={{
+                                    opacity: 0,
+                                    y: -20
+                                }}
+                                transition={{
+                                    duration: 0.7,
+                                    ease: "easeOut",
+                                    delay: 0.1
+                                }}
+                                className="splash-loading"
+                            >
+                                <div className="splash-loading-content">
+                                    <span className="splash-loading-text">Зареждане...</span>
+                                    <div className="splash-loading-bar">
+                                        <motion.div
+                                            className="splash-loading-progress"
+                                            initial={{ width: "0%" }}
+                                            animate={{ width: "100%" }}
+                                            transition={{
+                                                duration: 1.0,
+                                                ease: "easeInOut",
+                                                delay: 0.1
+                                            }}
+                                        />
+                                    </div>
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </motion.div>
+            )}
+        </AnimatePresence>
     );
 }

@@ -8,11 +8,16 @@ import SessionProvider from "@/components/SessionProvider";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { CartProvider } from "./context/CartContext";
+import { InterSplashProvider } from "./context/InterSplashContext";
 import SessionGuard from "@/components/SessionGuard";
 import SiteBackground from "@/components/background/SiteBackground";
 import { JSX } from "react";
 import MainWrapper from "@/components/MainWrapper";
 import SplashScreenWrapper from "@/components/ui/SplashScreenWrapper";
+import InterSplashWrapper from "@/components/ui/InterSplashWrapper";
+import NavigationManager from "@/components/ui/NavigationManager";
+import NetworkActivityTracker from "@/components/ui/NetworkActivityTracker";
+import SlowServerDetector from "@/components/ui/SlowServerDetector";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -54,11 +59,21 @@ export default async function RootLayout({
         <SessionProvider session={session}>
           <SessionGuard>
             <CartProvider>
-              <Header />
-              {/* Съдържанието е над фона */}
-              <MainWrapper>
-                {children}
-              </MainWrapper>
+              <InterSplashProvider>
+                <Header />
+                {/* Съдържанието е над фона */}
+                <MainWrapper>
+                  {children}
+                </MainWrapper>
+                {/* Inter Splash Screen for page transitions */}
+                <InterSplashWrapper />
+                {/* Navigation manager to hide splash when navigation completes */}
+                <NavigationManager />
+                {/* Network activity tracker to hide splash when all requests complete */}
+                <NetworkActivityTracker />
+                {/* Slow server detector for local development */}
+                <SlowServerDetector />
+              </InterSplashProvider>
             </CartProvider>
           </SessionGuard>
         </SessionProvider>

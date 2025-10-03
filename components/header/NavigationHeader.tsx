@@ -7,6 +7,7 @@ import CartIcon from "../cart/CartIcon";
 import { useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import LogoutConfirmation from "../ui/LogoutConfirmation";
+import NavigationLink from "../ui/NavigationLink";
 import {
     Search,
     User2,
@@ -371,7 +372,7 @@ export default function NavigationHeader(): JSX.Element {
                 <nav aria-label="Главна навигация" className="hidden md:block bg-transparent mt-1">
                     <div className="x-subnav__inner justify-center">
                         {mainLinks.map((l) => (
-                            <Link key={l.href} href={l.href} className="nav-pill">{l.label}</Link>
+                            <NavigationLink key={l.href} href={l.href} className="nav-pill">{l.label}</NavigationLink>
                         ))}
                     </div>
                 </nav>
@@ -406,13 +407,13 @@ export default function NavigationHeader(): JSX.Element {
                     <ul className="x-drawer__list">
                         {mainLinks.map((l) => (
                             <li key={l.href}>
-                                <Link href={l.href} className="x-drawer__item " onClick={() => setDrawerOpen(false)}>
+                                <NavigationLink href={l.href} className="x-drawer__item " onClick={() => setDrawerOpen(false)}>
                                     {l.label}
-                                </Link>
+                                </NavigationLink>
                             </li>
                         ))}
-                        <li className="pt-2"><Link href="/about" className="x-drawer__item " onClick={() => setDrawerOpen(false)}>За нас</Link></li>
-                        <li><Link href="/contact" className="x-drawer__item" onClick={() => setDrawerOpen(false)}>Контакти</Link></li>
+                        <li className="pt-2"><NavigationLink href="/about" className="x-drawer__item " onClick={() => setDrawerOpen(false)}>За нас</NavigationLink></li>
+                        <li><NavigationLink href="/contact" className="x-drawer__item" onClick={() => setDrawerOpen(false)}>Контакти</NavigationLink></li>
 
 
 
