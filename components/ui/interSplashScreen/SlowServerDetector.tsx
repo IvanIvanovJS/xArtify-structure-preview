@@ -52,5 +52,5 @@ export default function SlowServerDetector(): React.JSX.Element {
         }
     }, [isVisible]);
 
-    return null;
+    return null as unknown as React.JSX.Element;
 }

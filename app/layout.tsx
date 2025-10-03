@@ -14,10 +14,10 @@ import SiteBackground from "@/components/background/SiteBackground";
 import { JSX } from "react";
 import MainWrapper from "@/components/MainWrapper";
 import SplashScreenWrapper from "@/components/ui/SplashScreenWrapper";
-import InterSplashWrapper from "@/components/ui/InterSplashWrapper";
-import NavigationManager from "@/components/ui/NavigationManager";
-import NetworkActivityTracker from "@/components/ui/NetworkActivityTracker";
-import SlowServerDetector from "@/components/ui/SlowServerDetector";
+import InterSplashWrapper from "@/components/ui/interSplashScreen/InterSplashWrapper";
+import NavigationManager from "@/components/ui/interSplashScreen/NavigationManager";
+import NetworkActivityTracker from "@/components/ui/interSplashScreen/NetworkActivityTracker";
+import SlowServerDetector from "@/components/ui/interSplashScreen/SlowServerDetector";
 
 const inter = Inter({ subsets: ["latin"] });
 

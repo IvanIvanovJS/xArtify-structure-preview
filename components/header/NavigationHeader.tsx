@@ -7,7 +7,7 @@ import CartIcon from "../cart/CartIcon";
 import { useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import LogoutConfirmation from "../ui/LogoutConfirmation";
-import NavigationLink from "../ui/NavigationLink";
+import NavigationLink from "../ui/interSplashScreen/NavigationLink";
 import {
     Search,
     User2,

@@ -9,7 +9,7 @@ interface InterSplashScreenProps {
     onComplete: () => void;
 }
 
-export default function InterSplashScreen({ isVisible, onComplete }: InterSplashScreenProps): React.JSX.Element {
+export default function InterSplashScreen({ isVisible }: InterSplashScreenProps): React.JSX.Element {
     const [showLoading, setShowLoading] = useState(false);
 
     useEffect(() => {
