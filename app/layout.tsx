@@ -16,8 +16,7 @@ import MainWrapper from "@/components/MainWrapper";
 import SplashScreenWrapper from "@/components/ui/SplashScreenWrapper";
 import InterSplashWrapper from "@/components/ui/interSplashScreen/InterSplashWrapper";
 import NavigationManager from "@/components/ui/interSplashScreen/NavigationManager";
-import NetworkActivityTracker from "@/components/ui/interSplashScreen/NetworkActivityTracker";
-import SlowServerDetector from "@/components/ui/interSplashScreen/SlowServerDetector";
+import GlobalNavigationTracker from "@/components/ui/interSplashScreen/GlobalNavigationTracker";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -69,10 +68,8 @@ export default async function RootLayout({
                 <InterSplashWrapper />
                 {/* Navigation manager to hide splash when navigation completes */}
                 <NavigationManager />
-                {/* Network activity tracker to hide splash when all requests complete */}
-                <NetworkActivityTracker />
-                {/* Slow server detector for local development */}
-                <SlowServerDetector />
+                {/* Global navigation tracker for all clicks */}
+                <GlobalNavigationTracker />
               </InterSplashProvider>
             </CartProvider>
           </SessionGuard>

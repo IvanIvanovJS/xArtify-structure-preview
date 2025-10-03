@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useNavigationWithSplash } from "@/lib/hooks/useNavigationWithSplash";
+import { usePathname, useRouter } from "next/navigation";
+import { useInterSplash } from "@/app/context/InterSplashContext";
 import { ReactNode } from "react";
 
 interface NavigationLinkProps {
@@ -21,7 +21,8 @@ export default function NavigationLink({
     onClick
 }: NavigationLinkProps): React.JSX.Element {
     const pathname = usePathname();
-    const { navigateWithSplash, replaceWithSplash } = useNavigationWithSplash();
+    const router = useRouter();
+    const { showInterSplash } = useInterSplash();
 
     const handleClick = (e: React.MouseEvent<HTMLAnchorElement>): void => {
         e.preventDefault();
@@ -36,12 +37,17 @@ export default function NavigationLink({
             return;
         }
 
-        // Show splash and navigate
-        if (replace) {
-            replaceWithSplash(href);
-        } else {
-            navigateWithSplash(href);
-        }
+        // Show splash immediately before navigation
+        showInterSplash();
+
+        // Navigate after a short delay to ensure splash is visible
+        setTimeout(() => {
+            if (replace) {
+                router.replace(href);
+            } else {
+                router.push(href);
+            }
+        }, 50);
     };
 
     return (

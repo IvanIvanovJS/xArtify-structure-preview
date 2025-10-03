@@ -10,6 +10,7 @@ export default function InterSplashWrapper(): React.JSX.Element {
         <InterSplashScreen
             isVisible={isVisible}
             onComplete={hideInterSplash}
+            minDuration={400}
         />
     );
 }

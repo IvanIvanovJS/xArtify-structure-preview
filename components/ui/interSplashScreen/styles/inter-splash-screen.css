@@ -1,100 +1,67 @@
 /* Inter Splash Screen Styles - For page transitions */
 .inter-splash-screen {
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 99998 !important;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-/* Dark background */
-.inter-splash-background {
-    position: absolute;
     inset: 0;
-    background: #000;
-    z-index: -1;
-}
-
-/* Loading Bar */
-.inter-splash-loading {
+    z-index: 99999;
     display: flex;
     align-items: center;
     justify-content: center;
+    background: rgba(11, 11, 13, 0.94);
+    /* dark translucent */
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+    pointer-events: auto;
+    /* блокира кликове под него */
 }
 
+/* inner wrapper */
+.inter-splash-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 28px;
+}
+
+
+/* loading bar */
 .inter-splash-loading-bar {
-    width: 200px;
+    width: 240px;
     height: 6px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 3px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
     overflow: hidden;
-    border: 1px solid var(--color-primary-20);
+    box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.25);
 }
 
 .inter-splash-loading-progress {
     height: 100%;
-    background: linear-gradient(90deg,
-            var(--color-primary) 0%,
-            var(--color-primary-80) 50%,
-            var(--color-primary) 100%);
-    border-radius: 2px;
-    box-shadow: 0 0 15px var(--color-primary-60),
-        0 0 30px var(--color-primary-40);
-    position: relative;
-    overflow: hidden;
-}
-
-.inter-splash-loading-progress::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
+    width: 50%;
+    border-radius: 999px;
     background: linear-gradient(90deg,
             transparent 0%,
-            rgba(255, 255, 255, 0.3) 50%,
+            var(--color-primary-60) 20%,
+            var(--color-primary) 50%,
+            var(--color-primary-60) 80%,
             transparent 100%);
-    animation: shimmer 0.8s infinite;
+    box-shadow: 0 0 15px var(--color-primary-60),
+        0 0 30px var(--color-primary-40);
+    will-change: transform;
 }
 
-@keyframes shimmer {
-    0% {
-        left: -100%;
-    }
-
-    100% {
-        left: 100%;
-    }
-}
-
-/* Mobile optimizations */
-@media (max-width: 768px) {
+/* smaller screens */
+@media (max-width: 480px) {
     .inter-splash-loading-bar {
-        width: 150px;
+        width: 140px;
         height: 5px;
     }
 }
 
-@media (max-width: 480px) {
-    .inter-splash-loading-bar {
-        width: 120px;
-        height: 4px;
-    }
-}
-
-/* Reduced motion support */
+/* reduced motion: disable transitions/animations */
 @media (prefers-reduced-motion: reduce) {
     .inter-splash-loading-progress {
-        animation: none;
-        width: 100% !important;
-    }
-
-    .inter-splash-loading-progress::before {
-        animation: none;
+        transition: none !important;
+        animation: none !important;
+        transform: none !important;
+        width: 50% !important;
     }
 }

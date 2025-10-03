@@ -1,73 +1,71 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import "./styles/inter-splash-screen.css";
 
 interface InterSplashScreenProps {
     isVisible: boolean;
-    onComplete: () => void;
+    onComplete?: () => void;      // optional callback when exit finishes
+    minDuration?: number;         // minimal visible time in ms
+    label?: string;               // текст/лого, по подразбиране "xArtify"
 }
 
-export default function InterSplashScreen({ isVisible }: InterSplashScreenProps): React.JSX.Element {
-    const [showLoading, setShowLoading] = useState(false);
+export default function InterSplashScreen({
+    isVisible,
+    onComplete,
+    minDuration = 400,
+}: InterSplashScreenProps): React.JSX.Element {
+    const [show, setShow] = useState(isVisible);
+    const [showStartTs, setShowStartTs] = useState<number | null>(null);
 
+    // sink visible prop -> local show (за да контролираме анимации)
     useEffect(() => {
         if (isVisible) {
-            // Start loading animation immediately
-            setShowLoading(true);
+            setShow(true);
+            setShowStartTs(performance.now());
         } else {
-            // Hide loading when splash is hidden
-            setShowLoading(false);
+            // оставяме show да се скрие след exit анимацията (AnimatePresence ще го махне),
+            // но искаме да гарантираме minDuration
+            const now = performance.now();
+            const elapsed = showStartTs ? Math.max(0, now - showStartTs) : Infinity;
+            const remaining = Math.max(0, minDuration - elapsed);
+            const t = setTimeout(() => setShow(false), remaining);
+            return () => clearTimeout(t);
         }
-    }, [isVisible]);
+    }, [isVisible, minDuration]);
 
     return (
-        <AnimatePresence mode="wait">
-            {isVisible && (
+        <AnimatePresence
+            onExitComplete={() => {
+                // когато exit анимацията е приключила -> callback
+                onComplete?.();
+            }}
+        >
+            {show && (
                 <motion.div
+                    className="inter-splash-screen"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    transition={{
-                        duration: 0.1,
-                        ease: "easeInOut"
-                    }}
-                    className="inter-splash-screen"
+                    transition={{ duration: 0.28, ease: "easeInOut" }}
+                    aria-hidden={!isVisible}
                 >
-                    {/* Dark background */}
-                    <div className="inter-splash-background" />
-
-                    {/* Loading Bar */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{
-                            opacity: showLoading ? 1 : 0,
-                            y: showLoading ? 0 : 20
-                        }}
-                        exit={{
-                            opacity: 0,
-                            y: -20
-                        }}
-                        transition={{
-                            duration: 0.2,
-                            ease: "easeOut"
-                        }}
-                        className="inter-splash-loading"
-                    >
-                        <div className="inter-splash-loading-bar">
+                    <div className="inter-splash-inner" role="presentation">
+                        <div className="inter-splash-loading-bar" aria-hidden="true">
                             <motion.div
                                 className="inter-splash-loading-progress"
-                                initial={{ width: "0%" }}
-                                animate={{ width: "100%" }}
+                                animate={{
+                                    x: ["-50%", "150%", "-50%"]
+                                }}
                                 transition={{
-                                    duration: 0.4,
-                                    ease: "easeInOut",
-                                    delay: 0.1
+                                    duration: 1.5,
+                                    repeat: Infinity,
+                                    ease: "easeInOut"
                                 }}
                             />
                         </div>
-                    </motion.div>
+                    </div>
                 </motion.div>
             )}
         </AnimatePresence>
