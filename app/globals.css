@@ -41,6 +41,22 @@
   --color-primary-foreground: #0b0b0f;
   --color-muted: #1a1a20;
   --color-muted-foreground: #9ca3af;
+  /* Background variations */
+  --color-background-10: rgba(11, 11, 15, 0.1);
+  --color-background-20: rgba(11, 11, 15, 0.2);
+  --color-background-30: rgba(11, 11, 15, 0.3);
+  --color-background-40: rgba(11, 11, 15, 0.4);
+  --color-background-50: rgba(11, 11, 15, 0.5);
+  --color-background-60: rgba(11, 11, 15, 0.6);
+  --color-background-70: rgba(11, 11, 15, 0.7);
+  --color-background-80: rgba(11, 11, 15, 0.8);
+  --color-background-90: rgba(11, 11, 15, 0.9);
+  --color-background-95: rgba(11, 11, 15, 0.95);
+  --color-background-98: rgba(11, 11, 15, 0.98);
+  --color-background-99: rgba(11, 11, 15, 0.99);
+  --color-background-100: rgba(11, 11, 15, 1);
+
+
 
   /* Primary color variations with different opacities */
   --color-primary-rgb: 22 255 228;

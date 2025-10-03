@@ -19,9 +19,10 @@ import {
 } from "lucide-react";
 
 // Опростена логика за скролване на хедъра
-function useHeaderScroll(): { hidden: boolean; showOnHover: () => void; hideOnLeave: () => void } {
+function useHeaderScroll(): { hidden: boolean; showOnHover: () => void; hideOnLeave: () => void; hasScrolled: boolean } {
     const [hidden, setHidden] = useState<boolean>(false);
     const [isHovering, setIsHovering] = useState<boolean>(false);
+    const [hasScrolled, setHasScrolled] = useState<boolean>(false);
     const lastScrollY = useRef<number>(0);
     const ticking = useRef<boolean>(false);
 
@@ -39,9 +40,15 @@ function useHeaderScroll(): { hidden: boolean; showOnHover: () => void; hideOnLe
                 // Ако сме в началото на страницата, винаги показваме хедъра
                 if (currentScrollY <= 10) {
                     setHidden(false);
+                    setHasScrolled(false);
                     lastScrollY.current = currentScrollY;
                     ticking.current = false;
                     return;
+                }
+
+                // Отбелязваме че сме скролвали над 10px
+                if (currentScrollY > 10) {
+                    setHasScrolled(true);
                 }
 
                 // Ако hover-ваме в горната част, показваме хедъра
@@ -53,11 +60,15 @@ function useHeaderScroll(): { hidden: boolean; showOnHover: () => void; hideOnLe
                 }
 
                 // Ако скролваме надолу и сме над 100px от началото - скриваме
-                if (currentScrollY > lastScrollY.current && currentScrollY > 60) {
+                if (currentScrollY > lastScrollY.current && currentScrollY > 100) {
                     setHidden(true);
                 }
-                // Ако скролваме нагоре - показваме
-                else if (currentScrollY < lastScrollY.current) {
+                // Ако скролваме нагоре и сме над 100px - показваме само ако сме скролвали достатъчно нагоре
+                else if (currentScrollY < lastScrollY.current && currentScrollY > 100 && (lastScrollY.current - currentScrollY) > 50) {
+                    setHidden(false);
+                }
+                // Ако сме между 10px и 100px - винаги показваме хедъра
+                else if (currentScrollY <= 100) {
                     setHidden(false);
                 }
 
@@ -80,7 +91,7 @@ function useHeaderScroll(): { hidden: boolean; showOnHover: () => void; hideOnLe
     const showOnHover = () => setIsHovering(true);
     const hideOnLeave = () => setIsHovering(false);
 
-    return { hidden, showOnHover, hideOnLeave };
+    return { hidden, showOnHover, hideOnLeave, hasScrolled };
 }
 
 export default function NavigationHeader(): JSX.Element {
@@ -110,7 +121,7 @@ export default function NavigationHeader(): JSX.Element {
         return () => mq.removeEventListener?.("change", handler);
     }, []);
 
-    const { hidden, showOnHover, hideOnLeave } = useHeaderScroll();
+    const { hidden, showOnHover, hideOnLeave, hasScrolled } = useHeaderScroll();
 
     // Затваряне на search при клик извън
     useEffect(() => {
@@ -220,6 +231,8 @@ export default function NavigationHeader(): JSX.Element {
                 className={[
                     "x-header",
                     hidden ? "-translate-y-full" : "translate-y-0",
+                    // Добавяме фон когато сме скролвали (и на десктоп и на мобилни)
+                    isMounted && hasScrolled ? "x-header--scrolled" : "",
                 ].join(" ")}
                 role="banner"
                 onMouseEnter={isMounted ? showOnHover : undefined}
@@ -294,7 +307,14 @@ export default function NavigationHeader(): JSX.Element {
                             className="inline-block"
                             onClick={scrollToTop}
                         >
-                            <Image src="/xArtify-logo13.svg" alt="xArtify" width={220} height={60} priority />
+                            <Image
+                                src="/xArtify-logo13.svg"
+                                alt="xArtify"
+                                width={140}
+                                height={54}
+                                className="w-[100px] h-[36px] md:w-[140px] md:h-[54px]"
+                                priority
+                            />
                         </Link>
                     </div>
                     {/* ДЯСНО */}
@@ -369,7 +389,7 @@ export default function NavigationHeader(): JSX.Element {
                 </div>
 
                 {/* Под лентата – четирите линка (DESKTOP центрирани) */}
-                <nav aria-label="Главна навигация" className="hidden md:block bg-transparent mt-1">
+                <nav aria-label="Главна навигация" className="hidden md:block bg-transparent">
                     <div className="x-subnav__inner justify-center">
                         {mainLinks.map((l) => (
                             <NavigationLink key={l.href} href={l.href} className="nav-pill">{l.label}</NavigationLink>
