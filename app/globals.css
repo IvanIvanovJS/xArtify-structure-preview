@@ -22,6 +22,7 @@
 @import "../components/ui/styles/grayscale-toggle.css";
 @import "../components/ui/styles/splash-screen.css";
 @import "../components/artworkCard/styles/artwork-card.css";
+@import "../components/footer/styles/footer.css";
 
 
 /* 1) Color tokens */
