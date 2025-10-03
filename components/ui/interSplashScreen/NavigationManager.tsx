@@ -47,7 +47,7 @@ export default function NavigationManager(): React.JSX.Element {
                 hasHiddenRef.current = true;
                 hideInterSplash();
             }
-        }, 3000); // 3 seconds fallback
+        }, 3500); // 3.5 seconds fallback
 
         return () => clearTimeout(fallbackTimeout);
     }, [isVisible, hideInterSplash]);

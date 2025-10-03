@@ -78,7 +78,7 @@ export default function FAQSection(): React.JSX.Element {
                         </svg>
                     </div>
                     <div className="faq-title-section">
-                        <div className="faq-logo">FAQ</div>
+
                         <h2 className="faq-main-title">
                             <span className="faq-title-cosmic">АРТИСТИЧНИ</span>
                             <span className="faq-title-queries">ВЪПРОСИ</span>
