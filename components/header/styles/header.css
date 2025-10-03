@@ -10,6 +10,9 @@
 
     .x-header {
         @apply fixed w-full z-50 transition-transform duration-300;
+        width: 98%;
+        justify-self: center;
+        border-radius: 1.25rem;
     }
 
     /* Скролван фон само за десктоп */

@@ -23,12 +23,21 @@ function useHeaderScroll(): { hidden: boolean; showOnHover: () => void; hideOnLe
     const [hidden, setHidden] = useState<boolean>(false);
     const [isHovering, setIsHovering] = useState<boolean>(false);
     const [hasScrolled, setHasScrolled] = useState<boolean>(false);
+    const [isMobile, setIsMobile] = useState<boolean>(false);
     const lastScrollY = useRef<number>(0);
     const ticking = useRef<boolean>(false);
 
     useEffect(() => {
         // guard за SSR
         if (typeof window === "undefined") return;
+
+        // Детекция за мобилни устройства
+        const checkMobile = () => {
+            setIsMobile(window.innerWidth <= 767);
+        };
+
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
 
         const updateHeader = () => {
             if (ticking.current) return;
@@ -51,25 +60,40 @@ function useHeaderScroll(): { hidden: boolean; showOnHover: () => void; hideOnLe
                     setHasScrolled(true);
                 }
 
-                // Ако hover-ваме в горната част, показваме хедъра
-                if (isHovering) {
-                    setHidden(false);
-                    lastScrollY.current = currentScrollY;
-                    ticking.current = false;
-                    return;
-                }
+                // РАЗЛИЧНА ЛОГИКА ЗА МОБИЛНИ И ДЕСКТОП
+                if (isMobile) {
+                    // МОБИЛНА ЛОГИКА - по-агресивно скриване/показване
+                    if (currentScrollY > lastScrollY.current && currentScrollY > 50) {
+                        // Скриваме при скролване надолу над 50px
+                        setHidden(true);
+                    } else if (currentScrollY < lastScrollY.current && currentScrollY > 50) {
+                        // Показваме при скролване нагоре над 50px
+                        setHidden(false);
+                    } else if (currentScrollY <= 50) {
+                        // Винаги показваме под 50px
+                        setHidden(false);
+                    }
+                } else {
+                    // ДЕСКТОП ЛОГИКА - с hover функционалност
+                    if (isHovering) {
+                        setHidden(false);
+                        lastScrollY.current = currentScrollY;
+                        ticking.current = false;
+                        return;
+                    }
 
-                // Ако скролваме надолу и сме над 100px от началото - скриваме
-                if (currentScrollY > lastScrollY.current && currentScrollY > 100) {
-                    setHidden(true);
-                }
-                // Ако скролваме нагоре и сме над 100px - показваме само ако сме скролвали достатъчно нагоре
-                else if (currentScrollY < lastScrollY.current && currentScrollY > 100 && (lastScrollY.current - currentScrollY) > 50) {
-                    setHidden(false);
-                }
-                // Ако сме между 10px и 100px - винаги показваме хедъра
-                else if (currentScrollY <= 100) {
-                    setHidden(false);
+                    // Ако скролваме надолу и сме над 100px от началото - скриваме
+                    if (currentScrollY > lastScrollY.current && currentScrollY > 100) {
+                        setHidden(true);
+                    }
+                    // Ако скролваме нагоре и сме над 100px - показваме само ако сме скролвали достатъчно нагоре
+                    else if (currentScrollY < lastScrollY.current && currentScrollY > 100 && (lastScrollY.current - currentScrollY) > 50) {
+                        setHidden(false);
+                    }
+                    // Ако сме между 10px и 100px - винаги показваме хедъра
+                    else if (currentScrollY <= 100) {
+                        setHidden(false);
+                    }
                 }
 
                 lastScrollY.current = currentScrollY;
@@ -85,8 +109,9 @@ function useHeaderScroll(): { hidden: boolean; showOnHover: () => void; hideOnLe
 
         return () => {
             window.removeEventListener("scroll", updateHeader);
+            window.removeEventListener('resize', checkMobile);
         };
-    }, [isHovering, hidden]);
+    }, [isHovering, hidden, isMobile]);
 
     const showOnHover = () => setIsHovering(true);
     const hideOnLeave = () => setIsHovering(false);
