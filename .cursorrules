@@ -24,7 +24,8 @@ xArtify is a Bulgarian art platform built with Next.js 15, featuring:
 ## TypeScript & Code Quality Rules
 
 ### Strict Typing Requirements
-- **NEVER use `any` type** - always provide explicit types
+- **🚨 CRITICAL: NEVER use `any` type** - always provide explicit types
+- **🚨 MANDATORY: NO `any` under any circumstances** - this wastes tokens and creates errors
 - Use `interface` for object shapes, `type` for unions/primitives
 - Always type function parameters and return values
 - Use generic types for reusable components

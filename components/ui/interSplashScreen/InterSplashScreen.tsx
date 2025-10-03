@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import "./styles/inter-splash-screen.css";
 
@@ -17,18 +17,18 @@ export default function InterSplashScreen({
     minDuration = 400,
 }: InterSplashScreenProps): React.JSX.Element {
     const [show, setShow] = useState(isVisible);
-    const [showStartTs, setShowStartTs] = useState<number | null>(null);
+    const showStartTsRef = useRef<number | null>(null);
 
     // sink visible prop -> local show (за да контролираме анимации)
     useEffect(() => {
         if (isVisible) {
             setShow(true);
-            setShowStartTs(performance.now());
+            showStartTsRef.current = performance.now();
         } else {
             // оставяме show да се скрие след exit анимацията (AnimatePresence ще го махне),
             // но искаме да гарантираме minDuration
             const now = performance.now();
-            const elapsed = showStartTs ? Math.max(0, now - showStartTs) : Infinity;
+            const elapsed = showStartTsRef.current ? Math.max(0, now - showStartTsRef.current) : Infinity;
             const remaining = Math.max(0, minDuration - elapsed);
             const t = setTimeout(() => setShow(false), remaining);
             return () => clearTimeout(t);

@@ -43,7 +43,7 @@ export default function GlobalNavigationTracker(): React.JSX.Element {
         const originalPush = router.push;
         const originalReplace = router.replace;
 
-        router.push = (href: string, options?: any) => {
+        router.push = (href: string, options?: { scroll?: boolean }) => {
             // Skip if it's the same page
             if (pathname !== href) {
                 showInterSplash();
@@ -51,7 +51,7 @@ export default function GlobalNavigationTracker(): React.JSX.Element {
             return originalPush.call(router, href, options);
         };
 
-        router.replace = (href: string, options?: any) => {
+        router.replace = (href: string, options?: { scroll?: boolean }) => {
             // Skip if it's the same page
             if (pathname !== href) {
                 showInterSplash();
