@@ -711,6 +711,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 - **Reuse patterns**: Follow established codebase conventions
 - **Minimize context**: Focus on essential information only
 
+### **🚨 MANDATORY: Complete Integration Rule**
+- **ALWAYS integrate new components into their intended pages/routes**
+- **NEVER leave components unused** - always add them to the appropriate page
+- **When creating components for specific pages**: Immediately add them to that page
+- **When creating reusable components**: Show example usage in relevant pages
+- **Complete the full workflow**: Create component → Add to page → Test integration
+- **This prevents "half-finished" work and ensures components are actually used**
+
 Remember: Always prioritize Tier 1 requirements (Security, no `any`, mobile-first, **RLS policies for ALL CRUD operations**, **Documentation for ALL functionality**, Stripe SCA), maintain strict typing, implement proper security, follow the established patterns in the codebase, and NEVER use inline styles - always create separate CSS files.
 
 **CRITICAL**: Every time you create or refactor CRUD functionality requiring authorization, you MUST provide the corresponding SQL RLS policies for database-level protection. This ensures double-layer security architecture.

@@ -23,6 +23,8 @@
 @import "../components/ui/styles/splash-screen.css";
 @import "../components/artworkCard/styles/artwork-card.css";
 @import "../components/footer/styles/footer.css";
+@import "../components/faq/styles/faq-page.css";
+@import "../components/home/styles/home-faq.css";
 
 
 /* 1) Color tokens */

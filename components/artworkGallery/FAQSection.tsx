@@ -96,7 +96,7 @@ export default function FAQSection(): React.JSX.Element {
                             onClick={() => toggleItem(item.id)}
                         >
                             <div className="faq-question">
-                                <span className="faq-question-number">Q.</span>
+                                <span className="faq-question-number">В.</span>
                                 <span className="faq-question-text">{item.question}</span>
                                 <div className="faq-chevron">
                                     <svg
