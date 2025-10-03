@@ -111,5 +111,5 @@ export default function NavigationManager(): React.JSX.Element {
         };
     }, [isVisible, hideInterSplash]);
 
-    return null;
+    return null as unknown as React.JSX.Element;
 }

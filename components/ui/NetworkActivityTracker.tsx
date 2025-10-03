@@ -61,13 +61,13 @@ export default function NetworkActivityTracker(): React.JSX.Element {
         const originalXHROpen = XMLHttpRequest.prototype.open;
         const originalXHRSend = XMLHttpRequest.prototype.send;
 
-        XMLHttpRequest.prototype.open = function (...args) {
-            this._isTracked = true;
-            return originalXHROpen.apply(this, args);
+        XMLHttpRequest.prototype.open = function (method: string, url: string | URL, async?: boolean, username?: string | null, password?: string | null) {
+            (this as XMLHttpRequest & { _isTracked?: boolean })._isTracked = true;
+            return originalXHROpen.call(this, method, url, async ?? true, username, password);
         };
 
         XMLHttpRequest.prototype.send = function (...args) {
-            if (this._isTracked) {
+            if ((this as XMLHttpRequest & { _isTracked?: boolean })._isTracked) {
                 activeRequestsRef.current++;
                 console.log(`NetworkActivityTracker: XHR started (${activeRequestsRef.current} active)`);
 
@@ -120,5 +120,5 @@ export default function NetworkActivityTracker(): React.JSX.Element {
         }
     }, [isVisible]);
 
-    return null;
+    return null as unknown as React.JSX.Element;
 }
