@@ -10,7 +10,7 @@ interface MainWrapperProps {
 export default function MainWrapper({ children }: MainWrapperProps) {
     const pathname = usePathname();
 
-    // Страници без хедър - без padding-top
+    // Страници без хедър и футър - без padding-top
     const noHeaderPages = ["/login", "/register", "/forgotten-password"];
     const shouldHidePadding = noHeaderPages.includes(pathname);
 

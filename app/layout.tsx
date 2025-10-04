@@ -3,6 +3,8 @@ import "./globals.css";
 
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { JSX } from "react";
+
 import Header from "@/components/header/Header";
 import SessionProvider from "@/components/SessionProvider";
 import { getServerSession } from "next-auth";
@@ -11,13 +13,12 @@ import { CartProvider } from "./context/CartContext";
 import { InterSplashProvider } from "./context/InterSplashContext";
 import SessionGuard from "@/components/SessionGuard";
 import SiteBackground from "@/components/background/SiteBackground";
-import { JSX } from "react";
 import MainWrapper from "@/components/MainWrapper";
 import SplashScreenWrapper from "@/components/ui/SplashScreenWrapper";
 import InterSplashWrapper from "@/components/ui/interSplashScreen/InterSplashWrapper";
 import NavigationManager from "@/components/ui/interSplashScreen/NavigationManager";
 import GlobalNavigationTracker from "@/components/ui/interSplashScreen/GlobalNavigationTracker";
-import Footer from "@/components/footer/Footer";
+import ConditionalFooter from "@/components/footer/ConditionalFooter";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -64,7 +65,7 @@ export default async function RootLayout({
                 <MainWrapper>
                   {children}
                 </MainWrapper>
-                <Footer />
+                <ConditionalFooter />
                 {/* Inter Splash Screen for page transitions */}
                 <InterSplashWrapper />
                 {/* Navigation manager to hide splash when navigation completes */}
