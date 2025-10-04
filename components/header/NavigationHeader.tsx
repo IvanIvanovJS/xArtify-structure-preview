@@ -8,12 +8,13 @@ import { useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import LogoutConfirmation from "../ui/LogoutConfirmation";
 import NavigationLink from "../ui/interSplashScreen/NavigationLink";
+import MobileDrawer from "./MobileDrawer";
+import "./styles/mobile-drawer.css";
 import {
     Search,
     User2,
     Heart,
     Menu,
-    LogIn,
     LogOut,
     Shield,
 } from "lucide-react";
@@ -447,44 +448,10 @@ export default function NavigationHeader(): JSX.Element {
             </header >
 
             {/* MOBILE DRAWER */}
-            <aside className="x-drawer" data-open={drawerOpen ? "true" : "false"} aria-hidden={!drawerOpen}>
-                <nav aria-label="Мобилно меню">
-                    <ul className="x-drawer__list">
-                        {mainLinks.map((l) => (
-                            <li key={l.href}>
-                                <NavigationLink href={l.href} className="x-drawer__item " onClick={() => setDrawerOpen(false)}>
-                                    {l.label}
-                                </NavigationLink>
-                            </li>
-                        ))}
-                        <li className="pt-2"><NavigationLink href="/about" className="x-drawer__item " onClick={() => setDrawerOpen(false)}>За нас</NavigationLink></li>
-                        <li><NavigationLink href="/contact" className="x-drawer__item" onClick={() => setDrawerOpen(false)}>Контакти</NavigationLink></li>
-
-
-
-                        <li className="pt-2">
-                            {session ? (
-                                <button
-                                    onClick={() => setShowLogoutConfirm(true)}
-                                    className="x-drawer__item w-full text-left"
-                                >
-                                    <span className="inline-flex items-center gap-2">
-                                        <LogOut size={18} /> Изход
-                                    </span>
-                                </button>
-                            ) : (
-                                <Link href="/login" className="x-drawer__item"><span className="inline-flex items-center gap-2"><LogIn size={18} /> Вход</span></Link>
-                            )}
-                        </li>
-                    </ul>
-                </nav>
-            </aside >
-            <button
-                type="button"
-                className="x-drawer__backdrop"
-                data-open={drawerOpen ? "true" : "false"}
-                aria-hidden={!drawerOpen}
-                onClick={() => setDrawerOpen(false)}
+            <MobileDrawer
+                isOpen={drawerOpen}
+                onClose={() => setDrawerOpen(false)}
+                onLogout={() => setShowLogoutConfirm(true)}
             />
 
             {/* Logout Confirmation Modal */}
