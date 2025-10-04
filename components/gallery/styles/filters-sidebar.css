@@ -68,6 +68,12 @@
     padding-top: 0.5rem;
 }
 
+/* Search Bar */
+.search-bar {
+    width: 100%;
+    margin-bottom: 1rem;
+}
+
 /* Search Filter */
 .search-filter {
     width: 100%;

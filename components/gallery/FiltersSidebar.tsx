@@ -451,7 +451,6 @@ export default function FiltersSidebar({
 
     // State for expanded sections - all closed by default
     const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
-        search: false,
         author: false,
         technique: false,
         subject: false,
@@ -517,18 +516,24 @@ export default function FiltersSidebar({
             </div>
 
             <div className="filters-content">
-                {/* Search */}
-                <FilterSection
-                    title="Търсене"
-                    isExpanded={expandedSections.search}
-                    onToggle={() => toggleSection('search')}
-                >
+                {/* Search Bar */}
+                <div className="search-bar">
                     <SearchFilter
                         value={filters.q}
                         onChange={(value) => updateFilters({ q: value })}
                     />
+                </div>
+                {/* Sort */}
+                <FilterSection
+                    title="Сортиране"
+                    isExpanded={expandedSections.sort}
+                    onToggle={() => toggleSection('sort')}
+                >
+                    <SortFilter
+                        value={filters.sort}
+                        onChange={(value) => updateFilters({ sort: value })}
+                    />
                 </FilterSection>
-
                 {/* Author */}
                 <FilterSection
                     title="Художник"
@@ -631,17 +636,7 @@ export default function FiltersSidebar({
                     />
                 </FilterSection>
 
-                {/* Sort */}
-                <FilterSection
-                    title="Сортиране"
-                    isExpanded={expandedSections.sort}
-                    onToggle={() => toggleSection('sort')}
-                >
-                    <SortFilter
-                        value={filters.sort}
-                        onChange={(value) => updateFilters({ sort: value })}
-                    />
-                </FilterSection>
+
             </div>
         </div>
     );

@@ -2,7 +2,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { createPortal } from 'react-dom';
 import CustomDropdown from '@/components/ui/CustomDropdown';
@@ -67,10 +67,37 @@ function MobileFilterSection({
     onToggle: () => void;
     children: React.ReactNode;
 }): React.JSX.Element {
+    const sectionRef = useRef<HTMLDivElement>(null);
+
+    const handleToggle = (): void => {
+        onToggle();
+
+        // If expanding, scroll to center the section after animation
+        if (!isExpanded) {
+            setTimeout(() => {
+                if (sectionRef.current) {
+                    const container = sectionRef.current.closest('.mobile-filters-sheet-content') as HTMLElement;
+                    if (container) {
+                        const sectionRect = sectionRef.current.getBoundingClientRect();
+                        const containerRect = container.getBoundingClientRect();
+                        const containerCenter = containerRect.height / 2;
+                        const sectionCenter = sectionRect.top - containerRect.top + (sectionRect.height / 2);
+                        const scrollOffset = sectionCenter - containerCenter;
+
+                        container.scrollBy({
+                            top: scrollOffset,
+                            behavior: 'smooth'
+                        });
+                    }
+                }
+            }, 100); // Small delay to allow animation to start
+        }
+    };
+
     return (
-        <div className="mobile-filter-section">
+        <div ref={sectionRef} className="mobile-filter-section">
             <button
-                onClick={onToggle}
+                onClick={handleToggle}
                 className="mobile-filter-section-header"
                 type="button"
                 aria-expanded={isExpanded}
@@ -527,7 +554,6 @@ export default function FiltersMobileSheet({
 
     // State for expanded sections - all closed by default
     const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
-        search: false,
         author: false,
         technique: false,
         subject: false,
@@ -630,15 +656,23 @@ export default function FiltersMobileSheet({
 
                         {/* Sheet Content */}
                         <div className="mobile-filters-sheet-content">
-                            {/* Search */}
-                            <MobileFilterSection
-                                title="Търсене"
-                                isExpanded={expandedSections.search}
-                                onToggle={() => toggleSection('search')}
-                            >
+                            {/* Search Bar */}
+                            <div className="mobile-search-bar">
                                 <MobileSearchFilter
                                     value={filters.q}
                                     onChange={(value) => updateFilters({ q: value })}
+                                />
+                            </div>
+
+                            {/* Sort */}
+                            <MobileFilterSection
+                                title="Сортиране"
+                                isExpanded={expandedSections.sort}
+                                onToggle={() => toggleSection('sort')}
+                            >
+                                <MobileSortFilter
+                                    value={filters.sort}
+                                    onChange={(value) => updateFilters({ sort: value })}
                                 />
                             </MobileFilterSection>
 
@@ -744,17 +778,7 @@ export default function FiltersMobileSheet({
                                 />
                             </MobileFilterSection>
 
-                            {/* Sort */}
-                            <MobileFilterSection
-                                title="Сортиране"
-                                isExpanded={expandedSections.sort}
-                                onToggle={() => toggleSection('sort')}
-                            >
-                                <MobileSortFilter
-                                    value={filters.sort}
-                                    onChange={(value) => updateFilters({ sort: value })}
-                                />
-                            </MobileFilterSection>
+
                         </div>
 
                         {/* Sheet Footer */}

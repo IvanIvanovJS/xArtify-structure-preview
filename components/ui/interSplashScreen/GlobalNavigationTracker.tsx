@@ -46,7 +46,12 @@ export default function GlobalNavigationTracker(): React.JSX.Element {
         router.push = (href: string, options?: { scroll?: boolean }) => {
             // Skip if it's the same page
             if (pathname !== href) {
-                showInterSplash();
+                // Skip interSplash for filter operations (gallery page with or without query parameters)
+                const isFilterOperation = pathname === '/gallery' && (href === '/gallery' || href.startsWith('/gallery?'));
+
+                if (!isFilterOperation) {
+                    showInterSplash();
+                }
             }
             return originalPush.call(router, href, options);
         };
@@ -54,7 +59,12 @@ export default function GlobalNavigationTracker(): React.JSX.Element {
         router.replace = (href: string, options?: { scroll?: boolean }) => {
             // Skip if it's the same page
             if (pathname !== href) {
-                showInterSplash();
+                // Skip interSplash for filter operations (gallery page with or without query parameters)
+                const isFilterOperation = pathname === '/gallery' && (href === '/gallery' || href.startsWith('/gallery?'));
+
+                if (!isFilterOperation) {
+                    showInterSplash();
+                }
             }
             return originalReplace.call(router, href, options);
         };
