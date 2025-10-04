@@ -14,7 +14,6 @@
 @import "../components/credentials/LoginForm/styles/login.css";
 @import "../components/gallery/styles/gallery-page.css";
 @import "../components/gallery/styles/gallery-grid.css";
-@import "../components/gallery/styles/sort-bar.css";
 @import "../components/gallery/styles/active-chips.css";
 @import "../components/gallery/styles/filters-sidebar.css";
 @import "../components/gallery/styles/filters-mobile-sheet.css";
@@ -25,6 +24,7 @@
 @import "../components/footer/styles/footer.css";
 @import "../components/faq/styles/faq-page.css";
 @import "../components/home/styles/home-faq.css";
+@import "../components/artists/styles/artists.css";
 
 
 /* 1) Color tokens */

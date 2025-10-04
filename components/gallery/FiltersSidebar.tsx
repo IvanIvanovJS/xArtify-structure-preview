@@ -23,6 +23,7 @@ function useDebounce<T>(value: T, delay: number): T {
     return debouncedValue;
 }
 
+
 // Types
 interface FilterOptions {
     techniques: string[];
@@ -109,13 +110,11 @@ function SearchFilter({
 
 // Select filter component
 function SelectFilter({
-    title,
     options,
     value,
     onChange,
     placeholder = "Избери..."
 }: {
-    title: string;
     options: string[];
     value: string;
     onChange: (value: string) => void;
@@ -132,7 +131,6 @@ function SelectFilter({
                 value={value}
                 onChange={onChange}
                 options={dropdownOptions}
-                label={title}
                 className="filter-dropdown"
             />
         </div>
@@ -163,7 +161,6 @@ function AuthorFilter({
                 value={value}
                 onChange={onChange}
                 options={dropdownOptions}
-                label="Художник"
                 className="filter-dropdown"
             />
         </div>
@@ -211,34 +208,55 @@ function PriceFilter({
 
     const handleSliderChange = (type: 'min' | 'max', value: number): void => {
         if (type === 'min') {
-            setSliderMin(value);
+            // Ensure min doesn't exceed max
+            const newMin = Math.min(value, sliderMax);
+            setSliderMin(newMin);
         } else {
-            setSliderMax(value);
+            // Ensure max doesn't go below min
+            const newMax = Math.max(value, sliderMin);
+            setSliderMax(newMax);
         }
     };
+
+    const minPrice = priceRange?.min || 0;
+    const maxPrice = priceRange?.max || 10000;
+
+    // Update the filled range between sliders
+    useEffect(() => {
+        const minPercent = ((sliderMin - minPrice) / (maxPrice - minPrice)) * 100;
+        const maxPercent = ((sliderMax - minPrice) / (maxPrice - minPrice)) * 100;
+
+        const sliderContainer = document.querySelector('.dual-range-slider') as HTMLElement;
+        if (sliderContainer) {
+            sliderContainer.style.setProperty('--min-percent', `${minPercent}%`);
+            sliderContainer.style.setProperty('--max-percent', `${maxPercent}%`);
+        }
+    }, [sliderMin, sliderMax, minPrice, maxPrice]);
 
     return (
         <div className="price-filter">
             <label className="filter-label">Ценови диапазон</label>
 
-            {/* Range Slider */}
-            <div className="range-slider-container">
-                <input
-                    type="range"
-                    min={priceRange?.min || 0}
-                    max={priceRange?.max ? priceRange.max / 2 : 5000}
-                    value={sliderMin}
-                    onChange={(e) => handleSliderChange('min', parseInt(e.target.value))}
-                    className="range-slider range-slider-min"
-                />
-                <input
-                    type="range"
-                    min={priceRange?.max ? priceRange.max / 2 : 5000}
-                    max={priceRange?.max || 10000}
-                    value={sliderMax}
-                    onChange={(e) => handleSliderChange('max', parseInt(e.target.value))}
-                    className="range-slider range-slider-max"
-                />
+            {/* Dual Range Slider */}
+            <div className="dual-range-slider-container">
+                <div className="dual-range-slider">
+                    <input
+                        type="range"
+                        min={minPrice}
+                        max={maxPrice}
+                        value={sliderMin}
+                        onChange={(e) => handleSliderChange('min', parseInt(e.target.value))}
+                        className="range-slider range-slider-min"
+                    />
+                    <input
+                        type="range"
+                        min={minPrice}
+                        max={maxPrice}
+                        value={sliderMax}
+                        onChange={(e) => handleSliderChange('max', parseInt(e.target.value))}
+                        className="range-slider range-slider-max"
+                    />
+                </div>
             </div>
 
             {/* Value Display */}
@@ -395,6 +413,34 @@ function TagsFilter({
     );
 }
 
+// Sort filter component
+function SortFilter({
+    value,
+    onChange
+}: {
+    value: string;
+    onChange: (value: string) => void;
+}): React.JSX.Element {
+    const dropdownOptions = [
+        { value: 'newest', label: 'Най-нови' },
+        { value: 'price_asc', label: 'Цена: ниска към висока' },
+        { value: 'price_desc', label: 'Цена: висока към ниска' },
+        { value: 'title_asc', label: 'Заглавие: А-Я' },
+        { value: 'title_desc', label: 'Заглавие: Я-А' },
+    ];
+
+    return (
+        <div className="sort-filter">
+            <CustomDropdown
+                value={value}
+                onChange={onChange}
+                options={dropdownOptions}
+                className="filter-dropdown"
+            />
+        </div>
+    );
+}
+
 // Main Filters Sidebar Component
 export default function FiltersSidebar({
     filterOptions,
@@ -403,16 +449,17 @@ export default function FiltersSidebar({
     const router = useRouter();
     // const currentSearchParams = useSearchParams(); // Not used yet
 
-    // State for expanded sections
+    // State for expanded sections - all closed by default
     const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
-        search: true,
-        author: true,
+        search: false,
+        author: false,
         technique: false,
         subject: false,
         style: false,
         price: false,
         size: false,
         tags: false,
+        sort: false,
     });
 
     // State for filter values
@@ -430,6 +477,7 @@ export default function FiltersSidebar({
         heightMax: parseInt((searchParams.heightMax as string) || '0') || 0,
         tags: Array.isArray(searchParams.tags) ? searchParams.tags :
             (searchParams.tags as string)?.split(',') || [],
+        sort: (searchParams.sort as string) || 'newest',
     });
 
     const toggleSection = (section: string): void => {
@@ -501,7 +549,6 @@ export default function FiltersSidebar({
                     onToggle={() => toggleSection('technique')}
                 >
                     <SelectFilter
-                        title=""
                         options={filterOptions.techniques}
                         value={filters.technique}
                         onChange={(value) => updateFilters({ technique: value })}
@@ -516,7 +563,6 @@ export default function FiltersSidebar({
                     onToggle={() => toggleSection('subject')}
                 >
                     <SelectFilter
-                        title=""
                         options={filterOptions.subjects}
                         value={filters.subject}
                         onChange={(value) => updateFilters({ subject: value })}
@@ -531,7 +577,6 @@ export default function FiltersSidebar({
                     onToggle={() => toggleSection('style')}
                 >
                     <SelectFilter
-                        title=""
                         options={filterOptions.styles}
                         value={filters.style}
                         onChange={(value) => updateFilters({ style: value })}
@@ -583,6 +628,18 @@ export default function FiltersSidebar({
                         tags={filterOptions.tags}
                         selectedTags={filters.tags}
                         onTagsChange={(tags) => updateFilters({ tags })}
+                    />
+                </FilterSection>
+
+                {/* Sort */}
+                <FilterSection
+                    title="Сортиране"
+                    isExpanded={expandedSections.sort}
+                    onToggle={() => toggleSection('sort')}
+                >
+                    <SortFilter
+                        value={filters.sort}
+                        onChange={(value) => updateFilters({ sort: value })}
                     />
                 </FilterSection>
             </div>

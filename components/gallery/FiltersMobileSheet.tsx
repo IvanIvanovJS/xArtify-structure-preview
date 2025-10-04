@@ -138,13 +138,11 @@ function MobileSearchFilter({
 
 // Select filter component for mobile
 function MobileSelectFilter({
-    title,
     options,
     value,
     onChange,
     placeholder = "Избери..."
 }: {
-    title: string;
     options: string[];
     value: string;
     onChange: (value: string) => void;
@@ -161,7 +159,6 @@ function MobileSelectFilter({
                 value={value}
                 onChange={onChange}
                 options={dropdownOptions}
-                label={title}
                 className="mobile-filter-dropdown"
             />
         </div>
@@ -192,7 +189,6 @@ function MobileAuthorFilter({
                 value={value}
                 onChange={onChange}
                 options={dropdownOptions}
-                label="Художник"
                 className="mobile-filter-dropdown"
             />
         </div>
@@ -240,34 +236,55 @@ function MobilePriceFilter({
 
     const handleSliderChange = (type: 'min' | 'max', value: number): void => {
         if (type === 'min') {
-            setSliderMin(value);
+            // Ensure min doesn't exceed max
+            const newMin = Math.min(value, sliderMax);
+            setSliderMin(newMin);
         } else {
-            setSliderMax(value);
+            // Ensure max doesn't go below min
+            const newMax = Math.max(value, sliderMin);
+            setSliderMax(newMax);
         }
     };
+
+    const minPrice = priceRange?.min || 0;
+    const maxPrice = priceRange?.max || 10000;
+
+    // Update the filled range between sliders
+    useEffect(() => {
+        const minPercent = ((sliderMin - minPrice) / (maxPrice - minPrice)) * 100;
+        const maxPercent = ((sliderMax - minPrice) / (maxPrice - minPrice)) * 100;
+
+        const sliderContainer = document.querySelector('.mobile-dual-range-slider') as HTMLElement;
+        if (sliderContainer) {
+            sliderContainer.style.setProperty('--min-percent', `${minPercent}%`);
+            sliderContainer.style.setProperty('--max-percent', `${maxPercent}%`);
+        }
+    }, [sliderMin, sliderMax, minPrice, maxPrice]);
 
     return (
         <div className="mobile-price-filter">
             <label className="mobile-filter-label">Ценови диапазон</label>
 
-            {/* Range Slider */}
-            <div className="mobile-range-slider-container">
-                <input
-                    type="range"
-                    min={priceRange?.min || 0}
-                    max={priceRange?.max ? priceRange.max / 2 : 5000}
-                    value={sliderMin}
-                    onChange={(e) => handleSliderChange('min', parseInt(e.target.value))}
-                    className="mobile-range-slider mobile-range-slider-min"
-                />
-                <input
-                    type="range"
-                    min={priceRange?.max ? priceRange.max / 2 : 5000}
-                    max={priceRange?.max || 10000}
-                    value={sliderMax}
-                    onChange={(e) => handleSliderChange('max', parseInt(e.target.value))}
-                    className="mobile-range-slider mobile-range-slider-max"
-                />
+            {/* Dual Range Slider */}
+            <div className="mobile-dual-range-slider-container">
+                <div className="mobile-dual-range-slider">
+                    <input
+                        type="range"
+                        min={minPrice}
+                        max={maxPrice}
+                        value={sliderMin}
+                        onChange={(e) => handleSliderChange('min', parseInt(e.target.value))}
+                        className="mobile-range-slider mobile-range-slider-min"
+                    />
+                    <input
+                        type="range"
+                        min={minPrice}
+                        max={maxPrice}
+                        value={sliderMax}
+                        onChange={(e) => handleSliderChange('max', parseInt(e.target.value))}
+                        className="mobile-range-slider mobile-range-slider-max"
+                    />
+                </div>
             </div>
 
             {/* Value Display */}
@@ -466,6 +483,34 @@ function MobileTagsFilter({
     );
 }
 
+// Sort filter component for mobile
+function MobileSortFilter({
+    value,
+    onChange
+}: {
+    value: string;
+    onChange: (value: string) => void;
+}): React.JSX.Element {
+    const dropdownOptions = [
+        { value: 'newest', label: 'Най-нови' },
+        { value: 'price_asc', label: 'Цена: ниска към висока' },
+        { value: 'price_desc', label: 'Цена: висока към ниска' },
+        { value: 'title_asc', label: 'Заглавие: А-Я' },
+        { value: 'title_desc', label: 'Заглавие: Я-А' },
+    ];
+
+    return (
+        <div className="mobile-sort-filter">
+            <CustomDropdown
+                value={value}
+                onChange={onChange}
+                options={dropdownOptions}
+                className="mobile-filter-dropdown"
+            />
+        </div>
+    );
+}
+
 // Main Filters Mobile Sheet Component
 export default function FiltersMobileSheet({
     filterOptions,
@@ -480,9 +525,9 @@ export default function FiltersMobileSheet({
         setMounted(true);
     }, []);
 
-    // State for expanded sections
+    // State for expanded sections - all closed by default
     const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
-        search: true,
+        search: false,
         author: false,
         technique: false,
         subject: false,
@@ -490,6 +535,7 @@ export default function FiltersMobileSheet({
         price: false,
         size: false,
         tags: false,
+        sort: false,
     });
 
     // State for filter values
@@ -507,6 +553,7 @@ export default function FiltersMobileSheet({
         heightMax: parseInt((searchParams.heightMax as string) || '0') || 0,
         tags: Array.isArray(searchParams.tags) ? searchParams.tags :
             (searchParams.tags as string)?.split(',') || [],
+        sort: (searchParams.sort as string) || 'newest',
     });
 
     const toggleSection = (section: string): void => {
@@ -615,7 +662,6 @@ export default function FiltersMobileSheet({
                                 onToggle={() => toggleSection('technique')}
                             >
                                 <MobileSelectFilter
-                                    title=""
                                     options={filterOptions.techniques}
                                     value={filters.technique}
                                     onChange={(value) => updateFilters({ technique: value })}
@@ -630,7 +676,6 @@ export default function FiltersMobileSheet({
                                 onToggle={() => toggleSection('subject')}
                             >
                                 <MobileSelectFilter
-                                    title=""
                                     options={filterOptions.subjects}
                                     value={filters.subject}
                                     onChange={(value) => updateFilters({ subject: value })}
@@ -645,7 +690,6 @@ export default function FiltersMobileSheet({
                                 onToggle={() => toggleSection('style')}
                             >
                                 <MobileSelectFilter
-                                    title=""
                                     options={filterOptions.styles}
                                     value={filters.style}
                                     onChange={(value) => updateFilters({ style: value })}
@@ -697,6 +741,18 @@ export default function FiltersMobileSheet({
                                     tags={filterOptions.tags}
                                     selectedTags={filters.tags}
                                     onTagsChange={(tags) => updateFilters({ tags })}
+                                />
+                            </MobileFilterSection>
+
+                            {/* Sort */}
+                            <MobileFilterSection
+                                title="Сортиране"
+                                isExpanded={expandedSections.sort}
+                                onToggle={() => toggleSection('sort')}
+                            >
+                                <MobileSortFilter
+                                    value={filters.sort}
+                                    onChange={(value) => updateFilters({ sort: value })}
                                 />
                             </MobileFilterSection>
                         </div>

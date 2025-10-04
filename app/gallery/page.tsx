@@ -5,7 +5,6 @@ import { getBaseUrl } from '@/lib/url';
 import GalleryGrid from '../../components/gallery/GalleryGrid';
 import FiltersSidebar from '../../components/gallery/FiltersSidebar';
 import FiltersMobileSheet from '../../components/gallery/FiltersMobileSheet';
-import SortBar from '../../components/gallery/SortBar';
 import ActiveChips from '../../components/gallery/ActiveChips';
 
 
@@ -105,7 +104,8 @@ async function getPaintings(searchParams: { [key: string]: string | string[] | u
     const url = `${base}/api/paintings?${queryParams.toString()}`;
 
     const res = await fetch(url, {
-        cache: "no-store", // Always fetch fresh data for filters
+        // Use cache for better performance, but revalidate every 60 seconds
+        next: { revalidate: 60 },
     });
 
     if (!res.ok) {
@@ -120,7 +120,8 @@ async function getFilterOptions(): Promise<FilterOptions> {
     const base = await getBaseUrl();
 
     const res = await fetch(`${base}/api/paintings/filter-options`, {
-        cache: "no-store",
+        // Cache filter options for 5 minutes since they change less frequently
+        next: { revalidate: 300 },
     });
 
     if (!res.ok) {
@@ -171,13 +172,6 @@ export default async function GalleryPage({ searchParams }: GalleryPageProps): P
 
                     {/* Main Content */}
                     <main className="gallery-main">
-                        {/* Sort Bar */}
-                        <div className="sort-section">
-                            <Suspense fallback={<div className="loading-skeleton" />}>
-                                <SortBar searchParams={resolvedSearchParams} totalItems={paintingsData.total} />
-                            </Suspense>
-                        </div>
-
                         {/* Active Filters */}
                         <div className="active-filters-section">
                             <Suspense fallback={<div className="loading-skeleton" />}>

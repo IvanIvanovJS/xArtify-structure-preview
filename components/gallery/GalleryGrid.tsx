@@ -81,17 +81,8 @@ export default function GalleryGrid({
                 const newSearchParams = new URLSearchParams(searchParams.toString());
                 newSearchParams.set('page', (currentPage + 1).toString());
 
-                // Fetch next page
-                const response = await fetch(`/api/paintings?${newSearchParams.toString()}`);
-                if (!response.ok) throw new Error('Failed to fetch more paintings');
-
-                await response.json(); // Response data - will be used later for pagination
-
-                // Update URL with new page
+                // Update URL with new page - this will trigger a server-side fetch
                 router.push(`/gallery?${newSearchParams.toString()}`);
-
-                // Add new paintings to the list
-                // setLoadingPaintings(data.items); // Will be implemented later
             } catch (error) {
                 console.error('Error loading more paintings:', error);
                 // You might want to show a toast notification here
