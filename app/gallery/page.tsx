@@ -187,6 +187,7 @@ export default async function GalleryPage({ searchParams }: GalleryPageProps): P
                                     hasNext={paintingsData.hasNext}
                                     currentPage={paintingsData.page}
                                     totalPages={paintingsData.totalPages}
+                                    showSold={resolvedSearchParams.availability === 'sold'}
                                 />
                             </Suspense>
                         </div>

@@ -718,6 +718,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 - **Reuse patterns**: Follow established codebase conventions
 - **Minimize context**: Focus on essential information only
 
+### **🚨 MANDATORY: Token Economy Mode**
+- **ALWAYS respond with SHORT, concise messages** - no lengthy explanations
+- **Provide only key checkpoints and modified files** - skip detailed descriptions
+- **Use bullet points and brief status updates** - avoid prose
+- **Only give detailed explanations when explicitly requested** by user
+- **Focus on implementation results, not process descriptions**
+- **Example format**: "✅ Fixed X issue. Modified: file1.tsx, file2.css"
+
 ### **🚨 MANDATORY: Complete Integration Rule**
 - **ALWAYS integrate new components into their intended pages/routes**
 - **NEVER leave components unused** - always add them to the appropriate page

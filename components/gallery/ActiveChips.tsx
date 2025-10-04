@@ -39,6 +39,17 @@ function getFilterDisplayLabel(key: string, value: string | string[]): string {
             return `Височина до: ${parseFloat(value).toFixed(0)} см`;
         case 'q':
             return `Търсене: "${value}"`;
+        case 'availability':
+            switch (value) {
+                case 'new':
+                    return 'Наличност: Нови (последните 14 дни)';
+                case 'promotion':
+                    return 'Наличност: На промоция';
+                case 'sold':
+                    return 'Наличност: Продадени';
+                default:
+                    return `Наличност: ${value}`;
+            }
         default:
             return value;
     }

@@ -236,30 +236,33 @@ function MobilePriceFilter({
     onMinChange: (value: number) => void;
     onMaxChange: (value: number) => void;
 }): React.JSX.Element {
-    const [sliderMin, setSliderMin] = useState(minValue);
-    const [sliderMax, setSliderMax] = useState(maxValue);
+    const minPrice = priceRange?.min || 0;
+    const maxPrice = priceRange?.max || 10000;
+
+    const [sliderMin, setSliderMin] = useState(minValue || minPrice);
+    const [sliderMax, setSliderMax] = useState(maxValue || maxPrice);
 
     // Debounce the slider values to prevent excessive API calls
     const debouncedMin = useDebounce(sliderMin, 500);
     const debouncedMax = useDebounce(sliderMax, 500);
 
     useEffect(() => {
-        setSliderMin(minValue);
-        setSliderMax(maxValue);
-    }, [minValue, maxValue]);
+        setSliderMin(minValue || minPrice);
+        setSliderMax(maxValue || maxPrice);
+    }, [minValue, maxValue, minPrice, maxPrice]);
 
     // Update parent component only when debounced values change
     useEffect(() => {
-        if (debouncedMin !== minValue) {
+        if (debouncedMin !== minValue && debouncedMin !== minPrice) {
             onMinChange(debouncedMin);
         }
-    }, [debouncedMin, minValue, onMinChange]);
+    }, [debouncedMin, minValue, onMinChange, minPrice]);
 
     useEffect(() => {
-        if (debouncedMax !== maxValue) {
+        if (debouncedMax !== maxValue && debouncedMax !== maxPrice) {
             onMaxChange(debouncedMax);
         }
-    }, [debouncedMax, maxValue, onMaxChange]);
+    }, [debouncedMax, maxValue, onMaxChange, maxPrice]);
 
     const handleSliderChange = (type: 'min' | 'max', value: number): void => {
         if (type === 'min') {
@@ -273,13 +276,10 @@ function MobilePriceFilter({
         }
     };
 
-    const minPrice = priceRange?.min || 0;
-    const maxPrice = priceRange?.max || 10000;
-
     // Update the filled range between sliders
     useEffect(() => {
-        const minPercent = ((sliderMin - minPrice) / (maxPrice - minPrice)) * 100;
-        const maxPercent = ((sliderMax - minPrice) / (maxPrice - minPrice)) * 100;
+        const minPercent = Math.max(0, Math.min(100, ((sliderMin - minPrice) / (maxPrice - minPrice)) * 100));
+        const maxPercent = Math.max(0, Math.min(100, ((sliderMax - minPrice) / (maxPrice - minPrice)) * 100));
 
         const sliderContainer = document.querySelector('.mobile-dual-range-slider') as HTMLElement;
         if (sliderContainer) {
@@ -538,6 +538,33 @@ function MobileSortFilter({
     );
 }
 
+// Availability filter component for mobile
+function MobileAvailabilityFilter({
+    value,
+    onChange
+}: {
+    value: string;
+    onChange: (value: string) => void;
+}): React.JSX.Element {
+    const dropdownOptions = [
+        { value: '', label: 'Всички картини' },
+        { value: 'new', label: 'Нови (последните 14 дни)' },
+        { value: 'promotion', label: 'На промоция' },
+        { value: 'sold', label: 'Продадени' },
+    ];
+
+    return (
+        <div className="mobile-availability-filter">
+            <CustomDropdown
+                value={value}
+                onChange={onChange}
+                options={dropdownOptions}
+                className="mobile-filter-dropdown"
+            />
+        </div>
+    );
+}
+
 // Main Filters Mobile Sheet Component
 export default function FiltersMobileSheet({
     filterOptions,
@@ -562,6 +589,7 @@ export default function FiltersMobileSheet({
         size: false,
         tags: false,
         sort: false,
+        availability: false,
     });
 
     // State for filter values
@@ -571,8 +599,8 @@ export default function FiltersMobileSheet({
         technique: (searchParams.technique as string) || '',
         subject: (searchParams.subject as string) || '',
         style: (searchParams.style as string) || '',
-        priceMin: parseInt((searchParams.priceMin as string) || '0') || 0,
-        priceMax: parseInt((searchParams.priceMax as string) || '0') || filterOptions.priceRange?.max || 10000,
+        priceMin: searchParams.priceMin ? parseInt(searchParams.priceMin as string) || 0 : 0,
+        priceMax: searchParams.priceMax ? parseInt(searchParams.priceMax as string) || 0 : 0,
         widthMin: parseInt((searchParams.widthMin as string) || '0') || 0,
         widthMax: parseInt((searchParams.widthMax as string) || '0') || 0,
         heightMin: parseInt((searchParams.heightMin as string) || '0') || 0,
@@ -580,6 +608,7 @@ export default function FiltersMobileSheet({
         tags: Array.isArray(searchParams.tags) ? searchParams.tags :
             (searchParams.tags as string)?.split(',') || [],
         sort: (searchParams.sort as string) || 'newest',
+        availability: (searchParams.availability as string) || '',
     });
 
     const toggleSection = (section: string): void => {
@@ -599,6 +628,10 @@ export default function FiltersMobileSheet({
         Object.entries(updatedFilters).forEach(([key, value]) => {
             if (key === 'tags' && Array.isArray(value) && value.length > 0) {
                 newSearchParams.set(key, value.join(','));
+            } else if (key === 'priceMin' && value && value !== 0) {
+                newSearchParams.set(key, value.toString());
+            } else if (key === 'priceMax' && value && value !== (filterOptions.priceRange?.max || 10000)) {
+                newSearchParams.set(key, value.toString());
             } else if (value && value !== '' && value !== 0) {
                 newSearchParams.set(key, value.toString());
             }
@@ -673,6 +706,18 @@ export default function FiltersMobileSheet({
                                 <MobileSortFilter
                                     value={filters.sort}
                                     onChange={(value) => updateFilters({ sort: value })}
+                                />
+                            </MobileFilterSection>
+
+                            {/* Availability */}
+                            <MobileFilterSection
+                                title="Наличност"
+                                isExpanded={expandedSections.availability}
+                                onToggle={() => toggleSection('availability')}
+                            >
+                                <MobileAvailabilityFilter
+                                    value={filters.availability}
+                                    onChange={(value) => updateFilters({ availability: value })}
                                 />
                             </MobileFilterSection>
 

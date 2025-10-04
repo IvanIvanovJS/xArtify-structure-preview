@@ -69,6 +69,7 @@ const PaintingQuerySchema = z.object({
     widthMax: z.string().transform(val => val ? parseFloat(val) : undefined).optional(),
     heightMax: z.string().transform(val => val ? parseFloat(val) : undefined).optional(),
     sort: z.enum(['newest', 'price_asc', 'price_desc', 'title_asc', 'title_desc']).optional(),
+    availability: z.enum(['', 'new', 'promotion', 'sold']).optional(),
     page: z.string().transform(val => val ? parseInt(val) : 1).optional(),
     pageSize: z.string().transform(val => val ? parseInt(val) : 24).optional(),
 });
@@ -95,6 +96,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
             widthMax,
             heightMax,
             sort = 'newest',
+            availability,
             page = 1,
             pageSize = 24
         } = validatedParams;
@@ -162,6 +164,28 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
             where.heightCm = {};
             if (heightMin !== undefined) where.heightCm.gte = heightMin;
             if (heightMax !== undefined) where.heightCm.lte = heightMax;
+        }
+
+        // Availability filter
+        if (availability) {
+            switch (availability) {
+                case 'new':
+                    // Paintings created in the last 14 days
+                    const fourteenDaysAgo = new Date();
+                    fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
+                    where.createdAt = {
+                        gte: fourteenDaysAgo
+                    };
+                    break;
+                case 'promotion':
+                    // Paintings with promotional pricing
+                    where.isOnSale = true;
+                    break;
+                case 'sold':
+                    // Sold paintings
+                    where.isSold = true;
+                    break;
+            }
         }
 
         // Status filter (for now, we don't have a published field, so we'll show all)
