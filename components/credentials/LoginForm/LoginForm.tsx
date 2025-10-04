@@ -234,16 +234,33 @@ export default function LoginForm() {
                         </div>
                         <div className="login-options">
                             <div className="login-remember">
-                                <input
-                                    id="remember-me"
-                                    type="checkbox"
-                                    checked={rememberMe}
-                                    onChange={(e) => setRememberMe(e.target.checked)}
-                                    className="login-checkbox"
-                                />
-                                <label htmlFor="remember-me" className="login-remember-label">
-                                    Запомни ме
+                                <label htmlFor="remember-me" className="custom-checkbox-container">
+                                    <input
+                                        id="remember-me"
+                                        type="checkbox"
+                                        checked={rememberMe}
+                                        onChange={(e) => setRememberMe(e.target.checked)}
+                                        className="custom-checkbox-input"
+                                    />
+                                    <div className="custom-checkbox">
+                                        <svg
+                                            className="custom-checkbox-icon"
+                                            viewBox="0 0 16 16"
+                                            fill="none"
+                                        >
+                                            <path
+                                                d="M13.5 4.5L6 12L2.5 8.5"
+                                                stroke="currentColor"
+                                                strokeWidth="2"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                            />
+                                        </svg>
+                                    </div>
                                 </label>
+                                <span className="login-remember-label">
+                                    Запомни ме
+                                </span>
                             </div>
 
                             <Link
