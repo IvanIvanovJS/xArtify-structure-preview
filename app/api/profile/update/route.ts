@@ -143,7 +143,7 @@ export async function PUT(req: NextRequest): Promise<NextResponse> {
             return NextResponse.json(
                 {
                     message: "Невалидни данни",
-                    errors: error.errors.map(err => ({
+                    errors: error.issues.map(err => ({
                         field: err.path.join('.'),
                         message: err.message
                     }))
