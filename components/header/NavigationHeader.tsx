@@ -9,13 +9,13 @@ import { usePathname } from "next/navigation";
 import LogoutConfirmation from "../ui/LogoutConfirmation";
 import NavigationLink from "../ui/interSplashScreen/NavigationLink";
 import MobileDrawer from "./MobileDrawer";
+import ProfileDropdown from "./ProfileDropdown";
 import "./styles/mobile-drawer.css";
 import {
     Search,
     User2,
     Heart,
     Menu,
-    LogOut,
     Shield,
 } from "lucide-react";
 
@@ -129,6 +129,8 @@ export default function NavigationHeader(): JSX.Element {
     const [searchOpen, setSearchOpen] = useState<boolean>(false);
     const [isMounted, setIsMounted] = useState<boolean>(false);
     const [showLogoutConfirm, setShowLogoutConfirm] = useState<boolean>(false);
+    const [profileDropdownOpen, setProfileDropdownOpen] = useState<boolean>(false);
+    const profileDropdownTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     // Скриваме хедъра на login, register и forgotten-password страниците
     const shouldHideHeader = pathname === "/login" || pathname === "/register" || pathname === "/forgotten-password";
@@ -169,6 +171,27 @@ export default function NavigationHeader(): JSX.Element {
             document.removeEventListener('mousedown', handleClickOutside);
         };
     }, [searchOpen]);
+
+    // Затваряне на profile dropdown при клик извън
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            const target = event.target as Element;
+            const profileButton = target.closest('button[aria-controls*="profile-dropdown"]');
+            const profileDropdown = target.closest('.profile-dropdown');
+
+            if (profileDropdownOpen && !profileButton && !profileDropdown) {
+                setProfileDropdownOpen(false);
+            }
+        };
+
+        if (profileDropdownOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [profileDropdownOpen]);
 
     // Управление на фокуса при отваряне/затваряне на search
     useEffect(() => {
@@ -227,6 +250,7 @@ export default function NavigationHeader(): JSX.Element {
         // Затваряме всички отворени менюта
         setSearchOpen(false);
         setDrawerOpen(false);
+        setProfileDropdownOpen(false);
 
         // Скролваме към началото
         document.querySelector('body')?.scrollTo({
@@ -234,6 +258,15 @@ export default function NavigationHeader(): JSX.Element {
             behavior: 'smooth'
         });
     };
+
+    // Cleanup timeout on unmount
+    useEffect(() => {
+        return () => {
+            if (profileDropdownTimeoutRef.current) {
+                clearTimeout(profileDropdownTimeoutRef.current);
+            }
+        };
+    }, []);
 
     // Ако трябва да скрием хедъра, не рендираме нищо
     if (shouldHideHeader) {
@@ -360,16 +393,49 @@ export default function NavigationHeader(): JSX.Element {
                                 </Link>
                             )}
 
-                            <Link
-                                href={session ? "/my-profile" : "/login"}
-                                aria-label="Моят профил"
-                                className="x-icon-btn"
-                                title="Моят профил"
-                                onTouchStart={handleTouchStart}
-                                onTouchEnd={handleTouchEnd}
-                            >
-                                <User2 size={24} aria-hidden />
-                            </Link>
+                            {session ? (
+                                <div
+                                    className="relative"
+                                    onMouseEnter={() => {
+                                        if (profileDropdownTimeoutRef.current) {
+                                            clearTimeout(profileDropdownTimeoutRef.current);
+                                            profileDropdownTimeoutRef.current = null;
+                                        }
+                                        setProfileDropdownOpen(true);
+                                    }}
+                                    onMouseLeave={() => {
+                                        profileDropdownTimeoutRef.current = setTimeout(() => {
+                                            setProfileDropdownOpen(false);
+                                        }, 300);
+                                    }}
+                                >
+                                    <Link
+                                        href="/my-profile"
+                                        aria-label="Моят профил"
+                                        className="x-icon-btn"
+                                        title="Моят профил"
+                                        onTouchStart={handleTouchStart}
+                                        onTouchEnd={handleTouchEnd}
+                                    >
+                                        <User2 size={24} aria-hidden />
+                                    </Link>
+                                    <ProfileDropdown
+                                        isOpen={profileDropdownOpen}
+                                        onClose={() => setProfileDropdownOpen(false)}
+                                    />
+                                </div>
+                            ) : (
+                                <Link
+                                    href="/login"
+                                    aria-label="Вход"
+                                    className="x-icon-btn"
+                                    title="Вход"
+                                    onTouchStart={handleTouchStart}
+                                    onTouchEnd={handleTouchEnd}
+                                >
+                                    <User2 size={24} aria-hidden />
+                                </Link>
+                            )}
                             <Link
                                 href="/favorites-artists"
                                 aria-label="Любими артисти"
@@ -381,19 +447,6 @@ export default function NavigationHeader(): JSX.Element {
                                 <Heart size={24} aria-hidden />
                             </Link>
 
-                            {/* Logout button for desktop */}
-                            {session && (
-                                <button
-                                    onClick={() => setShowLogoutConfirm(true)}
-                                    className="x-icon-btn"
-                                    title="Изход"
-                                    onTouchStart={handleTouchStart}
-                                    onTouchEnd={handleTouchEnd}
-                                    aria-label="Изход"
-                                >
-                                    <LogOut size={24} aria-hidden />
-                                </button>
-                            )}
 
                             <CartIcon />
 

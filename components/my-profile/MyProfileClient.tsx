@@ -218,7 +218,7 @@ export default function MyProfileClient(): JSX.Element {
                 <div className="profile-info">
                     <h1 className="profile-title">Моят профил</h1>
                     <p className="profile-greeting">Здравей, {displayName}!</p>
-                    <span className="user-group">Група: {userGroup}</span>
+                    <span className="user-group">{userGroup}</span>
                 </div>
             </div>
 
