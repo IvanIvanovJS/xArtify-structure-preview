@@ -95,12 +95,10 @@
     background: linear-gradient(135deg,
             rgba(22, 255, 228, 0.1) 0%,
             rgba(0, 212, 170, 0.1) 100%);
-    border: 1px solid rgba(22, 255, 228, 0.3);
 }
 
 .profile-dropdown__item--special:hover .profile-dropdown__item-icon {
     background: rgba(22, 255, 228, 0.1);
-    border: 1px solid rgba(22, 255, 228, 0.3);
     transform: scale(1.05);
 }
 

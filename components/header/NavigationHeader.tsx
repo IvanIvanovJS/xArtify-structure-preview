@@ -422,6 +422,7 @@ export default function NavigationHeader(): JSX.Element {
                                     <ProfileDropdown
                                         isOpen={profileDropdownOpen}
                                         onClose={() => setProfileDropdownOpen(false)}
+                                        onLogout={() => setShowLogoutConfirm(true)}
                                     />
                                 </div>
                             ) : (

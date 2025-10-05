@@ -1,6 +1,6 @@
 "use client";
 
-import { JSX, useState, useRef, useEffect } from "react";
+import { JSX, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import {
@@ -17,12 +17,12 @@ import {
     Star,
     User2
 } from "lucide-react";
-import LogoutConfirmation from "../ui/LogoutConfirmation";
 import "./styles/profile-dropdown.css";
 
 interface ProfileDropdownProps {
     isOpen: boolean;
     onClose: () => void;
+    onLogout: () => void;
 }
 
 interface ProfileMenuItem {
@@ -35,9 +35,8 @@ interface ProfileMenuItem {
     isSpecial?: boolean;
 }
 
-export default function ProfileDropdown({ isOpen, onClose }: ProfileDropdownProps): JSX.Element {
+export default function ProfileDropdown({ isOpen, onClose, onLogout }: ProfileDropdownProps): JSX.Element {
     const { data: session } = useSession();
-    const [showLogoutConfirm, setShowLogoutConfirm] = useState<boolean>(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const contentRef = useRef<HTMLDivElement>(null);
     const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -223,7 +222,7 @@ export default function ProfileDropdown({ isOpen, onClose }: ProfileDropdownProp
                                     key={item.id}
                                     className="profile-dropdown__item profile-dropdown__item--logout"
                                     onClick={() => {
-                                        setShowLogoutConfirm(true);
+                                        onLogout();
                                         onClose();
                                     }}
                                     role="button"
@@ -231,7 +230,7 @@ export default function ProfileDropdown({ isOpen, onClose }: ProfileDropdownProp
                                     onKeyDown={(e) => {
                                         if (e.key === "Enter" || e.key === " ") {
                                             e.preventDefault();
-                                            setShowLogoutConfirm(true);
+                                            onLogout();
                                             onClose();
                                         }
                                     }}
@@ -276,11 +275,6 @@ export default function ProfileDropdown({ isOpen, onClose }: ProfileDropdownProp
                 </div>
             </div>
 
-            {/* Logout Confirmation Modal */}
-            <LogoutConfirmation
-                isOpen={showLogoutConfirm}
-                onClose={() => setShowLogoutConfirm(false)}
-            />
         </>
     );
 }
