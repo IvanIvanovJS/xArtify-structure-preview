@@ -116,6 +116,22 @@
   --color-error-2: rgba(239, 68, 68, 0.2);
   --color-error-3: rgba(239, 68, 68, 0.3);
 
+  /* Danger colors */
+  --color-danger-rgb: 239 68 68;
+  --color-danger: #ef4444;
+  --color-danger-05: rgba(239, 68, 68, 0.05);
+  --color-danger-10: rgba(239, 68, 68, 0.1);
+  --color-danger-15: rgba(239, 68, 68, 0.15);
+  --color-danger-20: rgba(239, 68, 68, 0.2);
+  --color-danger-30: rgba(239, 68, 68, 0.3);
+  --color-danger-40: rgba(239, 68, 68, 0.4);
+  --color-danger-50: rgba(239, 68, 68, 0.5);
+  --color-danger-60: rgba(239, 68, 68, 0.6);
+  --color-danger-70: rgba(239, 68, 68, 0.7);
+  --color-danger-80: rgba(239, 68, 68, 0.8);
+  --color-danger-90: rgba(239, 68, 68, 0.9);
+  --color-danger-95: rgba(239, 68, 68, 0.95);
+
   /* Success colors */
   --color-success-rgb: 34 197 94;
   --color-success-2: rgba(34, 197, 94, 0.2);
@@ -214,6 +230,22 @@
     --color-error-1: rgba(239, 68, 68, 0.1);
     --color-error-2: rgba(239, 68, 68, 0.2);
     --color-error-3: rgba(239, 68, 68, 0.3);
+
+    /* Danger colors */
+    --color-danger-rgb: 239 68 68;
+    --color-danger: #ef4444;
+    --color-danger-05: rgba(239, 68, 68, 0.05);
+    --color-danger-10: rgba(239, 68, 68, 0.1);
+    --color-danger-15: rgba(239, 68, 68, 0.15);
+    --color-danger-20: rgba(239, 68, 68, 0.2);
+    --color-danger-30: rgba(239, 68, 68, 0.3);
+    --color-danger-40: rgba(239, 68, 68, 0.4);
+    --color-danger-50: rgba(239, 68, 68, 0.5);
+    --color-danger-60: rgba(239, 68, 68, 0.6);
+    --color-danger-70: rgba(239, 68, 68, 0.7);
+    --color-danger-80: rgba(239, 68, 68, 0.8);
+    --color-danger-90: rgba(239, 68, 68, 0.9);
+    --color-danger-95: rgba(239, 68, 68, 0.95);
 
     /* Success colors */
     --color-success-rgb: 34 197 94;

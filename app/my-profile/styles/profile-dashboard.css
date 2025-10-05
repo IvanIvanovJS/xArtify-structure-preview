@@ -2,7 +2,7 @@
 
 .profile-dashboard-layout {
     min-height: 100vh;
-    background: var(--color-background);
+    background: transparent;
 }
 
 /* Mobile Header */
@@ -141,7 +141,6 @@
 .profile-dashboard__main {
     flex: 1;
     overflow-y: auto;
-    background: var(--color-background);
 }
 
 .profile-dashboard__content {
