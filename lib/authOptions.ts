@@ -66,6 +66,21 @@ export const authOptions: NextAuthOptions = {
                 token.role = user.role;
                 token.artistProfile = user.artistProfile;
             }
+
+            // Load artistProfile from database if not present in token
+            if (token.id && !token.artistProfile) {
+                try {
+                    const artistProfile = await prisma.artistProfile.findUnique({
+                        where: { userId: token.id as string },
+                        select: { id: true }
+                    });
+                    token.artistProfile = artistProfile;
+                } catch (error) {
+                    console.error('Error loading artistProfile:', error);
+                    token.artistProfile = null;
+                }
+            }
+
             return token;
         },
         async session({ session, token }) {

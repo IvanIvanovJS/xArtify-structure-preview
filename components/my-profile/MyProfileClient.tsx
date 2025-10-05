@@ -89,6 +89,15 @@ export default function MyProfileClient(): JSX.Element {
             isSpecial: true
         },
         {
+            id: "add-artwork",
+            title: "Добави картина",
+            icon: ImageIcon,
+            href: "/upload-artwork",
+            description: "Качи ново произведение",
+            isSpecial: true,
+            isArtistOnly: true
+        },
+        {
             id: "settings",
             title: "Настройки",
             icon: Settings,
@@ -181,21 +190,30 @@ export default function MyProfileClient(): JSX.Element {
     }
 
     const profileImage = userData.image || "/default-avatar.svg";
-    const userGroup = userData.isArtist ? "Артист" : "Потребител";
+    const isArtist = userData.artistProfile !== null;
+    const userGroup = isArtist ? "Артист" : "Потребител";
     const displayName = userData.name || "Анонимен потребител";
 
     // Filter menu items based on user type
     const availableMenuItems = profileMenuItems.filter(item => {
+        // Show "Become Artist" only for non-artists
+        if (item.id === "become-artist" && isArtist) {
+            return false;
+        }
         // Show artist-only items only for artists
-        if (item.isArtistOnly && !userData.isArtist) {
+        if (item.isArtistOnly && !isArtist) {
             return false;
         }
         return true;
     });
 
-    // Separate "Become Artist" from other items
-    const becomeArtistItem = availableMenuItems.find(item => item.id === "become-artist");
-    const otherMenuItems = availableMenuItems.filter(item => item.id !== "become-artist");
+    // Separate special items from other items
+    const specialItem = availableMenuItems.find(item =>
+        item.id === "become-artist" || item.id === "add-artwork"
+    );
+    const otherMenuItems = availableMenuItems.filter(item =>
+        item.id !== "become-artist" && item.id !== "add-artwork"
+    );
 
     return (
         <div className="my-profile-container">
@@ -222,16 +240,16 @@ export default function MyProfileClient(): JSX.Element {
                 </div>
             </div>
 
-            {/* Become Artist Section - Only for non-artists */}
-            {!userData.isArtist && becomeArtistItem && (
+            {/* Special Section - Become Artist for non-artists, Add Artwork for artists */}
+            {specialItem && (
                 <div className="become-artist-section">
                     <ProfileCard
-                        key={becomeArtistItem.id}
-                        title={becomeArtistItem.title}
-                        icon={becomeArtistItem.icon}
-                        href={becomeArtistItem.href}
-                        description={becomeArtistItem.description}
-                        isSpecial={becomeArtistItem.isSpecial}
+                        key={specialItem.id}
+                        title={specialItem.title}
+                        icon={specialItem.icon}
+                        href={specialItem.href}
+                        description={specialItem.description}
+                        isSpecial={specialItem.isSpecial}
                     />
                 </div>
             )}

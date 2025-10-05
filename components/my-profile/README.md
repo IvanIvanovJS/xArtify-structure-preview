@@ -1,161 +1,304 @@
-# My Profile Components
+# Profile Dashboard System
 
-This directory contains the refactored My Profile page components, providing a clean, minimalist design similar to modern mobile apps with a card-based layout.
+## Overview
 
-## Components
+The Profile Dashboard system provides users with a comprehensive interface to manage their account settings, view their data, and access various platform features. The system is designed with a mobile-first approach and follows the xArtify design system.
 
-### MyProfileClient
-Main client component that handles the profile page logic and layout.
+## Architecture
 
-**Features:**
-- User data fetching and state management
-- Responsive card-based layout
-- Dynamic menu items based on user type (regular user vs artist)
-- Loading and error states
-- Bulgarian localization
+### Layout Structure
 
-**Props:** None (fetches data internally)
+The profile dashboard uses a nested layout system:
 
-**Usage:**
-```tsx
-import MyProfileClient from "@/components/my-profile/MyProfileClient";
+- **Main Profile Page** (`/my-profile`): Shows the overview with navigation cards
+- **Dashboard Mode** (`/my-profile/*`): Shows sidebar navigation with content area
 
-export default function MyProfilePage() {
-  return <MyProfileClient />;
+### Components
+
+#### 1. Profile Layout (`app/my-profile/layout.tsx`)
+- **Purpose**: Provides sidebar navigation for dashboard sections
+- **Features**:
+  - Responsive sidebar with mobile hamburger menu
+  - Active state highlighting
+  - Back navigation to main profile page
+  - Mobile overlay for sidebar
+
+#### 2. Settings Page (`app/my-profile/settings/page.tsx`)
+- **Purpose**: User account management interface
+- **Features**:
+  - Profile image upload
+  - Name and email editing
+  - Password change functionality
+  - Account deletion with confirmation
+
+## API Endpoints
+
+### Profile Update (`/api/profile/update`)
+- **Method**: PUT
+- **Purpose**: Update user profile information
+- **Authentication**: Required
+- **Rate Limiting**: Yes
+- **Validation**: Zod schema validation
+
+**Request Body**:
+```typescript
+{
+  name: string;
+  email: string;
+  currentPassword?: string; // Required if changing password
+  newPassword?: string;     // Required if changing password
 }
 ```
 
-### ProfileCard
-Reusable card component for individual menu items.
-
-**Props:**
-- `title: string` - Card title
-- `icon: string` - Emoji icon
-- `href: string` - Navigation URL
-- `description?: string` - Optional description
-- `isSpecial?: boolean` - Special styling for highlighted cards
-
-**Usage:**
-```tsx
-import ProfileCard from "@/components/my-profile/ProfileCard";
-
-<ProfileCard
-  title="Настройки"
-  icon="⚙️"
-  href="/my-profile/settings"
-  description="Управление на профила"
-/>
+**Response**:
+```typescript
+{
+  message: string;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    image: string | null;
+    role: string;
+    updatedAt: Date;
+  }
+}
 ```
 
-## Menu Items
+### Image Upload (`/api/profile/upload-image`)
+- **Method**: POST
+- **Purpose**: Upload and update profile image
+- **Authentication**: Required
+- **Rate Limiting**: Yes
+- **File Validation**: Image files only, max 5MB
 
-The profile page displays different menu items based on user type:
+**Request**: FormData with `image` field
 
-### Regular Users
-- Настройки (Settings)
-- Моите поръчки (My Orders)
-- Любими произведения (Favorite Artworks)
-- Моите курсове (My Courses)
-- Портфейл (Wallet)
-- Известия (Notifications)
-- Стани артист (Become Artist) - Special card
+**Response**:
+```typescript
+{
+  message: string;
+  imagePath: string;
+  user: UserObject;
+}
+```
 
-### Artists (Additional Items)
-- Профил на артист (Artist Profile)
-- Моите произведения (My Artworks)
-- Аналитика (Analytics)
+### Account Deletion (`/api/profile/delete`)
+- **Method**: DELETE
+- **Purpose**: Delete user account permanently
+- **Authentication**: Required
+- **Rate Limiting**: Yes
+- **Security**: Password confirmation required
 
-## Styling
+**Request Body**:
+```typescript
+{
+  password: string; // Current password for confirmation
+}
+```
 
-### Design System
-- **Background**: Transparent with backdrop blur
-- **Cards**: Glass-morphism effect with subtle borders
-- **Colors**: Primary neon cyan (#16ffe4) with gradient accents
-- **Typography**: Inter font with proper hierarchy
-- **Spacing**: Consistent 1rem grid system
+**Response**:
+```typescript
+{
+  message: string;
+}
+```
 
-### Responsive Design
-- **Mobile-first**: Optimized for touch interaction
-- **Breakpoints**: 768px, 480px
-- **Grid**: Auto-fit columns with minimum 300px width
-- **Touch targets**: Minimum 44px for accessibility
+## Security Features
+
+### Authentication & Authorization
+- All endpoints require valid session
+- Users can only modify their own data
+- Admin accounts cannot be deleted
+- Password verification for sensitive operations
+
+### Rate Limiting
+- All endpoints protected with rate limiting
+- Prevents abuse and brute force attacks
+- Configurable limits per endpoint
+
+### Input Validation
+- Zod schema validation for all inputs
+- File type and size validation for uploads
+- Email format validation
+- Password strength requirements
+
+### Data Protection
+- Passwords hashed with bcrypt (12 rounds)
+- File uploads stored securely
+- Old images automatically deleted
+- Cascade deletion for related data
+
+## Database Security
+
+### Row Level Security (RLS) Policies
+
+The system implements comprehensive RLS policies to ensure data isolation:
+
+#### Users Table
+- Users can only view/update/delete their own profile
+- Policies: `Users can view own profile`, `Users can update own profile`, `Users can delete own profile`
+
+#### Artist Profiles Table
+- Artists can only manage their own artist profile
+- Policies: `Artists can view own profile`, `Artists can insert own profile`, `Artists can update own profile`, `Artists can delete own profile`
+
+#### Authentication Tables
+- Users can only access their own account and session data
+- Policies for accounts, sessions, and password reset tokens
+
+## User Experience
+
+### Mobile-First Design
+- Responsive sidebar that collapses on mobile
+- Touch-friendly interface elements
+- Optimized for thumb navigation
+- Mobile hamburger menu for navigation
 
 ### Accessibility
-- **ARIA labels**: Proper semantic markup
-- **Focus states**: Visible focus indicators
-- **Keyboard navigation**: Full keyboard support
-- **Screen readers**: Descriptive text and roles
-- **High contrast**: Support for high contrast mode
-- **Reduced motion**: Respects user preferences
+- Proper ARIA labels and roles
+- Keyboard navigation support
+- Screen reader compatibility
+- Focus management
 
-## Future Enhancements
-
-- [ ] Add user avatar upload functionality
-- [ ] Implement profile editing modal
-- [ ] Add notification badges to menu items
-- [ ] Create settings sub-pages
-- [ ] Add dark/light theme toggle
-- [ ] Implement user preferences storage
-- [ ] Add profile completion progress indicator
-- [ ] Create artist verification status display
-- [ ] Add social media links management
-- [ ] Implement profile sharing functionality
-- [ ] Add profile analytics dashboard
-- [ ] Create profile export feature
-- [ ] Add profile backup/restore functionality
-- [ ] Implement profile privacy settings
-- [ ] Add profile activity timeline
-- [ ] Create profile achievement system
-- [ ] Add profile customization options
-- [ ] Implement profile search functionality
-- [ ] Add profile comparison feature
-- [ ] Create profile recommendation system
-- [ ] Add profile integration with external services
-
-## Technical Details
-
-### State Management
-- Uses React hooks for local state
-- Fetches user data from `/api/profile` endpoint
-- Handles authentication and session management
-- Implements proper error handling and loading states
-
-### Performance
-- Lazy loading for images
-- Optimized re-renders with useCallback
-- Efficient state updates
-- Minimal bundle size impact
-
-### Security
-- Client-side data validation
-- Secure API communication
-- Proper error message handling
-- Session timeout management
+### Visual Design
+- Consistent with xArtify design system
+- Grayscale + neon color scheme
+- Smooth transitions and animations
+- Loading states and error handling
 
 ## File Structure
 
 ```
-components/my-profile/
-├── MyProfileClient.tsx          # Main client component
-├── ProfileCard.tsx              # Reusable card component
-├── styles/
-│   ├── my-profile.css          # Main component styles
-│   └── profile-card.css        # Card component styles
-└── README.md                   # This documentation
+app/my-profile/
+├── layout.tsx                 # Dashboard layout with sidebar
+├── page.tsx                   # Main profile overview
+├── settings/
+│   └── page.tsx              # Settings management page
+└── styles/
+    └── profile-dashboard.css # Dashboard-specific styles
+
+app/api/profile/
+├── update/
+│   └── route.ts              # Profile update endpoint
+├── upload-image/
+│   └── route.ts              # Image upload endpoint
+└── delete/
+    └── route.ts              # Account deletion endpoint
+
+supabasePolicies/
+└── user-profile-rls-policies.sql # Database security policies
 ```
 
-## Integration
+## Error Handling
 
-The components integrate with:
-- Next.js App Router
-- NextAuth.js for authentication
-- Prisma for database operations
-- Tailwind CSS for utility classes
-- Custom CSS for component-specific styling
+### Client-Side
+- Form validation with real-time feedback
+- Loading states during operations
+- Success/error message display
+- Graceful degradation for network issues
 
-## Browser Support
+### Server-Side
+- Comprehensive error logging
+- User-friendly error messages
+- Proper HTTP status codes
+- Input validation with detailed feedback
 
-- **Modern browsers**: Full support
-- **IE11**: Limited support (graceful degradation)
-- **Mobile browsers**: Optimized experience
-- **Screen readers**: Full accessibility support
+## Performance Optimizations
+
+### Image Handling
+- Automatic image optimization
+- File size validation (5MB max)
+- Unique filename generation
+- Old image cleanup
+
+### Database Operations
+- Efficient queries with proper indexing
+- Transaction handling for data consistency
+- Cascade deletion for related records
+
+### Caching
+- Rate limiting with Redis
+- Session-based caching
+- Optimized database queries
+
+## Future Enhancements
+
+- [ ] Two-factor authentication support
+- [ ] Social media account linking
+- [ ] Advanced privacy settings
+- [ ] Data export functionality
+- [ ] Account recovery options
+- [ ] Activity log and audit trail
+- [ ] Notification preferences
+- [ ] Theme customization
+- [ ] Language preferences
+- [ ] Advanced security settings
+
+## Testing
+
+### Unit Tests
+- Component rendering tests
+- Form validation tests
+- API endpoint tests
+- Error handling tests
+
+### Integration Tests
+- End-to-end user flows
+- Database operation tests
+- File upload tests
+- Authentication flow tests
+
+### Security Tests
+- RLS policy verification
+- Rate limiting tests
+- Input validation tests
+- Authorization tests
+
+## Deployment Considerations
+
+### Environment Variables
+- Database connection strings
+- File upload paths
+- Rate limiting configuration
+- Security keys and secrets
+
+### File Storage
+- Local file system for development
+- Cloud storage for production
+- CDN integration for images
+- Backup and recovery procedures
+
+### Monitoring
+- Error tracking and logging
+- Performance monitoring
+- Security event logging
+- User activity analytics
+
+## Maintenance
+
+### Regular Tasks
+- Database cleanup of old files
+- Security policy updates
+- Performance optimization
+- User feedback implementation
+
+### Security Updates
+- Regular dependency updates
+- Security patch management
+- Policy review and updates
+- Penetration testing
+
+## Support
+
+### User Support
+- Clear error messages
+- Help documentation
+- Contact information
+- FAQ section
+
+### Developer Support
+- Comprehensive documentation
+- Code comments and examples
+- Testing guidelines
+- Deployment procedures

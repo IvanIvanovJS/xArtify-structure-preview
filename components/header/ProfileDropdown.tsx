@@ -58,6 +58,15 @@ export default function ProfileDropdown({ isOpen, onClose, onLogout }: ProfileDr
             isSpecial: true
         },
         {
+            id: "add-artwork",
+            title: "Добави картина",
+            icon: ImageIcon,
+            href: "/upload-artwork",
+            description: "Качи ново произведение",
+            isSpecial: true,
+            isArtistOnly: true
+        },
+        {
             id: "settings",
             title: "Настройки",
             icon: Settings,
@@ -132,14 +141,28 @@ export default function ProfileDropdown({ isOpen, onClose, onLogout }: ProfileDr
         }
     ];
 
+    // Debug: Log session data
+    console.log('ProfileDropdown - Session:', {
+        userId: session?.user?.id,
+        role: session?.user?.role,
+        artistProfile: session?.user?.artistProfile,
+        hasArtistProfile: !!session?.user?.artistProfile
+    });
+
     // Filter menu items based on user type
     const availableMenuItems = profileMenuItems.filter(item => {
+        const hasArtistProfile = !!session?.user?.artistProfile;
+
         // Show "Become Artist" only for non-artists
-        if (item.id === "become-artist" && session?.user?.artistProfile) {
+        if (item.id === "become-artist" && hasArtistProfile) {
+            return false;
+        }
+        // Show "Add Artwork" only for artists
+        if (item.id === "add-artwork" && !hasArtistProfile) {
             return false;
         }
         // Show artist-only items only for artists
-        if (item.isArtistOnly && !session?.user?.artistProfile) {
+        if (item.isArtistOnly && !hasArtistProfile) {
             return false;
         }
         return true;
