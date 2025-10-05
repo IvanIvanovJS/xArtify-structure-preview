@@ -53,7 +53,7 @@ export default function ProfileDropdown({ isOpen, onClose, onLogout }: ProfileDr
             id: "become-artist",
             title: "Стани артист",
             icon: Star,
-            href: "/create-artist-profile",
+            href: "/become-an-artist",
             description: "Създай артистичен профил",
             isSpecial: true
         },
@@ -141,13 +141,6 @@ export default function ProfileDropdown({ isOpen, onClose, onLogout }: ProfileDr
         }
     ];
 
-    // Debug: Log session data
-    console.log('ProfileDropdown - Session:', {
-        userId: session?.user?.id,
-        role: session?.user?.role,
-        artistProfile: session?.user?.artistProfile,
-        hasArtistProfile: !!session?.user?.artistProfile
-    });
 
     // Filter menu items based on user type
     const availableMenuItems = profileMenuItems.filter(item => {

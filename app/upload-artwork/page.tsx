@@ -37,7 +37,7 @@ export default async function UploadArtworkPage(): Promise<React.JSX.Element> {
     const isAuthorized = artistProfile || userRole === 'ADMIN';
 
     if (!isAuthorized) {
-        redirect('/create-artist-profile?message=artist-profile-required');
+        redirect('/become-an-artist?message=artist-profile-required');
     }
 
     return <UploadArtwork />;

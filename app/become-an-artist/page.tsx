@@ -1,9 +1,9 @@
-// app/create-artist-profile/page.tsx
+// app/become-an-artist/page.tsx
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import CreateArtistProfileForm from "@/components/CreateArtistProfileForm";
+import CreateArtistProfileForm from "@/components/BecomeAnArtistForm";
 
 export const runtime = "nodejs";
 

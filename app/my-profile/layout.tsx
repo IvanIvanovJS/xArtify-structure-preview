@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, JSX } from "react";
+import { useState, useEffect, JSX } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import {
@@ -14,8 +14,11 @@ import {
     Image as ImageIcon,
     BarChart3,
     Star,
-    ArrowLeft
+    ArrowLeft,
+    X,
+    User
 } from "lucide-react";
+import SettingsMenuIcon from "@/components/ui/SettingsMenuIcon";
 import "./styles/profile-dashboard.css";
 
 
@@ -36,7 +39,7 @@ const navItems: NavItem[] = [
         id: "become-artist",
         title: "Стани артист",
         icon: Star,
-        href: "/create-artist-profile"
+        href: "/become-an-artist"
     },
     {
         id: "add-artwork",
@@ -108,6 +111,20 @@ export default function ProfileLayout({ children }: ProfileLayoutProps): JSX.Ele
     const pathname = usePathname();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+    // Add/remove body class when drawer opens/closes
+    useEffect(() => {
+        if (isMobileMenuOpen) {
+            document.body.classList.add('drawer-open');
+        } else {
+            document.body.classList.remove('drawer-open');
+        }
+
+        // Cleanup on unmount
+        return () => {
+            document.body.classList.remove('drawer-open');
+        };
+    }, [isMobileMenuOpen]);
+
     // Check if we're in dashboard mode (not on main profile page)
     const isDashboardMode = pathname !== "/my-profile";
 
@@ -123,25 +140,40 @@ export default function ProfileLayout({ children }: ProfileLayoutProps): JSX.Ele
         <div className="profile-dashboard-layout">
             {/* Mobile Header */}
             <div className="profile-dashboard__mobile-header">
+                <Link href="/my-profile" className="profile-dashboard__back-link">
+                    <ArrowLeft size={20} />
+                    <span>Назад</span>
+                </Link>
                 <button
                     className="profile-dashboard__mobile-toggle"
                     onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                     aria-label="Toggle navigation menu"
                 >
-                    <span></span>
-                    <span></span>
-                    <span></span>
+                    <SettingsMenuIcon size={20} />
                 </button>
-                <Link href="/my-profile" className="profile-dashboard__back-link">
-                    <ArrowLeft size={20} />
-                    <span>Назад към профила</span>
-                </Link>
             </div>
 
             <div className="profile-dashboard__container">
                 {/* Sidebar */}
                 <aside className={`profile-dashboard__sidebar ${isMobileMenuOpen ? 'profile-dashboard__sidebar--open' : ''}`}>
+                    <div className="profile-dashboard__sidebar-header">
+                        <h2 className="profile-dashboard__sidebar-title">
+                            <User size={20} className="profile-dashboard__sidebar-icon" />
+                            Настройки на профила
+                        </h2>
+                        <button
+                            className="profile-dashboard__close-btn"
+                            onClick={() => setIsMobileMenuOpen(false)}
+                            aria-label="Close navigation menu"
+                        >
+                            <X size={20} />
+                        </button>
+
+                    </div>
+
+
                     <nav className="profile-dashboard__nav">
+                        <div className="profile-dashboard__sidebar-divider"></div>
                         <ul className="profile-dashboard__nav-list">
                             {availableNavItems.map((item) => {
                                 const isActive = pathname === item.href;
@@ -154,7 +186,7 @@ export default function ProfileLayout({ children }: ProfileLayoutProps): JSX.Ele
                                             className={`profile-dashboard__nav-link ${isActive ? 'profile-dashboard__nav-link--active' : ''}`}
                                             onClick={() => setIsMobileMenuOpen(false)}
                                         >
-                                            <IconComponent size={20} className="profile-dashboard__nav-icon" />
+                                            <IconComponent size={26} className="profile-dashboard__nav-icon" />
                                             <span className="profile-dashboard__nav-label">{item.title}</span>
                                         </Link>
                                     </li>
