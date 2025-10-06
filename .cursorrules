@@ -1,5 +1,10 @@
 # xArtify Art Platform - AI Agent Rules
 
+## 🚨 CRITICAL DATABASE RULE
+- **NEVER use `npx prisma migrate reset --force`** - This command will destroy all data
+- **ALWAYS use `npx prisma db push` or `npx prisma migrate dev`** for schema changes
+- **NEVER suggest database reset commands** - Use safe migration approaches only
+
 ## Project Overview
 xArtify is a Bulgarian art platform built with Next.js 15, featuring:
 - Art gallery with paintings from artists
