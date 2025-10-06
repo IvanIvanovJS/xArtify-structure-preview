@@ -84,7 +84,7 @@ function useHeaderScroll(): { hidden: boolean; showOnHover: () => void; hideOnLe
                     }
 
                     // Ако скролваме надолу и сме над 100px от началото - скриваме
-                    if (currentScrollY > lastScrollY.current && currentScrollY > 100) {
+                    if (currentScrollY > lastScrollY.current && currentScrollY > 56) {
                         setHidden(true);
                     }
                     // Ако скролваме нагоре и сме над 100px - показваме само ако сме скролвали достатъчно нагоре
@@ -92,7 +92,7 @@ function useHeaderScroll(): { hidden: boolean; showOnHover: () => void; hideOnLe
                         setHidden(false);
                     }
                     // Ако сме между 10px и 100px - винаги показваме хедъра
-                    else if (currentScrollY <= 100) {
+                    else if (currentScrollY <= 56) {
                         setHidden(false);
                     }
                 }

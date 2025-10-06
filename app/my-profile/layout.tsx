@@ -158,7 +158,7 @@ export default function ProfileLayout({ children }: ProfileLayoutProps): JSX.Ele
                 <aside className={`profile-dashboard__sidebar ${isMobileMenuOpen ? 'profile-dashboard__sidebar--open' : ''}`}>
                     <div className="profile-dashboard__sidebar-header">
                         <h2 className="profile-dashboard__sidebar-title">
-                            <User size={20} className="profile-dashboard__sidebar-icon" />
+                            <User size={24} className="profile-dashboard__sidebar-icon" />
                             Настройки на профила
                         </h2>
                         <button
