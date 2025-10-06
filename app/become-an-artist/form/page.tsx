@@ -7,9 +7,9 @@ import ArtistProfileForm from "@/components/becomeAnArtist/ArtistProfileForm";
 export const runtime = "nodejs";
 
 interface FormPageProps {
-    searchParams: {
+    searchParams: Promise<{
         planId?: string;
-    };
+    }>;
 }
 
 export default async function ArtistFormPage({ searchParams }: FormPageProps) {
@@ -30,7 +30,8 @@ export default async function ArtistFormPage({ searchParams }: FormPageProps) {
     }
 
     // Get the selected plan
-    const planId = searchParams.planId;
+    const resolvedSearchParams = await searchParams;
+    const planId = resolvedSearchParams.planId;
     let selectedPlan = null;
 
     if (planId) {
