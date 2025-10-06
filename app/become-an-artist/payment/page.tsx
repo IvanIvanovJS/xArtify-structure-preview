@@ -7,10 +7,10 @@ import PaymentPageClient from "@/components/becomeAnArtist/PaymentPageClient";
 export const runtime = "nodejs";
 
 interface PaymentPageProps {
-    searchParams: {
+    searchParams: Promise<{
         artistId?: string;
         planId?: string;
-    };
+    }>;
 }
 
 export default async function PaymentPage({ searchParams }: PaymentPageProps) {
@@ -20,7 +20,8 @@ export default async function PaymentPage({ searchParams }: PaymentPageProps) {
         redirect('/login');
     }
 
-    const { artistId, planId } = searchParams;
+    const resolvedSearchParams = await searchParams;
+    const { artistId, planId } = resolvedSearchParams;
 
     if (!artistId || !planId) {
         redirect('/become-an-artist/plans');
