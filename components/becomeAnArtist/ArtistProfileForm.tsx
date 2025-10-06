@@ -168,22 +168,22 @@ export default function ArtistProfileForm({ userId, userData, selectedPlan }: Ar
     };
 
     return (
-        <div className="max-w-4xl mx-auto">
-            <form onSubmit={handleSubmit} className="space-y-8">
+        <div className="artist-profile-form">
+            <form onSubmit={handleSubmit} className="artist-form">
                 {/* Selected Plan Display */}
                 {selectedPlan && (
-                    <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
-                        <h2 className="text-xl font-semibold text-white mb-2">Избран план</h2>
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-cyan-400 font-medium">{selectedPlan.displayName}</p>
-                                <p className="text-gray-300 text-sm">{selectedPlan.description}</p>
+                    <div className="plan-display">
+                        <h2 className="plan-display-title">Избран план</h2>
+                        <div className="plan-display-content">
+                            <div className="plan-display-info">
+                                <h3>{selectedPlan.displayName}</h3>
+                                <p>{selectedPlan.description}</p>
                             </div>
-                            <div className="text-right">
-                                <p className="text-2xl font-bold text-white">
+                            <div className="plan-display-price">
+                                <h2>
                                     {selectedPlan.name === 'Free' ? '0' : selectedPlan.monthlyPrice.toFixed(0)}€
-                                </p>
-                                <p className="text-gray-300 text-sm">
+                                </h2>
+                                <p>
                                     {selectedPlan.name === 'Free' ? 'Безплатно' : 'на месец'}
                                 </p>
                             </div>
@@ -192,16 +192,20 @@ export default function ArtistProfileForm({ userId, userData, selectedPlan }: Ar
                 )}
 
                 {/* Personal Information */}
-                <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20">
-                    <h2 className="text-2xl font-bold text-white mb-6">Лична информация</h2>
+                <div className="form-section">
+                    <h2 className="form-title">Лична информация</h2>
 
-                    <div className="grid md:grid-cols-2 gap-6">
-                        <div>
-                            <label htmlFor="name" className="block text-sm font-medium text-white mb-2">
-                                Име за профила <span className="text-red-500">*</span>
+                    <div className="form-grid">
+                        <div className="form-field">
+                            <label htmlFor="name" className="form-label">
+                                Име за профила <span className="required">*</span>
                                 <Tooltip content="Изберете подходящо име за профила си, защото ще се показва в профила ви на артист">
-                                    <button type="button" className="ml-2 text-cyan-400 hover:text-cyan-300">
-                                        ℹ️
+                                    <button type="button" className="tooltip-button">
+                                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="tooltip-icon">
+                                            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
+                                            <path d="M12 16V12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                            <path d="M12 8H12.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                        </svg>
                                     </button>
                                 </Tooltip>
                             </label>
@@ -210,18 +214,22 @@ export default function ArtistProfileForm({ userId, userData, selectedPlan }: Ar
                                 id="name"
                                 value={formData.name}
                                 onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                                className="form-input"
                                 placeholder="Вашето име"
                             />
-                            {errors.name && <p className="mt-1 text-sm text-red-400">{errors.name}</p>}
+                            {errors.name && <p className="error-message">{errors.name}</p>}
                         </div>
 
-                        <div>
-                            <label htmlFor="email" className="block text-sm font-medium text-white mb-2">
-                                Имейл адрес <span className="text-red-500">*</span>
+                        <div className="form-field">
+                            <label htmlFor="email" className="form-label">
+                                Имейл адрес <span className="required">*</span>
                                 <Tooltip content="Имейлът ще се използва за комуникация с клиенти и за получаване на уведомления">
-                                    <button type="button" className="ml-2 text-cyan-400 hover:text-cyan-300">
-                                        ℹ️
+                                    <button type="button" className="tooltip-button">
+                                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="tooltip-icon">
+                                            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
+                                            <path d="M12 16V12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                            <path d="M12 8H12.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                        </svg>
                                     </button>
                                 </Tooltip>
                             </label>
@@ -230,19 +238,23 @@ export default function ArtistProfileForm({ userId, userData, selectedPlan }: Ar
                                 id="email"
                                 value={formData.email}
                                 onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                                className="form-input"
                                 placeholder="your@email.com"
                             />
-                            {errors.email && <p className="mt-1 text-sm text-red-400">{errors.email}</p>}
+                            {errors.email && <p className="error-message">{errors.email}</p>}
                         </div>
                     </div>
 
-                    <div className="mt-6">
-                        <label htmlFor="bio" className="block text-sm font-medium text-white mb-2">
-                            Кратка биография <span className="text-gray-400">({formData.bio.length}/750)</span>
+                    <div className="form-field">
+                        <label htmlFor="bio" className="form-label">
+                            Кратка биография <span className="character-count">({formData.bio.length}/750)</span>
                             <Tooltip content="Опишете себе си и своята творческа визия. Това ще помогне на клиентите да ви опознаят по-добре">
-                                <button type="button" className="ml-2 text-cyan-400 hover:text-cyan-300">
-                                    ℹ️
+                                <button type="button" className="tooltip-button">
+                                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="tooltip-icon">
+                                        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
+                                        <path d="M12 16V12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                        <path d="M12 8H12.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                    </svg>
                                 </button>
                             </Tooltip>
                         </label>
@@ -252,19 +264,23 @@ export default function ArtistProfileForm({ userId, userData, selectedPlan }: Ar
                             onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
                             rows={6}
                             maxLength={750}
-                            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent resize-none"
+                            className="form-textarea"
                             placeholder="Разкажете за себе си, своята творческа визия и какво ви вдъхновява..."
                         />
-                        {errors.bio && <p className="mt-1 text-sm text-red-400">{errors.bio}</p>}
+                        {errors.bio && <p className="error-message">{errors.bio}</p>}
                     </div>
 
-                    <div className="grid md:grid-cols-2 gap-6 mt-6">
-                        <div>
-                            <label htmlFor="phoneNumber" className="block text-sm font-medium text-white mb-2">
-                                Телефонен номер <span className="text-red-500">*</span>
+                    <div className="form-grid">
+                        <div className="form-field">
+                            <label htmlFor="phoneNumber" className="form-label">
+                                Телефонен номер <span className="required">*</span>
                                 <Tooltip content="Телефонът ще се използва за директна комуникация с клиенти">
-                                    <button type="button" className="ml-2 text-cyan-400 hover:text-cyan-300">
-                                        ℹ️
+                                    <button type="button" className="tooltip-button">
+                                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="tooltip-icon">
+                                            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
+                                            <path d="M12 16V12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                            <path d="M12 8H12.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                        </svg>
                                     </button>
                                 </Tooltip>
                             </label>
@@ -278,15 +294,19 @@ export default function ArtistProfileForm({ userId, userData, selectedPlan }: Ar
                                 }}
                                 className="phone-input"
                             />
-                            {errors.phoneNumber && <p className="mt-1 text-sm text-red-400">{errors.phoneNumber}</p>}
+                            {errors.phoneNumber && <p className="error-message">{errors.phoneNumber}</p>}
                         </div>
 
-                        <div>
-                            <label htmlFor="birthDate" className="block text-sm font-medium text-white mb-2">
+                        <div className="form-field">
+                            <label htmlFor="birthDate" className="form-label">
                                 Дата на раждане
                                 <Tooltip content="Датата на раждане е опционална и може да се скрие от публичния профил">
-                                    <button type="button" className="ml-2 text-cyan-400 hover:text-cyan-300">
-                                        ℹ️
+                                    <button type="button" className="tooltip-button">
+                                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="tooltip-icon">
+                                            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
+                                            <path d="M12 16V12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                            <path d="M12 8H12.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                        </svg>
                                     </button>
                                 </Tooltip>
                             </label>
@@ -295,30 +315,51 @@ export default function ArtistProfileForm({ userId, userData, selectedPlan }: Ar
                                 id="birthDate"
                                 value={formData.birthDate}
                                 onChange={(e) => setFormData(prev => ({ ...prev, birthDate: e.target.value }))}
-                                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                                className="form-input"
                             />
-                            <div className="mt-2 flex items-center">
-                                <input
-                                    type="checkbox"
-                                    id="showBirthDate"
-                                    checked={formData.showBirthDate}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, showBirthDate: e.target.checked }))}
-                                    className="h-4 w-4 text-cyan-600 focus:ring-cyan-500 border-white/20 rounded bg-white/10"
-                                />
-                                <label htmlFor="showBirthDate" className="ml-2 text-sm text-white">
-                                    Покажи датата на раждане в профила
+                            <div className="form-checkbox">
+                                <label htmlFor="showBirthDate" className="custom-checkbox-container">
+                                    <input
+                                        type="checkbox"
+                                        id="showBirthDate"
+                                        checked={formData.showBirthDate}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, showBirthDate: e.target.checked }))}
+                                        className="custom-checkbox-input"
+                                    />
+                                    <div className="custom-checkbox">
+                                        <svg
+                                            className="custom-checkbox-icon"
+                                            viewBox="0 0 16 16"
+                                            fill="none"
+                                        >
+                                            <path
+                                                d="M13.5 4.5L6 12L2.5 8.5"
+                                                stroke="currentColor"
+                                                strokeWidth="2"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                            />
+                                        </svg>
+                                    </div>
                                 </label>
+                                <span className="form-checkbox-label">
+                                    Покажи датата на раждане в профила
+                                </span>
                             </div>
                         </div>
                     </div>
 
-                    <div className="grid md:grid-cols-2 gap-6 mt-6">
-                        <div>
-                            <label htmlFor="country" className="block text-sm font-medium text-white mb-2">
+                    <div className="form-grid">
+                        <div className="form-field">
+                            <label htmlFor="country" className="form-label">
                                 Държава на произход
                                 <Tooltip content="Държавата, от която произхождате или където създавате своите творби">
-                                    <button type="button" className="ml-2 text-cyan-400 hover:text-cyan-300">
-                                        ℹ️
+                                    <button type="button" className="tooltip-button">
+                                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="tooltip-icon">
+                                            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
+                                            <path d="M12 16V12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                            <path d="M12 8H12.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                        </svg>
                                     </button>
                                 </Tooltip>
                             </label>
@@ -327,17 +368,21 @@ export default function ArtistProfileForm({ userId, userData, selectedPlan }: Ar
                                 id="country"
                                 value={formData.country}
                                 onChange={(e) => setFormData(prev => ({ ...prev, country: e.target.value }))}
-                                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                                className="form-input"
                                 placeholder="България"
                             />
                         </div>
 
-                        <div>
-                            <label htmlFor="city" className="block text-sm font-medium text-white mb-2">
+                        <div className="form-field">
+                            <label htmlFor="city" className="form-label">
                                 Град (опционално)
                                 <Tooltip content="Градът, в който живеете или работите">
-                                    <button type="button" className="ml-2 text-cyan-400 hover:text-cyan-300">
-                                        ℹ️
+                                    <button type="button" className="tooltip-button">
+                                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="tooltip-icon">
+                                            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
+                                            <path d="M12 16V12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                            <path d="M12 8H12.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                        </svg>
                                     </button>
                                 </Tooltip>
                             </label>
@@ -346,68 +391,43 @@ export default function ArtistProfileForm({ userId, userData, selectedPlan }: Ar
                                 id="city"
                                 value={formData.city}
                                 onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
-                                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                                className="form-input"
                                 placeholder="София"
                             />
                         </div>
                     </div>
                 </div>
 
-                {/* Security Settings */}
-                <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20">
-                    <h2 className="text-2xl font-bold text-white mb-6">Настройки за сигурност</h2>
-
-                    <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-white/10">
-                        <div>
-                            <h3 className="text-lg font-medium text-white">Двуфакторна верификация</h3>
-                            <p className="text-gray-300 text-sm">
-                                Добавете допълнителна защита към профила си
-                            </p>
-                        </div>
-                        <div className="flex items-center">
-                            <input
-                                type="checkbox"
-                                id="isTwoFactorEnabled"
-                                checked={formData.isTwoFactorEnabled}
-                                onChange={(e) => setFormData(prev => ({ ...prev, isTwoFactorEnabled: e.target.checked }))}
-                                className="h-5 w-5 text-cyan-600 focus:ring-cyan-500 border-white/20 rounded bg-white/10"
-                            />
-                            <label htmlFor="isTwoFactorEnabled" className="ml-3 text-sm text-white">
-                                {formData.isTwoFactorEnabled ? 'Активирана' : 'Деактивирана'}
-                            </label>
-                        </div>
-                    </div>
-                </div>
 
                 {/* FAQ Section */}
-                <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20">
-                    <div className="flex items-center justify-between mb-6">
-                        <h2 className="text-2xl font-bold text-white">Често задавани въпроси</h2>
+                <div className="faq-section">
+                    <div className="faq-header">
+                        <h2 className="faq-title">Често задавани въпроси</h2>
                         <button
                             type="button"
                             onClick={addFAQ}
-                            className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg transition-colors"
+                            className="faq-add-button"
                         >
                             Добави въпрос
                         </button>
                     </div>
 
-                    <p className="text-gray-300 mb-6">
+                    <p className="faq-description">
                         Добавете въпроси и отговори, които клиентите често задават за вас и вашите творби.
                     </p>
 
                     {/* Sample FAQs */}
-                    <div className="mb-6">
-                        <h3 className="text-lg font-medium text-white mb-3">Примерни въпроси:</h3>
-                        <div className="grid md:grid-cols-2 gap-2">
+                    <div className="sample-faqs">
+                        <h3 className="sample-faqs-title">Примерни въпроси:</h3>
+                        <div className="sample-faqs-grid">
                             {sampleFAQs.map((faq, index) => (
                                 <button
                                     key={index}
                                     type="button"
                                     onClick={() => addSampleFAQ(faq)}
-                                    className="p-3 text-left bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-colors"
+                                    className="sample-faq-button"
                                 >
-                                    <p className="text-white text-sm font-medium">{faq.question}</p>
+                                    <p className="sample-faq-text">{faq.question}</p>
                                 </button>
                             ))}
                         </div>
@@ -415,31 +435,31 @@ export default function ArtistProfileForm({ userId, userData, selectedPlan }: Ar
 
                     {/* Custom FAQs */}
                     {formData.faqs.map((faq, index) => (
-                        <div key={index} className="mb-6 p-4 bg-white/5 rounded-lg border border-white/10">
-                            <div className="flex justify-between items-center mb-3">
-                                <h4 className="text-white font-medium">Въпрос {index + 1}</h4>
+                        <div key={index} className="faq-item">
+                            <div className="faq-item-header">
+                                <h4 className="faq-item-title">Въпрос {index + 1}</h4>
                                 <button
                                     type="button"
                                     onClick={() => removeFAQ(index)}
-                                    className="text-red-400 hover:text-red-300 text-sm"
+                                    className="faq-remove-button"
                                 >
                                     Премахни
                                 </button>
                             </div>
-                            <div className="space-y-3">
+                            <div className="faq-inputs">
                                 <input
                                     type="text"
                                     value={faq.question}
                                     onChange={(e) => updateFAQ(index, 'question', e.target.value)}
                                     placeholder="Въпрос..."
-                                    className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                                    className="faq-input"
                                 />
                                 <textarea
                                     value={faq.answer}
                                     onChange={(e) => updateFAQ(index, 'answer', e.target.value)}
                                     placeholder="Отговор..."
                                     rows={3}
-                                    className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 resize-none"
+                                    className="faq-textarea"
                                 />
                             </div>
                         </div>
@@ -447,11 +467,11 @@ export default function ArtistProfileForm({ userId, userData, selectedPlan }: Ar
                 </div>
 
                 {/* Submit Button */}
-                <div className="flex justify-end">
+                <div className="submit-section">
                     <button
                         type="submit"
                         disabled={isSubmitting}
-                        className="px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="form-button"
                     >
                         {isSubmitting ? "Създаване на профил..." : "Създай профил на артист"}
                     </button>

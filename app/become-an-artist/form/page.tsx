@@ -51,25 +51,21 @@ export default async function ArtistFormPage({ searchParams }: FormPageProps) {
     });
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-            <div className="container mx-auto px-4 py-8">
-                <div className="max-w-4xl mx-auto">
-                    <div className="text-center mb-8">
-                        <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-                            Създайте профила си на артист
-                        </h1>
-                        <p className="text-xl text-gray-300">
-                            Попълнете информацията по-долу, за да започнете да продавате своите творби
-                        </p>
-                    </div>
-
-                    <ArtistProfileForm
-                        userId={session.user.id}
-                        userData={user}
-                        selectedPlan={selectedPlan}
-                    />
-                </div>
+        <div className="container mx-auto p-4 sm:p-8">
+            <div className="text-center mb-8">
+                <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
+                    Създайте профила си на артист
+                </h1>
+                <p className="text-xl text-gray-300">
+                    Попълнете информацията по-долу, за да започнете да продавате своите творби
+                </p>
             </div>
+
+            <ArtistProfileForm
+                userId={session.user.id}
+                userData={user}
+                selectedPlan={selectedPlan}
+            />
         </div>
     );
 }

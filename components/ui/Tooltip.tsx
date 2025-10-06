@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, ReactNode } from "react";
+import "./styles/tooltip.css";
 
 interface TooltipProps {
     content: string;
@@ -17,6 +18,7 @@ export function Tooltip({
 }: TooltipProps) {
     const [isVisible, setIsVisible] = useState(false);
     const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
+    const [isTouch, setIsTouch] = useState(false);
 
     const showTooltip = () => {
         const id = setTimeout(() => {
@@ -33,52 +35,66 @@ export function Tooltip({
         setIsVisible(false);
     };
 
-    const getPositionClasses = () => {
-        switch (position) {
-            case 'top':
-                return 'bottom-full left-1/2 transform -translate-x-1/2 mb-2';
-            case 'bottom':
-                return 'top-full left-1/2 transform -translate-x-1/2 mt-2';
-            case 'left':
-                return 'right-full top-1/2 transform -translate-y-1/2 mr-2';
-            case 'right':
-                return 'left-full top-1/2 transform -translate-y-1/2 ml-2';
-            default:
-                return 'bottom-full left-1/2 transform -translate-x-1/2 mb-2';
+    const handleTouchStart = () => {
+        setIsTouch(true);
+        showTooltip();
+    };
+
+    const handleTouchEnd = () => {
+        // Keep tooltip visible for touch devices
+        if (isTouch) {
+            setTimeout(() => {
+                setIsVisible(false);
+            }, 3000); // Hide after 3 seconds
         }
     };
 
-    const getArrowClasses = () => {
+    const getPositionClass = () => {
         switch (position) {
             case 'top':
-                return 'top-full left-1/2 transform -translate-x-1/2 border-l-transparent border-r-transparent border-b-transparent border-t-gray-800';
+                return 'tooltip-top';
             case 'bottom':
-                return 'bottom-full left-1/2 transform -translate-x-1/2 border-l-transparent border-r-transparent border-t-transparent border-b-gray-800';
+                return 'tooltip-bottom';
             case 'left':
-                return 'left-full top-1/2 transform -translate-y-1/2 border-t-transparent border-b-transparent border-r-transparent border-l-gray-800';
+                return 'tooltip-left';
             case 'right':
-                return 'right-full top-1/2 transform -translate-y-1/2 border-t-transparent border-b-transparent border-l-transparent border-r-gray-800';
+                return 'tooltip-right';
             default:
-                return 'top-full left-1/2 transform -translate-x-1/2 border-l-transparent border-r-transparent border-b-transparent border-t-gray-800';
+                return 'tooltip-top';
+        }
+    };
+
+    const getArrowClass = () => {
+        switch (position) {
+            case 'top':
+                return 'tooltip-arrow-top';
+            case 'bottom':
+                return 'tooltip-arrow-bottom';
+            case 'left':
+                return 'tooltip-arrow-left';
+            case 'right':
+                return 'tooltip-arrow-right';
+            default:
+                return 'tooltip-arrow-top';
         }
     };
 
     return (
         <div
-            className="relative inline-block"
+            className="tooltip-container"
             onMouseEnter={showTooltip}
             onMouseLeave={hideTooltip}
             onFocus={showTooltip}
             onBlur={hideTooltip}
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
         >
             {children}
 
             {isVisible && (
-                <div className={`absolute z-50 ${getPositionClasses()}`}>
-                    <div className="bg-gray-800 text-white text-sm px-3 py-2 rounded-lg shadow-lg max-w-xs whitespace-normal">
-                        {content}
-                    </div>
-                    <div className={`absolute w-0 h-0 border-4 ${getArrowClasses()}`}></div>
+                <div className={`tooltip-content ${getPositionClass()}`}>
+                    {content}
+                    <div className={`tooltip-arrow ${getArrowClass()}`}></div>
                 </div>
             )}
         </div>
