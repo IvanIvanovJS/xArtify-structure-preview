@@ -240,7 +240,7 @@ export default function NavigationHeader(): JSX.Element {
             { href: "/artists", label: "Артисти" },
             session?.user?.artistProfile
                 ? { href: "/upload-artwork", label: "Качи картина" }
-                : { href: "/become-an-artist", label: "Стани артист" },
+                : { href: "/become-an-artist/plans", label: "Стани артист" },
         ],
         [session]
     );

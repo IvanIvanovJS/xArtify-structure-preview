@@ -39,7 +39,7 @@ const navItems: NavItem[] = [
         id: "become-artist",
         title: "Стани артист",
         icon: Star,
-        href: "/become-an-artist"
+        href: "/become-an-artist/plans"
     },
     {
         id: "add-artwork",

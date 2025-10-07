@@ -57,6 +57,24 @@
     align-items: center;
     justify-content: center;
     touch-action: manipulation;
+    white-space: nowrap;
+}
+
+/* Mobile responsive for billing toggle */
+@media (max-width: 480px) {
+    .billing-option {
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+    }
+
+    .billing-toggle {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .billing-option {
+        border-radius: 0.75rem;
+    }
 }
 
 .billing-option.active {
@@ -78,8 +96,50 @@
 .pricing-cards {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 2rem;
+    gap: 2.5rem;
     margin-bottom: 4rem;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+    .pricing-cards {
+        grid-template-columns: 1fr;
+        gap: 3rem;
+
+    }
+
+
+    .plans-title {
+        font-size: 2rem;
+    }
+
+    .plans-subtitle {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .subscription-plans-page {
+        padding: 1rem 0;
+    }
+
+    .plans-header {
+        margin-bottom: 2rem;
+    }
+
+    .plans-title {
+        font-size: 1.75rem;
+    }
+
+    .pricing-card {
+        padding: 1.5rem;
+    }
+
+    .pricing-cards {
+        gap: 2.5rem;
+    }
+
+
 }
 
 .pricing-card {
@@ -96,12 +156,18 @@
 
 .pricing-card:hover {
     border-color: var(--color-primary-60);
-    transform: translateY(-2px);
+    box-shadow: 0 0 20px var(--color-primary-10);
 }
 
 .pricing-card.popular {
     border-color: var(--color-primary-70);
     box-shadow: 0 0 0 1px var(--color-primary-70);
+}
+
+.pricing-card.popular:hover {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 1px var(--color-primary);
+
 }
 
 .popular-badge {
@@ -111,7 +177,7 @@
     transform: translateX(-50%);
     background: var(--color-background);
     color: var(--color-white-8);
-    padding: 0.5rem 2rem;
+    padding: 0.5rem 1rem;
     border-radius: 9999px;
     border: 1px solid var(--color-primary);
     font-size: 0.875rem;
@@ -192,7 +258,7 @@
 
 .feature-text {
     color: var(--color-white-8);
-    font-size: 0.875rem;
+    font-size: 1rem;
 }
 
 .plan-button {
@@ -287,6 +353,40 @@
     margin-bottom: 2rem;
 }
 
+/* Mobile responsive for comparison table */
+@media (max-width: 768px) {
+    .comparison-table {
+        padding: 1rem;
+        margin: 0 -1rem 2rem -1rem;
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+    }
+
+    .comparison-title {
+        font-size: 1.25rem;
+    }
+
+    .features-table th,
+    .features-table td {
+        padding: 0.75rem 0.5rem;
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+
+    .features-table th,
+    .features-table td {
+        padding: 0.5rem 0.25rem;
+        font-size: 0.75rem;
+    }
+
+    .comparison-title {
+        font-size: 1.125rem;
+    }
+}
+
 .table-container {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
@@ -375,10 +475,10 @@
 }
 
 .requirement-item:hover {
-    border-color: var(--color-primary-30);
+    border-color: var(--color-primary-45);
     box-shadow: 0 0 20px var(--color-primary-10);
-    transform: translateY(-2px);
 }
+
 
 .requirement-open {
     border-color: var(--color-primary);
@@ -396,7 +496,7 @@
 .requirement-number {
     font-size: 1.5rem;
     font-weight: 700;
-    color: var(--color-primary);
+    color: var(--color-primary-70);
     text-shadow: 0 0 10px var(--color-primary-50);
     flex-shrink: 0;
 }
@@ -481,9 +581,8 @@
 }
 
 .faq-item:hover {
-    border-color: var(--color-primary-30);
+    border-color: var(--color-primary-45);
     box-shadow: 0 0 20px var(--color-primary-10);
-    transform: translateY(-2px);
 }
 
 .faq-open {
@@ -502,7 +601,7 @@
 .faq-question-number {
     font-size: 1.5rem;
     font-weight: 700;
-    color: var(--color-primary);
+    color: var(--color-primary-70);
     text-shadow: 0 0 10px var(--color-primary-50);
     flex-shrink: 0;
 }
@@ -596,12 +695,29 @@
 
     .pricing-cards {
         grid-template-columns: 1fr;
-        gap: 1.5rem;
+        gap: 3rem;
         margin-bottom: 3rem;
     }
 
     .pricing-card {
         padding: 1.5rem;
+    }
+
+    .faq-section {
+        margin: 0 -1rem;
+        padding: 2rem 1rem;
+    }
+
+    .faq-title {
+        font-size: 1.5rem;
+    }
+
+    .faq-question-text {
+        font-size: 1rem;
+    }
+
+    .requirement-title {
+        font-size: 1rem;
     }
 
     .price-amount {
@@ -712,6 +828,18 @@
         padding: 1rem;
     }
 
+    .faq-section {
+        padding: 1.5rem 0.5rem;
+    }
+
+    .faq-title {
+        font-size: 1.25rem;
+    }
+
+    .comparison-title {
+        font-size: 1.125rem;
+    }
+
     .price-amount {
         font-size: 1.75rem;
     }
@@ -775,14 +903,15 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
+
 .requirement-item:hover {
-    background: var(--color-primary-20);
     border-color: var(--color-primary-45);
+    box-shadow: 0 0 20px var(--color-primary-10);
 }
 
 .faq-item:hover {
-    background: var(--color-primary-20);
     border-color: var(--color-primary-45);
+    box-shadow: 0 0 20px var(--color-primary-10);
 }
 
 /* Animation */

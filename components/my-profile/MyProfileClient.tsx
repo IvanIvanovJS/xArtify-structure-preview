@@ -84,7 +84,7 @@ export default function MyProfileClient(): JSX.Element {
             id: "become-artist",
             title: "Стани артист",
             icon: Star,
-            href: "/become-an-artist",
+            href: "/become-an-artist/plans",
             description: "Създай артистичен профил",
             isSpecial: true
         },

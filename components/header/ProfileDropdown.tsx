@@ -53,7 +53,7 @@ export default function ProfileDropdown({ isOpen, onClose, onLogout }: ProfileDr
             id: "become-artist",
             title: "Стани артист",
             icon: Star,
-            href: "/become-an-artist",
+            href: "/become-an-artist/plans",
             description: "Създай артистичен профил",
             isSpecial: true
         },

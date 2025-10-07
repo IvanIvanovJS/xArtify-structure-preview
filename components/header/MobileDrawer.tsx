@@ -61,7 +61,7 @@ export default function MobileDrawer({ isOpen, onClose, onLogout }: MobileDrawer
         { href: "/courses", label: "КУРСОВЕ", icon: BookOpen },
         session?.user?.artistProfile
             ? { href: "/upload-artwork", label: "КАЧИ КАРТИНА", icon: Upload }
-            : { href: "/become-an-artist", label: "СТАНИ АРТИСТ", icon: Star },
+            : { href: "/become-an-artist/plans", label: "СТАНИ АРТИСТ", icon: Star },
     ];
 
     const additionalLinks = [
