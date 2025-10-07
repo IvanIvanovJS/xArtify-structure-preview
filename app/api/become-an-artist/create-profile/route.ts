@@ -116,8 +116,9 @@ export async function POST(req: NextRequest) {
                     });
                 } else if (paymentInfo && paymentInfo.status === 'succeeded') {
                     // Create subscription with payment info (handles both free and paid plans)
-                    const isFreePlan = paymentInfo.metadata?.isFreePlan === true ||
-                        paymentInfo.metadata?.isFreePlan === 'true' ||
+                    const metadata = paymentInfo.metadata as Record<string, string | number | boolean> | null;
+                    const isFreePlan = metadata?.isFreePlan === true ||
+                        metadata?.isFreePlan === 'true' ||
                         (paymentInfo.amount === 0 || paymentInfo.amount === 1);
 
                     await tx.artistSubscription.create({
