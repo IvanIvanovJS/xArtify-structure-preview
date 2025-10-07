@@ -20,12 +20,16 @@ const CheckoutForm = ({
     planId,
     billingCycle,
     userId,
-    currentSubscriptionId
+    currentSubscriptionId,
+    isFreePlan,
+    setupIntentId
 }: {
     planId: string;
     billingCycle: 'monthly' | 'yearly';
     userId: string;
     currentSubscriptionId: string;
+    isFreePlan: boolean;
+    setupIntentId: string;
 }) => {
     const stripe = useStripe();
     const elements = useElements();
@@ -290,6 +294,8 @@ export default function SubscriptionPaymentClient({
                                 billingCycle={billingCycle}
                                 userId={userId}
                                 currentSubscriptionId={currentSubscription.id}
+                                isFreePlan={isFreePlan}
+                                setupIntentId={setupIntentId}
                             />
                         </Elements>
                     </div>
