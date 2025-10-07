@@ -4,6 +4,11 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/authOptions';
 import { parsePhoneNumberFromString } from 'libphonenumber-js';
 import { z } from 'zod';
+import Stripe from 'stripe';
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+    apiVersion: "2025-07-30.basil",
+});
 
 const CreateArtistProfileSchema = z.object({
     name: z.string().min(1, 'Името е задължително'),
@@ -121,13 +126,41 @@ export async function POST(req: NextRequest) {
                         metadata?.isFreePlan === 'true' ||
                         (paymentInfo.amount === 0 || paymentInfo.amount === 1);
 
+                    let stripeCustomerId = null;
+                    //TODO: Add stripeSubscriptionId
+                    // let stripeSubscriptionId = null;
+                    let currentPeriodStart = null;
+                    let currentPeriodEnd = null;
+
+                    if (!isFreePlan) {
+                        // Create Stripe Customer
+                        const customer = await stripe.customers.create({
+                            email: validatedData.email,
+                            name: validatedData.name,
+                            metadata: {
+                                userId: validatedData.userId,
+                                artistId: artistProfile.id
+                            }
+                        });
+                        stripeCustomerId = customer.id;
+
+                        // Set period dates manually for now
+                        currentPeriodStart = new Date();
+                        currentPeriodEnd = new Date();
+                        currentPeriodEnd.setMonth(currentPeriodEnd.getMonth() + (paymentInfo.billingCycle === 'yearly' ? 12 : 1));
+                    }
+
                     await tx.artistSubscription.create({
                         data: {
                             artistId: artistProfile.id,
                             planId: selectedPlan.id,
                             status: 'active',
                             billingCycle: paymentInfo.billingCycle,
-                            paymentIntentId: isFreePlan ? null : paymentInfo.id, // Don't store payment intent for free plans
+                            paymentIntentId: isFreePlan ? null : paymentInfo.id,
+                            stripeCustomerId,
+                            stripeSubscriptionId: null,
+                            currentPeriodStart,
+                            currentPeriodEnd,
                         }
                     });
                 } else {

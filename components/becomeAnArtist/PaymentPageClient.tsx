@@ -45,61 +45,77 @@ const CheckoutForm = ({
 
         setIsLoading(true);
 
-        const { error, paymentIntent } = await stripe.confirmPayment({
-            elements,
-            redirect: "if_required",
-        });
-
-        if (error) {
-            setMessage(error.message || "Възникна грешка при плащането.");
-            setIsLoading(false);
-            return;
-        }
-
-        if (paymentIntent && paymentIntent.status === "succeeded") {
-            try {
-                const response = await fetch("/api/become-an-artist/process-payment", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        planId,
-                        billingCycle,
-                        paymentIntentId: paymentIntent.id
-                    }),
-                });
-
-                if (response.ok) {
-                    router.push(`/become-an-artist/form?planId=${planId}&paymentIntentId=${paymentIntent.id}`);
-                } else {
-                    const errorData = await response.json();
-                    setMessage(`Грешка при обработка на плащането: ${errorData.message}`);
-                }
-            } catch (error) {
-                console.error(error);
-                setMessage("Възникна грешка при свързване със сървъра.");
-            }
-        } else if (isFreePlan && setupIntentId) {
+        if (isFreePlan && setupIntentId) {
             // Handle SetupIntent for free plans
-            try {
-                const response = await fetch("/api/become-an-artist/process-payment", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        planId,
-                        billingCycle,
-                        setupIntentId: setupIntentId
-                    }),
-                });
+            const { error, setupIntent } = await stripe.confirmSetup({
+                elements,
+                redirect: "if_required",
+            });
 
-                if (response.ok) {
-                    router.push(`/become-an-artist/form?planId=${planId}&setupIntentId=${setupIntentId}`);
-                } else {
-                    const errorData = await response.json();
-                    setMessage(`Грешка при активиране на плана: ${errorData.message}`);
+            if (error) {
+                setMessage(error.message || "Възникна грешка при запазване на картата.");
+                setIsLoading(false);
+                return;
+            }
+
+            if (setupIntent && setupIntent.status === "succeeded") {
+                try {
+                    const response = await fetch("/api/become-an-artist/process-payment", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            planId,
+                            billingCycle,
+                            setupIntentId: setupIntent.id
+                        }),
+                    });
+
+                    if (response.ok) {
+                        router.push(`/become-an-artist/form?planId=${planId}&setupIntentId=${setupIntent.id}`);
+                    } else {
+                        const errorData = await response.json();
+                        setMessage(`Грешка при активиране на плана: ${errorData.message}`);
+                    }
+                } catch (error) {
+                    console.error(error);
+                    setMessage("Възникна грешка при свързване със сървъра.");
                 }
-            } catch (error) {
-                console.error(error);
-                setMessage("Възникна грешка при свързване със сървъра.");
+            }
+        } else {
+            // Handle PaymentIntent for paid plans
+            const { error, paymentIntent } = await stripe.confirmPayment({
+                elements,
+                redirect: "if_required",
+            });
+
+            if (error) {
+                setMessage(error.message || "Възникна грешка при плащането.");
+                setIsLoading(false);
+                return;
+            }
+
+            if (paymentIntent && paymentIntent.status === "succeeded") {
+                try {
+                    const response = await fetch("/api/become-an-artist/process-payment", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            planId,
+                            billingCycle,
+                            paymentIntentId: paymentIntent.id
+                        }),
+                    });
+
+                    if (response.ok) {
+                        router.push(`/become-an-artist/form?planId=${planId}&paymentIntentId=${paymentIntent.id}`);
+                    } else {
+                        const errorData = await response.json();
+                        setMessage(`Грешка при обработка на плащането: ${errorData.message}`);
+                    }
+                } catch (error) {
+                    console.error(error);
+                    setMessage("Възникна грешка при свързване със сървъра.");
+                }
             }
         }
 

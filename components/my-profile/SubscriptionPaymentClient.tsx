@@ -49,65 +49,81 @@ const CheckoutForm = ({
 
         setIsLoading(true);
 
-        const { error, paymentIntent } = await stripe.confirmPayment({
-            elements,
-            redirect: "if_required",
-        });
-
-        if (error) {
-            setMessage(error.message || "Възникна грешка при плащането.");
-            setIsLoading(false);
-            return;
-        }
-
-        if (paymentIntent && paymentIntent.status === "succeeded") {
-            try {
-                const response = await fetch("/api/subscription/process-upgrade", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        planId,
-                        billingCycle,
-                        paymentIntentId: paymentIntent.id,
-                        currentSubscriptionId
-                    }),
-                });
-
-                if (response.ok) {
-                    alert("Планът беше успешно надграден!");
-                    router.push('/my-profile/subscription');
-                } else {
-                    const errorData = await response.json();
-                    setMessage(`Грешка при надграждане на плана: ${errorData.message}`);
-                }
-            } catch (error) {
-                console.error(error);
-                setMessage("Възникна грешка при свързване със сървъра.");
-            }
-        } else if (isFreePlan && setupIntentId) {
+        if (isFreePlan && setupIntentId) {
             // Handle SetupIntent for free plans
-            try {
-                const response = await fetch("/api/subscription/process-upgrade", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        planId,
-                        billingCycle,
-                        setupIntentId: setupIntentId,
-                        currentSubscriptionId
-                    }),
-                });
+            const { error, setupIntent } = await stripe.confirmSetup({
+                elements,
+                redirect: "if_required",
+            });
 
-                if (response.ok) {
-                    alert("Планът беше успешно променен на безплатен!");
-                    router.push('/my-profile/subscription');
-                } else {
-                    const errorData = await response.json();
-                    setMessage(`Грешка при промяна на плана: ${errorData.message}`);
+            if (error) {
+                setMessage(error.message || "Възникна грешка при запазване на картата.");
+                setIsLoading(false);
+                return;
+            }
+
+            if (setupIntent && setupIntent.status === "succeeded") {
+                try {
+                    const response = await fetch("/api/subscription/process-upgrade", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            planId,
+                            billingCycle,
+                            setupIntentId: setupIntent.id,
+                            currentSubscriptionId
+                        }),
+                    });
+
+                    if (response.ok) {
+                        alert("Планът беше успешно променен на безплатен!");
+                        router.push('/my-profile/subscription');
+                    } else {
+                        const errorData = await response.json();
+                        setMessage(`Грешка при промяна на плана: ${errorData.message}`);
+                    }
+                } catch (error) {
+                    console.error(error);
+                    setMessage("Възникна грешка при свързване със сървъра.");
                 }
-            } catch (error) {
-                console.error(error);
-                setMessage("Възникна грешка при свързване със сървъра.");
+            }
+        } else {
+            // Handle PaymentIntent for paid plans
+            const { error, paymentIntent } = await stripe.confirmPayment({
+                elements,
+                redirect: "if_required",
+            });
+
+            if (error) {
+                setMessage(error.message || "Възникна грешка при плащането.");
+                setIsLoading(false);
+                return;
+            }
+
+            if (paymentIntent && paymentIntent.status === "succeeded") {
+                try {
+                    const response = await fetch("/api/subscription/process-upgrade", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            planId,
+                            billingCycle,
+                            paymentIntentId: paymentIntent.id,
+                            currentSubscriptionId
+                        }),
+                    });
+
+                    if (response.ok) {
+                        alert("Планът беше успешно надграден!");
+                        router.push('/my-profile/subscription');
+                    } else {
+                        const errorData = await response.json();
+                        setMessage(`Грешка при надграждане на плана: ${errorData.message}`);
+                    }
+                } catch (error) {
+                    console.error(error);
+                    setMessage("Възникна грешка при свързване със сървъра.");
+                }
             }
         }
 
