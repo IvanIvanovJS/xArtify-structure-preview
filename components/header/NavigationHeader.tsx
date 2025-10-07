@@ -7,26 +7,38 @@ import CartIcon from "../cart/CartIcon";
 import { useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import LogoutConfirmation from "../ui/LogoutConfirmation";
+import NavigationLink from "../ui/interSplashScreen/NavigationLink";
+import MobileDrawer from "./MobileDrawer";
+import ProfileDropdown from "./ProfileDropdown";
+import "./styles/mobile-drawer.css";
 import {
     Search,
     User2,
     Heart,
     Menu,
-    LogIn,
-    LogOut,
     Shield,
 } from "lucide-react";
 
 // Опростена логика за скролване на хедъра
-function useHeaderScroll(): { hidden: boolean; showOnHover: () => void; hideOnLeave: () => void } {
+function useHeaderScroll(): { hidden: boolean; showOnHover: () => void; hideOnLeave: () => void; hasScrolled: boolean } {
     const [hidden, setHidden] = useState<boolean>(false);
     const [isHovering, setIsHovering] = useState<boolean>(false);
+    const [hasScrolled, setHasScrolled] = useState<boolean>(false);
+    const [isMobile, setIsMobile] = useState<boolean>(false);
     const lastScrollY = useRef<number>(0);
     const ticking = useRef<boolean>(false);
 
     useEffect(() => {
         // guard за SSR
         if (typeof window === "undefined") return;
+
+        // Детекция за мобилни устройства
+        const checkMobile = () => {
+            setIsMobile(window.innerWidth <= 767);
+        };
+
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
 
         const updateHeader = () => {
             if (ticking.current) return;
@@ -38,26 +50,51 @@ function useHeaderScroll(): { hidden: boolean; showOnHover: () => void; hideOnLe
                 // Ако сме в началото на страницата, винаги показваме хедъра
                 if (currentScrollY <= 10) {
                     setHidden(false);
+                    setHasScrolled(false);
                     lastScrollY.current = currentScrollY;
                     ticking.current = false;
                     return;
                 }
 
-                // Ако hover-ваме в горната част, показваме хедъра
-                if (isHovering) {
-                    setHidden(false);
-                    lastScrollY.current = currentScrollY;
-                    ticking.current = false;
-                    return;
+                // Отбелязваме че сме скролвали над 10px
+                if (currentScrollY > 10) {
+                    setHasScrolled(true);
                 }
 
-                // Ако скролваме надолу и сме над 100px от началото - скриваме
-                if (currentScrollY > lastScrollY.current && currentScrollY > 60) {
-                    setHidden(true);
-                }
-                // Ако скролваме нагоре - показваме
-                else if (currentScrollY < lastScrollY.current) {
-                    setHidden(false);
+                // РАЗЛИЧНА ЛОГИКА ЗА МОБИЛНИ И ДЕСКТОП
+                if (isMobile) {
+                    // МОБИЛНА ЛОГИКА - по-агресивно скриване/показване
+                    if (currentScrollY > lastScrollY.current && currentScrollY > 50) {
+                        // Скриваме при скролване надолу над 50px
+                        setHidden(true);
+                    } else if (currentScrollY < lastScrollY.current && currentScrollY > 50) {
+                        // Показваме при скролване нагоре над 50px
+                        setHidden(false);
+                    } else if (currentScrollY <= 50) {
+                        // Винаги показваме под 50px
+                        setHidden(false);
+                    }
+                } else {
+                    // ДЕСКТОП ЛОГИКА - с hover функционалност
+                    if (isHovering) {
+                        setHidden(false);
+                        lastScrollY.current = currentScrollY;
+                        ticking.current = false;
+                        return;
+                    }
+
+                    // Ако скролваме надолу и сме над 100px от началото - скриваме
+                    if (currentScrollY > lastScrollY.current && currentScrollY > 56) {
+                        setHidden(true);
+                    }
+                    // Ако скролваме нагоре и сме над 100px - показваме само ако сме скролвали достатъчно нагоре
+                    else if (currentScrollY < lastScrollY.current && currentScrollY > 100 && (lastScrollY.current - currentScrollY) > 50) {
+                        setHidden(false);
+                    }
+                    // Ако сме между 10px и 100px - винаги показваме хедъра
+                    else if (currentScrollY <= 56) {
+                        setHidden(false);
+                    }
                 }
 
                 lastScrollY.current = currentScrollY;
@@ -73,13 +110,14 @@ function useHeaderScroll(): { hidden: boolean; showOnHover: () => void; hideOnLe
 
         return () => {
             window.removeEventListener("scroll", updateHeader);
+            window.removeEventListener('resize', checkMobile);
         };
-    }, [isHovering, hidden]);
+    }, [isHovering, hidden, isMobile]);
 
     const showOnHover = () => setIsHovering(true);
     const hideOnLeave = () => setIsHovering(false);
 
-    return { hidden, showOnHover, hideOnLeave };
+    return { hidden, showOnHover, hideOnLeave, hasScrolled };
 }
 
 export default function NavigationHeader(): JSX.Element {
@@ -91,6 +129,8 @@ export default function NavigationHeader(): JSX.Element {
     const [searchOpen, setSearchOpen] = useState<boolean>(false);
     const [isMounted, setIsMounted] = useState<boolean>(false);
     const [showLogoutConfirm, setShowLogoutConfirm] = useState<boolean>(false);
+    const [profileDropdownOpen, setProfileDropdownOpen] = useState<boolean>(false);
+    const profileDropdownTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     // Скриваме хедъра на login, register и forgotten-password страниците
     const shouldHideHeader = pathname === "/login" || pathname === "/register" || pathname === "/forgotten-password";
@@ -109,7 +149,7 @@ export default function NavigationHeader(): JSX.Element {
         return () => mq.removeEventListener?.("change", handler);
     }, []);
 
-    const { hidden, showOnHover, hideOnLeave } = useHeaderScroll();
+    const { hidden, showOnHover, hideOnLeave, hasScrolled } = useHeaderScroll();
 
     // Затваряне на search при клик извън
     useEffect(() => {
@@ -131,6 +171,27 @@ export default function NavigationHeader(): JSX.Element {
             document.removeEventListener('mousedown', handleClickOutside);
         };
     }, [searchOpen]);
+
+    // Затваряне на profile dropdown при клик извън
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            const target = event.target as Element;
+            const profileButton = target.closest('button[aria-controls*="profile-dropdown"]');
+            const profileDropdown = target.closest('.profile-dropdown');
+
+            if (profileDropdownOpen && !profileButton && !profileDropdown) {
+                setProfileDropdownOpen(false);
+            }
+        };
+
+        if (profileDropdownOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [profileDropdownOpen]);
 
     // Управление на фокуса при отваряне/затваряне на search
     useEffect(() => {
@@ -178,8 +239,8 @@ export default function NavigationHeader(): JSX.Element {
             { href: "/gallery", label: "Галерия" },
             { href: "/artists", label: "Артисти" },
             session?.user?.artistProfile
-                ? { href: "/upload-artwork", label: "Качи картина" }
-                : { href: "/create-artist-profile", label: "Стани артист" },
+                ? { href: "/my-profile/subscription", label: "Управление на абонамента" }
+                : { href: "/become-an-artist/plans", label: "Стани артист" },
         ],
         [session]
     );
@@ -189,6 +250,7 @@ export default function NavigationHeader(): JSX.Element {
         // Затваряме всички отворени менюта
         setSearchOpen(false);
         setDrawerOpen(false);
+        setProfileDropdownOpen(false);
 
         // Скролваме към началото
         document.querySelector('body')?.scrollTo({
@@ -196,6 +258,15 @@ export default function NavigationHeader(): JSX.Element {
             behavior: 'smooth'
         });
     };
+
+    // Cleanup timeout on unmount
+    useEffect(() => {
+        return () => {
+            if (profileDropdownTimeoutRef.current) {
+                clearTimeout(profileDropdownTimeoutRef.current);
+            }
+        };
+    }, []);
 
     // Ако трябва да скрием хедъра, не рендираме нищо
     if (shouldHideHeader) {
@@ -219,6 +290,8 @@ export default function NavigationHeader(): JSX.Element {
                 className={[
                     "x-header",
                     hidden ? "-translate-y-full" : "translate-y-0",
+                    // Добавяме фон когато сме скролвали (и на десктоп и на мобилни)
+                    isMounted && hasScrolled ? "x-header--scrolled" : "",
                 ].join(" ")}
                 role="banner"
                 onMouseEnter={isMounted ? showOnHover : undefined}
@@ -293,7 +366,14 @@ export default function NavigationHeader(): JSX.Element {
                             className="inline-block"
                             onClick={scrollToTop}
                         >
-                            <Image src="/xArtify-logo13.svg" alt="xArtify" width={220} height={60} priority />
+                            <Image
+                                src="/xArtify-logo13.svg"
+                                alt="xArtify"
+                                width={140}
+                                height={54}
+                                className="w-[100px] h-[36px] md:w-[140px] md:h-[54px]"
+                                priority
+                            />
                         </Link>
                     </div>
                     {/* ДЯСНО */}
@@ -313,16 +393,50 @@ export default function NavigationHeader(): JSX.Element {
                                 </Link>
                             )}
 
-                            <Link
-                                href={session ? "/my-profile" : "/login"}
-                                aria-label="Моят профил"
-                                className="x-icon-btn"
-                                title="Моят профил"
-                                onTouchStart={handleTouchStart}
-                                onTouchEnd={handleTouchEnd}
-                            >
-                                <User2 size={24} aria-hidden />
-                            </Link>
+                            {session ? (
+                                <div
+                                    className="relative"
+                                    onMouseEnter={() => {
+                                        if (profileDropdownTimeoutRef.current) {
+                                            clearTimeout(profileDropdownTimeoutRef.current);
+                                            profileDropdownTimeoutRef.current = null;
+                                        }
+                                        setProfileDropdownOpen(true);
+                                    }}
+                                    onMouseLeave={() => {
+                                        profileDropdownTimeoutRef.current = setTimeout(() => {
+                                            setProfileDropdownOpen(false);
+                                        }, 300);
+                                    }}
+                                >
+                                    <Link
+                                        href="/my-profile"
+                                        aria-label="Моят профил"
+                                        className="x-icon-btn"
+                                        title="Моят профил"
+                                        onTouchStart={handleTouchStart}
+                                        onTouchEnd={handleTouchEnd}
+                                    >
+                                        <User2 size={24} aria-hidden />
+                                    </Link>
+                                    <ProfileDropdown
+                                        isOpen={profileDropdownOpen}
+                                        onClose={() => setProfileDropdownOpen(false)}
+                                        onLogout={() => setShowLogoutConfirm(true)}
+                                    />
+                                </div>
+                            ) : (
+                                <Link
+                                    href="/login"
+                                    aria-label="Вход"
+                                    className="x-icon-btn"
+                                    title="Вход"
+                                    onTouchStart={handleTouchStart}
+                                    onTouchEnd={handleTouchEnd}
+                                >
+                                    <User2 size={24} aria-hidden />
+                                </Link>
+                            )}
                             <Link
                                 href="/favorites-artists"
                                 aria-label="Любими артисти"
@@ -334,19 +448,6 @@ export default function NavigationHeader(): JSX.Element {
                                 <Heart size={24} aria-hidden />
                             </Link>
 
-                            {/* Logout button for desktop */}
-                            {session && (
-                                <button
-                                    onClick={() => setShowLogoutConfirm(true)}
-                                    className="x-icon-btn"
-                                    title="Изход"
-                                    onTouchStart={handleTouchStart}
-                                    onTouchEnd={handleTouchEnd}
-                                    aria-label="Изход"
-                                >
-                                    <LogOut size={24} aria-hidden />
-                                </button>
-                            )}
 
                             <CartIcon />
 
@@ -368,10 +469,10 @@ export default function NavigationHeader(): JSX.Element {
                 </div>
 
                 {/* Под лентата – четирите линка (DESKTOP центрирани) */}
-                <nav aria-label="Главна навигация" className="hidden md:block bg-transparent mt-1">
+                <nav aria-label="Главна навигация" className="hidden md:block bg-transparent">
                     <div className="x-subnav__inner justify-center">
                         {mainLinks.map((l) => (
-                            <Link key={l.href} href={l.href} className="nav-pill">{l.label}</Link>
+                            <NavigationLink key={l.href} href={l.href} className="nav-pill">{l.label}</NavigationLink>
                         ))}
                     </div>
                 </nav>
@@ -401,44 +502,10 @@ export default function NavigationHeader(): JSX.Element {
             </header >
 
             {/* MOBILE DRAWER */}
-            <aside className="x-drawer" data-open={drawerOpen ? "true" : "false"} aria-hidden={!drawerOpen}>
-                <nav aria-label="Мобилно меню">
-                    <ul className="x-drawer__list">
-                        {mainLinks.map((l) => (
-                            <li key={l.href}>
-                                <Link href={l.href} className="x-drawer__item " onClick={() => setDrawerOpen(false)}>
-                                    {l.label}
-                                </Link>
-                            </li>
-                        ))}
-                        <li className="pt-2"><Link href="/about" className="x-drawer__item " onClick={() => setDrawerOpen(false)}>За нас</Link></li>
-                        <li><Link href="/contact" className="x-drawer__item" onClick={() => setDrawerOpen(false)}>Контакти</Link></li>
-
-
-
-                        <li className="pt-2">
-                            {session ? (
-                                <button
-                                    onClick={() => setShowLogoutConfirm(true)}
-                                    className="x-drawer__item w-full text-left"
-                                >
-                                    <span className="inline-flex items-center gap-2">
-                                        <LogOut size={18} /> Изход
-                                    </span>
-                                </button>
-                            ) : (
-                                <Link href="/login" className="x-drawer__item"><span className="inline-flex items-center gap-2"><LogIn size={18} /> Вход</span></Link>
-                            )}
-                        </li>
-                    </ul>
-                </nav>
-            </aside >
-            <button
-                type="button"
-                className="x-drawer__backdrop"
-                data-open={drawerOpen ? "true" : "false"}
-                aria-hidden={!drawerOpen}
-                onClick={() => setDrawerOpen(false)}
+            <MobileDrawer
+                isOpen={drawerOpen}
+                onClose={() => setDrawerOpen(false)}
+                onLogout={() => setShowLogoutConfirm(true)}
             />
 
             {/* Logout Confirmation Modal */}

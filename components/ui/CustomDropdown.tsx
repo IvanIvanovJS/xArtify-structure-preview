@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { ChevronDownIcon, CheckIcon } from 'lucide-react';
+import { ChevronDownIcon, ChevronUpIcon, CheckIcon } from 'lucide-react';
 
 interface DropdownOption {
     value: string;
@@ -69,10 +69,17 @@ export default function CustomDropdown({
                     aria-expanded={isOpen}
                 >
                     <span className="selected-option">{displayValue}</span>
-                    <ChevronDownIcon
-                        className={`dropdown-icon ${isOpen ? 'rotate-180' : ''}`}
-                        size={16}
-                    />
+                    {isOpen ? (
+                        <ChevronUpIcon
+                            className="dropdown-icon"
+                            size={14}
+                        />
+                    ) : (
+                        <ChevronDownIcon
+                            className="dropdown-icon"
+                            size={14}
+                        />
+                    )}
                 </button>
 
                 {isOpen && (

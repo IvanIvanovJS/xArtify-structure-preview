@@ -1,7 +1,7 @@
 // app/artists/page.tsx
-import Image from 'next/image';
-import Link from 'next/link';
 import { prisma } from "@/lib/prisma";
+import ArtistsClient from "@/components/artists/ArtistsClient";
+
 export const runtime = "nodejs";
 
 // Компонентът се изпълнява на сървъра
@@ -23,38 +23,5 @@ export default async function AllArtistsPage() {
         },
     });
 
-    return (
-        <div className="container mx-auto px-4 py-8 sm:px-8">
-            <h1 className="text-4xl font-bold text-center text-white mb-8">Всички артисти</h1>
-
-            {artists.length > 0 ? (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
-                    {artists.map((artist) => (
-                        <Link key={artist.id} href={`/artists/${artist.id}`} className="group block">
-                            <div className="flex flex-col items-center text-center">
-                                {/* Профилна снимка */}
-                                <div className="relative w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden shadow-lg group-hover:shadow-xl transition-shadow duration-300">
-                                    <Image
-                                        src={artist.user.image || "/placeholder-avatar.jpg"}
-                                        alt={artist.user.name || "Профилна снимка"}
-                                        fill // replaces layout="fill"
-                                        style={{ objectFit: "cover" }}
-                                        className="group-hover:scale-105 transition-transform duration-300"
-                                    />
-                                </div>
-                                {/* Име на артиста */}
-                                <p className="mt-2 text-md font-semibold text-white group-hover:underline">
-                                    {artist.user.name}
-                                </p>
-                            </div>
-                        </Link>
-                    ))}
-                </div>
-            ) : (
-                <div className="text-center text-gray-400 text-xl">
-                    Все още няма регистрирани артисти.
-                </div>
-            )}
-        </div>
-    );
+    return <ArtistsClient artists={artists} />;
 }

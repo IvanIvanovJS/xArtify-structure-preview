@@ -121,11 +121,19 @@ model Painting {
 model ArtistProfile {
   id           String    @id @default(cuid())
   userId       String    @unique
-  bio          String?
+  bio          String?   @db.Text
   user         User      @relation(fields: [userId], references: [id]) // Релация обратно към User
   phoneNumber  String?
+  birthDate    DateTime?
+  showBirthDate Boolean  @default(false)
+  country      String?
+  city         String?
+  isTwoFactorEnabled Boolean @default(false)
+  twoFactorSecret String?
   paintings    Painting[]
   tags         Tag[]     // Релация към таговете на автора
+  faqs         ArtistFAQ[] // Често задавани въпроси
+  subscription ArtistSubscription?
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 }
@@ -160,6 +168,85 @@ model Subscription {
   status        String    // Активен, изтекъл и т.н.
   startDate     DateTime  @default(now())
   endDate       DateTime?
+}
+
+// Модел за планове за абонаменти на артисти
+model SubscriptionPlan {
+  id                String    @id @default(cuid())
+  name              String    // "Free", "Medium", "High"
+  displayName       String    // "Безплатен", "Среден", "Висок"
+  description       String    @db.Text
+  monthlyPrice      Float     // Цена за месец в евро
+  yearlyPrice       Float     // Цена за година в евро
+  yearlyDiscount    Float     @default(0.2) // 20% отстъпка за годишен абонамент
+  maxActivePaintings Int      // Максимален брой активни картини
+  commissionRate    Float     // Комисионна от продажба (0.3 = 30%)
+  analyticsAccess   String    // "minimal", "extended", "full"
+  advertisingPriority String  // "low", "high", "very_high"
+  directCommunication Boolean @default(false)
+  emailPromotions   Boolean   @default(false)
+  notifications     Boolean   @default(false)
+  unlimitedUploads  Boolean   @default(false)
+  isActive          Boolean   @default(true)
+  stripePriceId     String?   // Stripe Price ID за месечен абонамент
+  stripeYearlyPriceId String? // Stripe Price ID за годишен абонамент
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  // Relations
+  artistSubscriptions ArtistSubscription[]
+  
+  @@unique([name])
+}
+
+// Модел за абонаменти на артисти
+model ArtistSubscription {
+  id                String    @id @default(cuid())
+  artistId          String    @unique
+  planId            String
+  artist            ArtistProfile @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  plan              SubscriptionPlan @relation(fields: [planId], references: [id])
+  status            String    // "active", "cancelled", "expired", "past_due", "pending"
+  billingCycle      String    // "monthly", "yearly"
+  stripeSubscriptionId String? // Stripe Subscription ID
+  stripeCustomerId  String?   // Stripe Customer ID
+  paymentIntentId   String?   // Payment Intent ID for one-time payments
+  currentPeriodStart DateTime?
+  currentPeriodEnd  DateTime?
+  cancelAtPeriodEnd Boolean   @default(false)
+  cancelledAt       DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+}
+
+// Модел за съхранение на информация за плащания
+model PaymentIntent {
+  id            String    @id @default(cuid())
+  userId        String
+  planId        String
+  billingCycle  String    // "monthly", "yearly"
+  amount        Int       // Amount in cents
+  currency      String    @default("eur")
+  status        String    // "succeeded", "failed", "pending"
+  metadata      Json?     // Additional metadata
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  @@map("payment_intents")
+}
+
+// Модел за често задавани въпроси на артисти
+model ArtistFAQ {
+  id        String    @id @default(cuid())
+  artistId  String
+  question  String    @db.Text
+  answer    String    @db.Text
+  artist    ArtistProfile @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  
+  @@index([artistId])
 }
 
 // Модел за записване в курс

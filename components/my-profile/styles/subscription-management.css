@@ -1,0 +1,428 @@
+/* Subscription Management Styles */
+.subscription-management {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 0;
+}
+
+.subscription-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.subscription-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--color-white-8);
+    margin-bottom: 1rem;
+    line-height: 1.2;
+}
+
+.subscription-subtitle {
+    font-size: 1.125rem;
+    color: var(--color-white-8);
+    margin: 0;
+}
+
+/* Current Subscription */
+.current-subscription {
+    margin-bottom: 3rem;
+}
+
+.current-subscription-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--color-white-8);
+    margin-bottom: 1rem;
+}
+
+.current-subscription-card {
+    background: var(--color-white-1);
+    border: 1px solid var(--color-primary-30);
+    border-radius: 0.75rem;
+    padding: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.current-plan-info {
+    flex: 1;
+}
+
+.current-plan-name {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-white-8);
+    margin-bottom: 0.5rem;
+}
+
+.current-plan-description {
+    color: var(--color-white-8);
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
+}
+
+.current-plan-price {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+}
+
+.current-price-amount {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--color-primary);
+}
+
+.current-price-period {
+    color: var(--color-white-8);
+    font-size: 1rem;
+}
+
+.current-plan-status {
+    display: flex;
+    align-items: center;
+}
+
+.status-badge {
+    padding: 0.5rem 1rem;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.status-badge.active {
+    background: var(--color-primary-20);
+    color: var(--color-primary);
+    border: 1px solid var(--color-primary-30);
+}
+
+.status-badge.pending {
+    background: var(--color-promotion-20);
+    color: var(--color-promotion);
+    border: 1px solid var(--color-promotion-30);
+}
+
+.status-badge.cancelled {
+    background: var(--color-white-2);
+    color: var(--color-white-6);
+    border: 1px solid var(--color-white-3);
+}
+
+/* Billing Toggle */
+.billing-toggle-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 3rem;
+}
+
+.billing-toggle {
+    display: flex;
+    background: var(--color-background);
+    border: none;
+    border-radius: 10rem;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.billing-option {
+    padding: 0.5rem 1.5rem;
+    background: transparent;
+    border: none;
+    border-radius: 1.5rem;
+    color: var(--color-white-8);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+    position: relative;
+    flex: 1;
+    text-align: center;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: manipulation;
+    white-space: nowrap;
+}
+
+.billing-option.active {
+    background: var(--color-primary-70);
+    color: var(--color-background-80);
+    border-radius: 10rem;
+}
+
+.billing-option:not(.active) {
+    color: var(--color-white-8);
+}
+
+.billing-option:not(.active):hover {
+    color: var(--color-primary-70);
+}
+
+/* Available Plans */
+.available-plans {
+    margin-bottom: 4rem;
+}
+
+.available-plans-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--color-white-8);
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.plans-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+.plan-card {
+    position: relative;
+    background: var(--color-white-1);
+    border: 1px solid var(--color-primary-30);
+    border-radius: 0.75rem;
+    padding: 2rem;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.plan-card:hover {
+    border-color: var(--color-primary-60);
+    box-shadow: 0 0 20px var(--color-primary-10);
+}
+
+.plan-card.current {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 1px var(--color-primary);
+}
+
+.plan-card.upgrade {
+    border-color: var(--color-primary-70);
+}
+
+.plan-card.downgrade {
+    border-color: var(--color-white-4);
+}
+
+.current-plan-badge {
+    position: absolute;
+    top: -1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--color-primary);
+    color: var(--color-background);
+    padding: 0.5rem 1rem;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 700;
+}
+
+.discount-badge {
+    position: absolute;
+    top: -0.5rem;
+    right: -0.5rem;
+    background: var(--color-promotion);
+    color: var(--color-white-8);
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.plan-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.plan-name {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-white-8);
+    margin-bottom: 0.5rem;
+}
+
+.plan-description {
+    color: var(--color-white-8);
+    font-size: 0.875rem;
+    margin-bottom: 1.5rem;
+}
+
+.plan-price {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.price-amount {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--color-primary);
+}
+
+.price-period {
+    color: var(--color-white-8);
+    font-size: 1rem;
+}
+
+.discount-text {
+    color: var(--color-promotion);
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.plan-features {
+    flex: 1;
+    margin-bottom: 2rem;
+}
+
+.feature-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.feature-check {
+    width: 20px;
+    height: 20px;
+    color: var(--color-primary);
+    flex-shrink: 0;
+}
+
+.feature-text {
+    color: var(--color-white-8);
+    font-size: 0.875rem;
+}
+
+.plan-button {
+    width: 100%;
+    padding: 0.875rem 1.5rem;
+    border: none;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: manipulation;
+}
+
+.plan-button.current {
+    background: var(--color-white-2);
+    color: var(--color-white-6);
+    cursor: not-allowed;
+}
+
+.plan-button.upgrade {
+    background: var(--color-primary);
+    color: var(--color-background);
+}
+
+.plan-button.upgrade:hover {
+    background: var(--color-primary-70);
+    box-shadow: 0 0 20px var(--color-primary-30);
+}
+
+.plan-button.downgrade {
+    background: var(--color-white-3);
+    color: var(--color-white-8);
+    border: 1px solid var(--color-white-4);
+}
+
+.plan-button.downgrade:hover {
+    background: var(--color-white-4);
+    border-color: var(--color-white-5);
+}
+
+.plan-button.secondary {
+    background: transparent;
+    color: var(--color-white-8);
+    border: 1px solid var(--color-primary-30);
+}
+
+.plan-button.secondary:hover {
+    background: var(--color-primary-10);
+    border-color: var(--color-primary-60);
+}
+
+.plan-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .subscription-management {
+        padding: 1rem 0;
+    }
+
+    .subscription-title {
+        font-size: 2rem;
+    }
+
+    .subscription-subtitle {
+        font-size: 1rem;
+    }
+
+    .current-subscription-card {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+
+    .plans-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    .plan-card {
+        padding: 1.5rem;
+    }
+
+    .billing-toggle {
+        width: 100%;
+        max-width: 320px;
+        margin: 0 auto;
+    }
+
+    .billing-option {
+        padding: 0.75rem 1rem;
+        font-size: 0.875rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .subscription-title {
+        font-size: 1.75rem;
+    }
+
+    .current-subscription-card {
+        padding: 1.5rem;
+    }
+
+    .plan-card {
+        padding: 1rem;
+    }
+
+    .price-amount {
+        font-size: 2rem;
+    }
+
+    .billing-option {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.8rem;
+    }
+}

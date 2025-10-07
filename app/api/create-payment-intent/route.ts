@@ -16,26 +16,73 @@ export async function POST(req: NextRequest) {
     }
 
     try {
-        const { isArtist } = await req.json();
+        const { planId, billingCycle, isArtist, isUpgrade, currentSubscriptionId } = await req.json();
 
-        if (!isArtist) {
-            return NextResponse.json({ message: "No payment required" });
+        if (!isArtist || !planId || !billingCycle) {
+            return NextResponse.json({ message: "Missing required fields" }, { status: 400 });
         }
 
-        // Създаваме PaymentIntent с автоматични методи (Apple Pay / Google Pay)
-        const paymentIntent = await stripe.paymentIntents.create({
-            amount: 10000, // 100.00 лв. в стотинки
-            currency: "bgn",
-            metadata: {
-                userId: session.user.id,
-                email: session.user.email as string,
-            },
-            automatic_payment_methods: {
-                enabled: true, // активира всички автоматично поддържани методи
-            },
+        // Get plan details
+        const { prisma } = await import("@/lib/prisma");
+        const plan = await prisma.subscriptionPlan.findUnique({
+            where: { id: planId }
         });
 
-        return NextResponse.json({ clientSecret: paymentIntent.client_secret });
+        if (!plan) {
+            return NextResponse.json({ message: "Plan not found" }, { status: 404 });
+        }
+
+        // Calculate amount based on plan and billing cycle
+        const amount = billingCycle === 'yearly' ? plan.yearlyPrice : plan.monthlyPrice;
+        const isFreePlan = amount === 0;
+
+        if (isFreePlan) {
+            // For free plans, use SetupIntent to save payment method without charging
+            const setupIntent = await stripe.setupIntents.create({
+                payment_method_types: ['card'],
+                metadata: {
+                    userId: session.user.id,
+                    email: session.user.email as string,
+                    planId: planId,
+                    billingCycle: billingCycle,
+                    isUpgrade: isUpgrade ? 'true' : 'false',
+                    currentSubscriptionId: currentSubscriptionId || '',
+                    isFreePlan: 'true',
+                },
+            });
+
+            return NextResponse.json({
+                clientSecret: setupIntent.client_secret,
+                setupIntentId: setupIntent.id,
+                isFreePlan: true
+            });
+        } else {
+            // For paid plans, use PaymentIntent
+            const amountInCents = Math.round(amount * 100);
+
+            const paymentIntent = await stripe.paymentIntents.create({
+                amount: amountInCents,
+                currency: "bgn",
+                metadata: {
+                    userId: session.user.id,
+                    email: session.user.email as string,
+                    planId: planId,
+                    billingCycle: billingCycle,
+                    isUpgrade: isUpgrade ? 'true' : 'false',
+                    currentSubscriptionId: currentSubscriptionId || '',
+                    isFreePlan: 'false',
+                },
+                automatic_payment_methods: {
+                    enabled: true, // активира всички автоматично поддържани методи
+                },
+            });
+
+            return NextResponse.json({
+                clientSecret: paymentIntent.client_secret,
+                paymentIntentId: paymentIntent.id,
+                isFreePlan: false
+            });
+        }
     } catch (error) {
         console.error("Error creating payment intent:", error);
         return NextResponse.json({ message: "Error creating payment intent" }, { status: 500 });

@@ -8,6 +8,17 @@ interface FilterOptions {
     subjects: string[];
     styles: string[];
     tags: string[];
+    authors: Array<{ id: string; name: string }>;
+    priceRange: {
+        min: number;
+        max: number;
+    };
+    sizeRange: {
+        widthMin: number;
+        widthMax: number;
+        heightMin: number;
+        heightMax: number;
+    };
 }
 
 export async function GET(): Promise<NextResponse> {
@@ -41,7 +52,7 @@ export async function GET(): Promise<NextResponse> {
         ];
 
         // Get unique values from existing paintings
-        const [techniques, subjects, styles, dbTags] = await Promise.all([
+        const [techniques, subjects, styles, dbTags, authors, priceRange, sizeRange] = await Promise.all([
             prisma.painting.findMany({
                 select: { technique: true },
                 where: {
@@ -79,6 +90,41 @@ export async function GET(): Promise<NextResponse> {
                     title: { not: { startsWith: 'TEMP_TAG_' } }
                 },
             }),
+            // Get all unique authors
+            prisma.artistProfile.findMany({
+                select: {
+                    id: true,
+                    user: {
+                        select: {
+                            name: true
+                        }
+                    }
+                },
+                where: {
+                    user: {
+                        name: { not: null }
+                    }
+                },
+                distinct: ['userId']
+            }),
+            // Get price range
+            prisma.painting.aggregate({
+                _min: { price: true },
+                _max: { price: true },
+                where: {
+                    // Exclude temporary tag paintings
+                    title: { not: { startsWith: 'TEMP_TAG_' } }
+                }
+            }),
+            // Get size range
+            prisma.painting.aggregate({
+                _min: { widthCm: true, heightCm: true },
+                _max: { widthCm: true, heightCm: true },
+                where: {
+                    // Exclude temporary tag paintings
+                    title: { not: { startsWith: 'TEMP_TAG_' } }
+                }
+            }),
         ]);
 
         // Extract unique tags from all paintings
@@ -89,6 +135,15 @@ export async function GET(): Promise<NextResponse> {
                     .filter(tag => tag && tag.trim().length > 0)
             )
         ).sort();
+
+        // Process authors
+        const allAuthors = authors
+            .filter(author => author.user.name)
+            .map(author => ({
+                id: author.id,
+                name: author.user.name!
+            }))
+            .sort((a, b) => a.name.localeCompare(b.name));
 
         // Combine default options with database options, removing duplicates
         const allTechniques = Array.from(new Set([
@@ -110,6 +165,17 @@ export async function GET(): Promise<NextResponse> {
             subjects: allSubjects.sort(),
             styles: allStyles.sort(),
             tags: allTagsCombined.sort(),
+            authors: allAuthors,
+            priceRange: {
+                min: priceRange._min.price || 0,
+                max: priceRange._max.price || 10000,
+            },
+            sizeRange: {
+                widthMin: sizeRange._min.widthCm || 0,
+                widthMax: sizeRange._max.widthCm || 1000,
+                heightMin: sizeRange._min.heightCm || 0,
+                heightMax: sizeRange._max.heightCm || 1000,
+            },
         };
 
         return NextResponse.json(filterOptions);
@@ -142,6 +208,17 @@ export async function GET(): Promise<NextResponse> {
                 'Романтично', 'Драматично', 'Елегантно', 'Смело', 'Нежно', 'Сила',
                 'Свобода', 'Любов', 'Мечти', 'Реалност', 'Фантазия', 'Емоции'
             ],
+            authors: [],
+            priceRange: {
+                min: 0,
+                max: 10000,
+            },
+            sizeRange: {
+                widthMin: 0,
+                widthMax: 1000,
+                heightMin: 0,
+                heightMax: 1000,
+            },
         };
 
         return NextResponse.json(defaultOptions);

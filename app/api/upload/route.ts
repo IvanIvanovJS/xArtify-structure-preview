@@ -189,8 +189,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             height: result.height,
         };
 
-        // Log successful upload
-        console.log(`Image uploaded successfully: ${uploadResult.publicId} by user ${session.user.id}`);
 
         return NextResponse.json(uploadResult, { status: 200 });
 

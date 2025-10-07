@@ -14,14 +14,18 @@
 @import "../components/credentials/LoginForm/styles/login.css";
 @import "../components/gallery/styles/gallery-page.css";
 @import "../components/gallery/styles/gallery-grid.css";
-@import "../components/gallery/styles/sort-bar.css";
 @import "../components/gallery/styles/active-chips.css";
 @import "../components/gallery/styles/filters-sidebar.css";
 @import "../components/gallery/styles/filters-mobile-sheet.css";
 @import "../components/ui/styles/custom-dropdown.css";
+@import "../components/ui/styles/global-checkbox.css";
 @import "../components/ui/styles/grayscale-toggle.css";
 @import "../components/ui/styles/splash-screen.css";
 @import "../components/artworkCard/styles/artwork-card.css";
+@import "../components/footer/styles/footer.css";
+@import "../components/faq/styles/faq-page.css";
+@import "../components/home/styles/home-faq.css";
+@import "../components/artists/styles/artists.css";
 
 
 /* 1) Color tokens */
@@ -41,6 +45,22 @@
   --color-primary-foreground: #0b0b0f;
   --color-muted: #1a1a20;
   --color-muted-foreground: #9ca3af;
+  /* Background variations */
+  --color-background-10: rgba(11, 11, 15, 0.1);
+  --color-background-20: rgba(11, 11, 15, 0.2);
+  --color-background-30: rgba(11, 11, 15, 0.3);
+  --color-background-40: rgba(11, 11, 15, 0.4);
+  --color-background-50: rgba(11, 11, 15, 0.5);
+  --color-background-60: rgba(11, 11, 15, 0.6);
+  --color-background-70: rgba(11, 11, 15, 0.7);
+  --color-background-80: rgba(11, 11, 15, 0.8);
+  --color-background-90: rgba(11, 11, 15, 0.9);
+  --color-background-95: rgba(11, 11, 15, 0.95);
+  --color-background-98: rgba(11, 11, 15, 0.98);
+  --color-background-99: rgba(11, 11, 15, 0.99);
+  --color-background-100: rgba(11, 11, 15, 1);
+
+
 
   /* Primary color variations with different opacities */
   --color-primary-rgb: 22 255 228;
@@ -96,6 +116,22 @@
   --color-error-1: rgba(239, 68, 68, 0.1);
   --color-error-2: rgba(239, 68, 68, 0.2);
   --color-error-3: rgba(239, 68, 68, 0.3);
+
+  /* Danger colors */
+  --color-danger-rgb: 239 68 68;
+  --color-danger: #ef4444;
+  --color-danger-05: rgba(239, 68, 68, 0.05);
+  --color-danger-10: rgba(239, 68, 68, 0.1);
+  --color-danger-15: rgba(239, 68, 68, 0.15);
+  --color-danger-20: rgba(239, 68, 68, 0.2);
+  --color-danger-30: rgba(239, 68, 68, 0.3);
+  --color-danger-40: rgba(239, 68, 68, 0.4);
+  --color-danger-50: rgba(239, 68, 68, 0.5);
+  --color-danger-60: rgba(239, 68, 68, 0.6);
+  --color-danger-70: rgba(239, 68, 68, 0.7);
+  --color-danger-80: rgba(239, 68, 68, 0.8);
+  --color-danger-90: rgba(239, 68, 68, 0.9);
+  --color-danger-95: rgba(239, 68, 68, 0.95);
 
   /* Success colors */
   --color-success-rgb: 34 197 94;
@@ -195,6 +231,22 @@
     --color-error-1: rgba(239, 68, 68, 0.1);
     --color-error-2: rgba(239, 68, 68, 0.2);
     --color-error-3: rgba(239, 68, 68, 0.3);
+
+    /* Danger colors */
+    --color-danger-rgb: 239 68 68;
+    --color-danger: #ef4444;
+    --color-danger-05: rgba(239, 68, 68, 0.05);
+    --color-danger-10: rgba(239, 68, 68, 0.1);
+    --color-danger-15: rgba(239, 68, 68, 0.15);
+    --color-danger-20: rgba(239, 68, 68, 0.2);
+    --color-danger-30: rgba(239, 68, 68, 0.3);
+    --color-danger-40: rgba(239, 68, 68, 0.4);
+    --color-danger-50: rgba(239, 68, 68, 0.5);
+    --color-danger-60: rgba(239, 68, 68, 0.6);
+    --color-danger-70: rgba(239, 68, 68, 0.7);
+    --color-danger-80: rgba(239, 68, 68, 0.8);
+    --color-danger-90: rgba(239, 68, 68, 0.9);
+    --color-danger-95: rgba(239, 68, 68, 0.95);
 
     /* Success colors */
     --color-success-rgb: 34 197 94;

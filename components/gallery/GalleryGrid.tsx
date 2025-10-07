@@ -20,14 +20,8 @@ interface GalleryGridProps {
 
 // Enhanced Painting Card for Gallery using new ArtworkCard
 function GalleryPaintingCard({ painting, showSold }: { painting: PaintingWithArtist; showSold?: boolean }): React.JSX.Element {
-    // Debug logging
-    if (painting.isSold) {
-        console.log(`GalleryPaintingCard: Painting "${painting.title}" is sold, showSold: ${showSold}`);
-    }
-
     // Don't render sold paintings if showSold is false
     if (painting.isSold && !showSold) {
-        console.log(`GalleryPaintingCard: Hiding sold painting "${painting.title}"`);
         return <></>;
     }
 
@@ -73,10 +67,6 @@ export default function GalleryGrid({
     totalPages,
     showSold = false
 }: GalleryGridProps): React.JSX.Element {
-    // Debug logging
-    console.log(`GalleryGrid: showSold = ${showSold}, total paintings: ${paintings.length}`);
-    const soldCount = paintings.filter(p => p.isSold).length;
-    console.log(`GalleryGrid: sold paintings count: ${soldCount}`);
     const router = useRouter();
     const searchParams = useSearchParams();
     const [isLoading, startTransition] = useTransition();
@@ -91,17 +81,8 @@ export default function GalleryGrid({
                 const newSearchParams = new URLSearchParams(searchParams.toString());
                 newSearchParams.set('page', (currentPage + 1).toString());
 
-                // Fetch next page
-                const response = await fetch(`/api/paintings?${newSearchParams.toString()}`);
-                if (!response.ok) throw new Error('Failed to fetch more paintings');
-
-                await response.json(); // Response data - will be used later for pagination
-
-                // Update URL with new page
+                // Update URL with new page - this will trigger a server-side fetch
                 router.push(`/gallery?${newSearchParams.toString()}`);
-
-                // Add new paintings to the list
-                // setLoadingPaintings(data.items); // Will be implemented later
             } catch (error) {
                 console.error('Error loading more paintings:', error);
                 // You might want to show a toast notification here

@@ -4,6 +4,7 @@ import { useSession } from "next-auth/react";
 import BannerVideo from "@/components/home/BannerVideo";
 import HomeHero from "@/components/home/HomeHero";
 import CoursesAdv from "@/components/home/CoursesAdv";
+import HomeFAQ from "@/components/home/HomeFAQ";
 
 export default function HomePage() {
   const { status } = useSession();
@@ -32,6 +33,8 @@ export default function HomePage() {
         buttonText="Научи повече"
       />
 
+      {/* HomeFAQ секция */}
+      <HomeFAQ />
 
     </>
   );

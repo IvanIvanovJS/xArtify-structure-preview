@@ -4,7 +4,13 @@ import { NextRequest, NextResponse } from "next/server";
 export async function middleware(request: NextRequest) {
     // 🔒 CRITICAL: Basic session validation for protected routes
     const { pathname } = request.nextUrl;
-    const protectedRoutes = ['/admin', '/upload-artwork', '/my-profile', '/create-artist-profile'];
+    const protectedRoutes = [
+        '/admin',
+        '/upload-artwork',
+        '/my-profile',
+        '/become-an-artist/payment',
+        '/become-an-artist/form'
+    ];
     const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
 
     if (isProtectedRoute) {

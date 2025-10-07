@@ -40,7 +40,7 @@ const CheckoutForm = ({ bio, phoneNumber, userId }: { bio: string; phoneNumber: 
 
         if (paymentIntent && paymentIntent.status === "succeeded") {
             try {
-                const response = await fetch("/api/create-artist-profile", {
+                const response = await fetch("/api/become-an-artist", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ bio, phoneNumber, userId, paymentIntentId: paymentIntent.id }),
