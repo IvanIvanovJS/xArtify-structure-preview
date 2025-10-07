@@ -80,6 +80,31 @@ const CheckoutForm = ({
                 console.error(error);
                 setMessage("Възникна грешка при свързване със сървъра.");
             }
+        } else if (isFreePlan && setupIntentId) {
+            // Handle SetupIntent for free plans
+            try {
+                const response = await fetch("/api/subscription/process-upgrade", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        planId,
+                        billingCycle,
+                        setupIntentId: setupIntentId,
+                        currentSubscriptionId
+                    }),
+                });
+
+                if (response.ok) {
+                    alert("Планът беше успешно променен на безплатен!");
+                    router.push('/my-profile/subscription');
+                } else {
+                    const errorData = await response.json();
+                    setMessage(`Грешка при промяна на плана: ${errorData.message}`);
+                }
+            } catch (error) {
+                console.error(error);
+                setMessage("Възникна грешка при свързване със сървъра.");
+            }
         }
 
         setIsLoading(false);
@@ -117,7 +142,7 @@ const CheckoutForm = ({
                     disabled={!stripe || !elements || isLoading || !agreeToTerms}
                     className="payment-button"
                 >
-                    {isLoading ? "Плащане..." : "Плати и надгради плана"}
+                    {isLoading ? "Обработка..." : (isFreePlan ? "Активирай безплатния план" : "Плати и надгради плана")}
                 </button>
             </div>
 
@@ -139,6 +164,8 @@ export default function SubscriptionPaymentClient({
     const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
     const [clientSecret, setClientSecret] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+    const [isFreePlan, setIsFreePlan] = useState(false);
+    const [setupIntentId, setSetupIntentId] = useState("");
     const router = useRouter();
 
     const formatPrice = (cycle: 'monthly' | 'yearly') => {
@@ -172,6 +199,10 @@ export default function SubscriptionPaymentClient({
 
             const data = await response.json();
             setClientSecret(data.clientSecret);
+            setIsFreePlan(data.isFreePlan || false);
+            if (data.setupIntentId) {
+                setSetupIntentId(data.setupIntentId);
+            }
         } catch (error) {
             console.error(error);
             alert("Възникна грешка при стартиране на плащането.");

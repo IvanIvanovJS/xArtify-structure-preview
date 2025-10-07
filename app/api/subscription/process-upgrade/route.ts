@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import Stripe from "stripe";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-    apiVersion: "2024-12-18.acacia",
+    apiVersion: "2025-07-30.basil",
 });
 
 export async function POST(req: NextRequest) {
@@ -16,17 +16,53 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
         }
 
-        const { planId, billingCycle, paymentIntentId, currentSubscriptionId } = await req.json();
+        const { planId, billingCycle, paymentIntentId, setupIntentId, currentSubscriptionId } = await req.json();
 
-        if (!planId || !billingCycle || !paymentIntentId || !currentSubscriptionId) {
+        if (!planId || !billingCycle || !currentSubscriptionId || (!paymentIntentId && !setupIntentId)) {
             return NextResponse.json({ message: "Missing required fields" }, { status: 400 });
         }
 
-        // Verify payment intent with Stripe
-        const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+        let isFreePlan = false;
+        let paymentData: {
+            id: string;
+            amount: number;
+            currency: string;
+            status: string;
+            metadata: Record<string, string>;
+        } | null = null;
 
-        if (paymentIntent.status !== "succeeded") {
-            return NextResponse.json({ message: "Payment not completed" }, { status: 400 });
+        if (setupIntentId) {
+            // Handle SetupIntent for free plans
+            const setupIntent = await stripe.setupIntents.retrieve(setupIntentId);
+            isFreePlan = setupIntent.metadata?.isFreePlan === 'true';
+
+            if (setupIntent.status !== "succeeded") {
+                return NextResponse.json({ message: "Payment method not saved" }, { status: 400 });
+            }
+
+            paymentData = {
+                id: setupIntentId,
+                amount: 0,
+                currency: "bgn",
+                status: "succeeded",
+                metadata: setupIntent.metadata || {}
+            };
+        } else if (paymentIntentId) {
+            // Handle PaymentIntent for paid plans
+            const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+            isFreePlan = paymentIntent.metadata?.isFreePlan === 'true';
+
+            if (paymentIntent.status !== "succeeded") {
+                return NextResponse.json({ message: "Payment not completed" }, { status: 400 });
+            }
+
+            paymentData = {
+                id: paymentIntentId,
+                amount: paymentIntent.amount,
+                currency: paymentIntent.currency,
+                status: "succeeded",
+                metadata: paymentIntent.metadata || {}
+            };
         }
 
         // Verify plan exists
@@ -38,6 +74,10 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ message: "Plan not found" }, { status: 404 });
         }
 
+        if (!paymentData) {
+            return NextResponse.json({ message: "Payment data not found" }, { status: 400 });
+        }
+
         // Update subscription with transaction
         const result = await prisma.$transaction(async (tx) => {
             // Update the subscription
@@ -47,7 +87,7 @@ export async function POST(req: NextRequest) {
                     planId: plan.id,
                     billingCycle: billingCycle,
                     status: 'active',
-                    paymentIntentId: paymentIntentId,
+                    paymentIntentId: isFreePlan ? null : paymentData.id,
                     updatedAt: new Date()
                 },
                 include: {
@@ -58,17 +98,19 @@ export async function POST(req: NextRequest) {
             // Store payment information
             await tx.paymentIntent.create({
                 data: {
-                    id: paymentIntentId,
+                    id: paymentData.id,
                     userId: session.user.id,
                     planId: planId,
                     billingCycle: billingCycle,
-                    amount: paymentIntent.amount,
-                    currency: paymentIntent.currency,
+                    amount: paymentData.amount,
+                    currency: paymentData.currency,
                     status: "succeeded",
                     metadata: {
                         planName: plan.name,
                         planDisplayName: plan.displayName,
-                        isUpgrade: true
+                        isUpgrade: true,
+                        isFreePlan: isFreePlan,
+                        intentType: setupIntentId ? 'setup' : 'payment'
                     }
                 }
             });

@@ -115,14 +115,18 @@ export async function POST(req: NextRequest) {
                         }
                     });
                 } else if (paymentInfo && paymentInfo.status === 'succeeded') {
-                    // Create paid subscription with payment info
+                    // Create subscription with payment info (handles both free and paid plans)
+                    const isFreePlan = paymentInfo.metadata?.isFreePlan === true ||
+                        paymentInfo.metadata?.isFreePlan === 'true' ||
+                        (paymentInfo.amount === 0 || paymentInfo.amount === 1);
+
                     await tx.artistSubscription.create({
                         data: {
                             artistId: artistProfile.id,
                             planId: selectedPlan.id,
                             status: 'active',
                             billingCycle: paymentInfo.billingCycle,
-                            paymentIntentId: paymentInfo.id,
+                            paymentIntentId: isFreePlan ? null : paymentInfo.id, // Don't store payment intent for free plans
                         }
                     });
                 } else {

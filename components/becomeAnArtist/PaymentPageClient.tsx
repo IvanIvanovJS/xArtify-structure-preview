@@ -74,6 +74,29 @@ const CheckoutForm = ({
                 console.error(error);
                 setMessage("Възникна грешка при свързване със сървъра.");
             }
+        } else if (isFreePlan && setupIntentId) {
+            // Handle SetupIntent for free plans
+            try {
+                const response = await fetch("/api/become-an-artist/process-payment", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        planId,
+                        billingCycle,
+                        setupIntentId: setupIntentId
+                    }),
+                });
+
+                if (response.ok) {
+                    router.push(`/become-an-artist/form?planId=${planId}&setupIntentId=${setupIntentId}`);
+                } else {
+                    const errorData = await response.json();
+                    setMessage(`Грешка при активиране на плана: ${errorData.message}`);
+                }
+            } catch (error) {
+                console.error(error);
+                setMessage("Възникна грешка при свързване със сървъра.");
+            }
         }
 
         setIsLoading(false);
@@ -111,7 +134,7 @@ const CheckoutForm = ({
                     disabled={!stripe || !elements || isLoading || !agreeToTerms}
                     className="payment-button"
                 >
-                    {isLoading ? "Плащане..." : "Плати и активирай абонамента"}
+                    {isLoading ? "Обработка..." : (isFreePlan ? "Активирай безплатния план" : "Плати и активирай абонамента")}
                 </button>
             </div>
 
@@ -128,6 +151,8 @@ export default function PaymentPageClient({ plan, userId }: PaymentPageClientPro
     const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
     const [clientSecret, setClientSecret] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+    const [isFreePlan, setIsFreePlan] = useState(false);
+    const [setupIntentId, setSetupIntentId] = useState("");
 
     const formatPrice = (cycle: 'monthly' | 'yearly') => {
         const price = cycle === 'yearly' ? plan.yearlyPrice : plan.monthlyPrice;
@@ -158,6 +183,10 @@ export default function PaymentPageClient({ plan, userId }: PaymentPageClientPro
 
             const data = await response.json();
             setClientSecret(data.clientSecret);
+            setIsFreePlan(data.isFreePlan || false);
+            if (data.setupIntentId) {
+                setSetupIntentId(data.setupIntentId);
+            }
         } catch (error) {
             console.error(error);
             alert("Възникна грешка при стартиране на плащането.");
