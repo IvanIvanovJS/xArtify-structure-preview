@@ -17,11 +17,15 @@ interface PaymentPageClientProps {
 const CheckoutForm = ({
     planId,
     billingCycle,
-    userId
+    userId,
+    isFreePlan,
+    setupIntentId
 }: {
     planId: string;
     billingCycle: 'monthly' | 'yearly';
     userId: string;
+    isFreePlan: boolean;
+    setupIntentId: string;
 }) => {
     const stripe = useStripe();
     const elements = useElements();
@@ -269,6 +273,8 @@ export default function PaymentPageClient({ plan, userId }: PaymentPageClientPro
                                 planId={plan.id}
                                 billingCycle={billingCycle}
                                 userId={userId}
+                                isFreePlan={isFreePlan}
+                                setupIntentId={setupIntentId}
                             />
                         </Elements>
                     </div>
