@@ -8,7 +8,6 @@ export const runtime = "nodejs";
 
 interface PaymentPageProps {
     searchParams: Promise<{
-        artistId?: string;
         planId?: string;
     }>;
 }
@@ -21,51 +20,39 @@ export default async function PaymentPage({ searchParams }: PaymentPageProps) {
     }
 
     const resolvedSearchParams = await searchParams;
-    const { artistId, planId } = resolvedSearchParams;
+    const { planId } = resolvedSearchParams;
 
-    if (!artistId || !planId) {
+    if (!planId) {
         redirect('/become-an-artist/plans');
     }
 
-    // Get artist profile and plan details
-    const [artistProfile, plan] = await Promise.all([
-        prisma.artistProfile.findUnique({
-            where: { id: artistId },
-            include: { user: true }
-        }),
-        prisma.subscriptionPlan.findUnique({
-            where: { id: planId }
-        })
-    ]);
-
-    if (!artistProfile || !plan) {
-        redirect('/become-an-artist/plans');
-    }
-
-    // Check if user owns this artist profile
-    if (artistProfile.userId !== session.user.id) {
-        redirect('/become-an-artist/plans');
-    }
-
-    // Check if artist already has a subscription
-    const existingSubscription = await prisma.artistSubscription.findUnique({
-        where: { artistId }
+    // Get plan details
+    const plan = await prisma.subscriptionPlan.findUnique({
+        where: { id: planId }
     });
 
-    if (existingSubscription) {
-        redirect(`/artists/${artistId}`);
+    if (!plan) {
+        redirect('/become-an-artist/plans');
+    }
+
+    // Check if user already has artist profile
+    const existingProfile = await prisma.artistProfile.findUnique({
+        where: { userId: session.user.id }
+    });
+
+    if (existingProfile) {
+        redirect(`/artists/${existingProfile.id}`);
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-            <div className="container mx-auto px-4 py-8">
-                <PaymentPageClient
-                    artistProfile={artistProfile}
-                    plan={plan}
-                    userId={session.user.id}
-                />
-            </div>
+
+        <div className="container mx-auto px-4 py-8">
+            <PaymentPageClient
+                plan={plan}
+                userId={session.user.id}
+            />
         </div>
+
     );
 }
 

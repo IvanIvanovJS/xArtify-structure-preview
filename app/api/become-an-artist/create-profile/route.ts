@@ -20,7 +20,8 @@ const CreateArtistProfileSchema = z.object({
         answer: z.string().min(1, 'Отговорът е задължителен')
     })).default([]),
     userId: z.string().min(1, 'User ID е задължителен'),
-    planId: z.string().optional()
+    planId: z.string().optional(),
+    paymentIntentId: z.string().optional()
 });
 
 export async function POST(req: NextRequest) {
@@ -49,11 +50,19 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ message: 'Invalid phone number' }, { status: 400 });
         }
 
-        // Get the selected plan
+        // Get the selected plan and payment info
         let selectedPlan = null;
+        let paymentInfo = null;
+
         if (validatedData.planId) {
             selectedPlan = await prisma.subscriptionPlan.findUnique({
                 where: { id: validatedData.planId }
+            });
+        }
+
+        if (validatedData.paymentIntentId) {
+            paymentInfo = await prisma.paymentIntent.findUnique({
+                where: { id: validatedData.paymentIntentId }
             });
         }
 
@@ -93,26 +102,40 @@ export async function POST(req: NextRequest) {
                 });
             }
 
-            // Create subscription if plan is selected and it's not free
-            if (selectedPlan && selectedPlan.name !== 'Free') {
-                await tx.artistSubscription.create({
-                    data: {
-                        artistId: artistProfile.id,
-                        planId: selectedPlan.id,
-                        status: 'pending', // Will be activated after payment
-                        billingCycle: 'monthly', // Default, will be updated after payment
-                    }
-                });
-            } else if (selectedPlan && selectedPlan.name === 'Free') {
-                // Create free subscription immediately
-                await tx.artistSubscription.create({
-                    data: {
-                        artistId: artistProfile.id,
-                        planId: selectedPlan.id,
-                        status: 'active',
-                        billingCycle: 'monthly',
-                    }
-                });
+            // Create subscription based on plan and payment status
+            if (selectedPlan) {
+                if (selectedPlan.name === 'Free') {
+                    // Create free subscription immediately
+                    await tx.artistSubscription.create({
+                        data: {
+                            artistId: artistProfile.id,
+                            planId: selectedPlan.id,
+                            status: 'active',
+                            billingCycle: 'monthly',
+                        }
+                    });
+                } else if (paymentInfo && paymentInfo.status === 'succeeded') {
+                    // Create paid subscription with payment info
+                    await tx.artistSubscription.create({
+                        data: {
+                            artistId: artistProfile.id,
+                            planId: selectedPlan.id,
+                            status: 'active',
+                            billingCycle: paymentInfo.billingCycle,
+                            paymentIntentId: paymentInfo.id,
+                        }
+                    });
+                } else {
+                    // Create pending subscription for paid plans without payment
+                    await tx.artistSubscription.create({
+                        data: {
+                            artistId: artistProfile.id,
+                            planId: selectedPlan.id,
+                            status: 'pending',
+                            billingCycle: 'monthly',
+                        }
+                    });
+                }
             }
 
             return { artistProfile, updatedUser, selectedPlan };

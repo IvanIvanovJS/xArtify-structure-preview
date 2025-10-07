@@ -9,6 +9,7 @@ export const runtime = "nodejs";
 interface FormPageProps {
     searchParams: Promise<{
         planId?: string;
+        paymentIntentId?: string;
     }>;
 }
 
@@ -29,14 +30,21 @@ export default async function ArtistFormPage({ searchParams }: FormPageProps) {
         redirect(`/artists/${existingProfile.id}`);
     }
 
-    // Get the selected plan
+    // Get the selected plan and payment info
     const resolvedSearchParams = await searchParams;
-    const planId = resolvedSearchParams.planId;
+    const { planId, paymentIntentId } = resolvedSearchParams;
     let selectedPlan = null;
+    let paymentInfo = null;
 
     if (planId) {
         selectedPlan = await prisma.subscriptionPlan.findUnique({
             where: { id: planId }
+        });
+    }
+
+    if (paymentIntentId) {
+        paymentInfo = await prisma.paymentIntent.findUnique({
+            where: { id: paymentIntentId }
         });
     }
 
@@ -65,6 +73,7 @@ export default async function ArtistFormPage({ searchParams }: FormPageProps) {
                 userId={session.user.id}
                 userData={user}
                 selectedPlan={selectedPlan}
+                paymentInfo={paymentInfo}
             />
         </div>
     );

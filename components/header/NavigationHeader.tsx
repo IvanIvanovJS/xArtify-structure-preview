@@ -239,7 +239,7 @@ export default function NavigationHeader(): JSX.Element {
             { href: "/gallery", label: "Галерия" },
             { href: "/artists", label: "Артисти" },
             session?.user?.artistProfile
-                ? { href: "/upload-artwork", label: "Качи картина" }
+                ? { href: "/my-profile/subscription", label: "Управление на абонамента" }
                 : { href: "/become-an-artist/plans", label: "Стани артист" },
         ],
         [session]

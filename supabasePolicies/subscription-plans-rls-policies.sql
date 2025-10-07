@@ -240,3 +240,38 @@ CREATE POLICY "artist_profiles_delete" ON "ArtistProfile"
     )
   );
 
+-- Enable RLS on payment intents table
+ALTER TABLE "payment_intents" ENABLE ROW LEVEL SECURITY;
+
+-- Users can view their own payment intents
+CREATE POLICY "payment_intents_select" ON "payment_intents"
+  FOR SELECT USING ("userId" = auth.uid()::text);
+
+-- Users can insert their own payment intents
+CREATE POLICY "payment_intents_insert" ON "payment_intents"
+  FOR INSERT WITH CHECK ("userId" = auth.uid()::text);
+
+-- Users can update their own payment intents
+CREATE POLICY "payment_intents_update" ON "payment_intents"
+  FOR UPDATE USING ("userId" = auth.uid()::text);
+
+-- Admins can view all payment intents
+CREATE POLICY "payment_intents_admin_select" ON "payment_intents"
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM "User" 
+      WHERE "User".id = auth.uid()::text 
+      AND "User".role = 'ADMIN'
+    )
+  );
+
+-- Admins can update all payment intents
+CREATE POLICY "payment_intents_admin_update" ON "payment_intents"
+  FOR UPDATE USING (
+    EXISTS (
+      SELECT 1 FROM "User" 
+      WHERE "User".id = auth.uid()::text 
+      AND "User".role = 'ADMIN'
+    )
+  );
+

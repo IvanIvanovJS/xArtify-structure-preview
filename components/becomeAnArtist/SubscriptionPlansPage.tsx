@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { SubscriptionPlan } from "@prisma/client";
 import "./styles/subscription-plans-page.css";
 
@@ -15,6 +16,7 @@ export default function SubscriptionPlansPage({ plans, userId }: SubscriptionPla
     const [openRequirement, setOpenRequirement] = useState<number | null>(null);
     const [openFaq, setOpenFaq] = useState<number | null>(null);
     const router = useRouter();
+    const { data: session } = useSession();
 
 
     const formatPrice = (plan: SubscriptionPlan, cycle: 'monthly' | 'yearly') => {
@@ -30,7 +32,13 @@ export default function SubscriptionPlansPage({ plans, userId }: SubscriptionPla
     };
 
     const handleSelectPlan = (planId: string) => {
-        router.push(`/become-an-artist/form?planId=${planId}`);
+        // Check if user is logged in
+        if (!session?.user) {
+            router.push('/login');
+            return;
+        }
+
+        router.push(`/become-an-artist/payment?planId=${planId}`);
     };
 
     const requirements = [

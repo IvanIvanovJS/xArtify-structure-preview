@@ -206,10 +206,11 @@ model ArtistSubscription {
   planId            String
   artist            ArtistProfile @relation(fields: [artistId], references: [id], onDelete: Cascade)
   plan              SubscriptionPlan @relation(fields: [planId], references: [id])
-  status            String    // "active", "cancelled", "expired", "past_due"
+  status            String    // "active", "cancelled", "expired", "past_due", "pending"
   billingCycle      String    // "monthly", "yearly"
   stripeSubscriptionId String? // Stripe Subscription ID
   stripeCustomerId  String?   // Stripe Customer ID
+  paymentIntentId   String?   // Payment Intent ID for one-time payments
   currentPeriodStart DateTime?
   currentPeriodEnd  DateTime?
   cancelAtPeriodEnd Boolean   @default(false)
@@ -217,6 +218,22 @@ model ArtistSubscription {
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
   
+}
+
+// Модел за съхранение на информация за плащания
+model PaymentIntent {
+  id            String    @id @default(cuid())
+  userId        String
+  planId        String
+  billingCycle  String    // "monthly", "yearly"
+  amount        Int       // Amount in cents
+  currency      String    @default("eur")
+  status        String    // "succeeded", "failed", "pending"
+  metadata      Json?     // Additional metadata
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  @@map("payment_intents")
 }
 
 // Модел за често задавани въпроси на артисти

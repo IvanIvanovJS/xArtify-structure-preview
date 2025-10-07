@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { SubscriptionPlan, User } from "@prisma/client";
+import { SubscriptionPlan, User, PaymentIntent } from "@prisma/client";
 import PhoneInput from "react-phone-number-input";
 import "react-phone-number-input/style.css";
 import { isValidPhoneNumber } from "react-phone-number-input";
@@ -14,6 +14,7 @@ interface ArtistProfileFormProps {
     userId: string;
     userData: Pick<User, 'name' | 'email' | 'image'> | null;
     selectedPlan: SubscriptionPlan | null;
+    paymentInfo: PaymentIntent | null;
 }
 
 interface FAQItem {
@@ -44,7 +45,7 @@ const sampleFAQs = [
     }
 ];
 
-export default function ArtistProfileForm({ userId, userData, selectedPlan }: ArtistProfileFormProps) {
+export default function ArtistProfileForm({ userId, userData, selectedPlan, paymentInfo }: ArtistProfileFormProps) {
     const router = useRouter();
     const { update } = useSession();
 
@@ -110,7 +111,8 @@ export default function ArtistProfileForm({ userId, userData, selectedPlan }: Ar
                 body: JSON.stringify({
                     ...formData,
                     userId,
-                    planId: selectedPlan?.id
+                    planId: selectedPlan?.id,
+                    paymentIntentId: paymentInfo?.id
                 }),
             });
 
@@ -118,13 +120,8 @@ export default function ArtistProfileForm({ userId, userData, selectedPlan }: Ar
                 const result = await response.json();
                 await update({ ...userData, isArtist: true });
 
-                if (selectedPlan?.name === 'Free') {
-                    // For free plan, redirect directly to artist profile
-                    router.push(`/artists/${result.artistProfile.id}`);
-                } else {
-                    // For paid plans, redirect to payment page
-                    router.push(`/become-an-artist/payment?artistId=${result.artistProfile.id}&planId=${selectedPlan?.id}`);
-                }
+                // Redirect to artist profile after successful creation
+                router.push(`/artists/${result.artistProfile.id}`);
             } else {
                 const errorData = await response.json();
                 alert(`Грешка при създаване на профил: ${errorData.message}`);

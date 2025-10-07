@@ -2,26 +2,30 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { SubscriptionPlan } from "@prisma/client";
+import { ArtistSubscription, SubscriptionPlan } from "@prisma/client";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements, PaymentElement, useStripe, useElements } from "@stripe/react-stripe-js";
-import "./styles/payment-page.css";
+import "../becomeAnArtist/styles/payment-page.css";
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY as string);
 
-interface PaymentPageClientProps {
+interface SubscriptionPaymentClientProps {
     plan: SubscriptionPlan;
+    currentSubscription: ArtistSubscription & { plan: SubscriptionPlan };
+    paymentIntentId: string;
     userId: string;
 }
 
 const CheckoutForm = ({
     planId,
     billingCycle,
-    userId
+    userId,
+    currentSubscriptionId
 }: {
     planId: string;
     billingCycle: 'monthly' | 'yearly';
     userId: string;
+    currentSubscriptionId: string;
 }) => {
     const stripe = useStripe();
     const elements = useElements();
@@ -54,21 +58,23 @@ const CheckoutForm = ({
 
         if (paymentIntent && paymentIntent.status === "succeeded") {
             try {
-                const response = await fetch("/api/become-an-artist/process-payment", {
+                const response = await fetch("/api/subscription/process-upgrade", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         planId,
                         billingCycle,
-                        paymentIntentId: paymentIntent.id
+                        paymentIntentId: paymentIntent.id,
+                        currentSubscriptionId
                     }),
                 });
 
                 if (response.ok) {
-                    router.push(`/become-an-artist/form?planId=${planId}&paymentIntentId=${paymentIntent.id}`);
+                    alert("Планът беше успешно надграден!");
+                    router.push('/my-profile/subscription');
                 } else {
                     const errorData = await response.json();
-                    setMessage(`Грешка при обработка на плащането: ${errorData.message}`);
+                    setMessage(`Грешка при надграждане на плана: ${errorData.message}`);
                 }
             } catch (error) {
                 console.error(error);
@@ -100,7 +106,7 @@ const CheckoutForm = ({
                         </svg>
                     </div>
                     <span className="form-checkbox-label">
-                        Съгласявам се с <a href="/terms" target="_blank" className="terms-link">правилата на сайта</a> и <a href="/privacy" target="_blank" className="terms-link">политиката за поверителност</a> за артистични профили
+                        Съгласявам се с <a href="/terms" target="_blank" className="terms-link">правилата на сайта</a> и <a href="/privacy" target="_blank" className="terms-link">политиката за поверителност</a> за промяна на абонамента
                     </span>
                 </label>
             </div>
@@ -111,7 +117,7 @@ const CheckoutForm = ({
                     disabled={!stripe || !elements || isLoading || !agreeToTerms}
                     className="payment-button"
                 >
-                    {isLoading ? "Плащане..." : "Плати и активирай абонамента"}
+                    {isLoading ? "Плащане..." : "Плати и надгради плана"}
                 </button>
             </div>
 
@@ -124,10 +130,16 @@ const CheckoutForm = ({
     );
 };
 
-export default function PaymentPageClient({ plan, userId }: PaymentPageClientProps) {
+export default function SubscriptionPaymentClient({
+    plan,
+    currentSubscription,
+    paymentIntentId,
+    userId
+}: SubscriptionPaymentClientProps) {
     const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
     const [clientSecret, setClientSecret] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+    const router = useRouter();
 
     const formatPrice = (cycle: 'monthly' | 'yearly') => {
         const price = cycle === 'yearly' ? plan.yearlyPrice : plan.monthlyPrice;
@@ -152,7 +164,9 @@ export default function PaymentPageClient({ plan, userId }: PaymentPageClientPro
                 body: JSON.stringify({
                     planId: plan.id,
                     billingCycle,
-                    isArtist: true
+                    isArtist: true,
+                    isUpgrade: true,
+                    currentSubscriptionId: currentSubscription.id
                 }),
             });
 
@@ -187,18 +201,18 @@ export default function PaymentPageClient({ plan, userId }: PaymentPageClientPro
             <div className="payment-container">
                 <div className="payment-header">
                     <button
-                        onClick={() => window.history.back()}
+                        onClick={() => router.back()}
                         className="back-button"
                     >
                         ← Назад
                     </button>
-                    <h1 className="payment-title">Завършете плащането</h1>
+                    <h1 className="payment-title">Надграждане на плана</h1>
                 </div>
 
                 <div className="payment-content">
                     <div className="payment-summary">
                         <div className="summary-header">
-                            <h2 className="summary-title">Абонирайте се за {plan.displayName}</h2>
+                            <h2 className="summary-title">Надграждане към {plan.displayName}</h2>
                             <div className="summary-price">
                                 <span className="price-amount">{formatPrice(billingCycle)}€</span>
                                 <span className="price-period">за {billingCycle === 'yearly' ? 'година' : 'месец'}</span>
@@ -207,7 +221,11 @@ export default function PaymentPageClient({ plan, userId }: PaymentPageClientPro
 
                         <div className="summary-details">
                             <div className="summary-item">
-                                <span className="summary-label">План:</span>
+                                <span className="summary-label">Текущ план:</span>
+                                <span className="summary-value">{currentSubscription.plan.displayName}</span>
+                            </div>
+                            <div className="summary-item">
+                                <span className="summary-label">Нов план:</span>
                                 <span className="summary-value">{plan.displayName}</span>
                             </div>
                             <div className="summary-item">
@@ -240,6 +258,7 @@ export default function PaymentPageClient({ plan, userId }: PaymentPageClientPro
                                 planId={plan.id}
                                 billingCycle={billingCycle}
                                 userId={userId}
+                                currentSubscriptionId={currentSubscription.id}
                             />
                         </Elements>
                     </div>
@@ -252,18 +271,18 @@ export default function PaymentPageClient({ plan, userId }: PaymentPageClientPro
         <div className="payment-container">
             <div className="payment-header">
                 <button
-                    onClick={() => window.history.back()}
+                    onClick={() => router.back()}
                     className="back-button"
                 >
                     ← Назад
                 </button>
-                <h1 className="payment-title">Плащане за абонамент</h1>
+                <h1 className="payment-title">Надграждане на плана</h1>
             </div>
 
             <div className="payment-content">
                 <div className="payment-summary">
                     <div className="summary-header">
-                        <h2 className="summary-title">Абонирайте се за {plan.displayName}</h2>
+                        <h2 className="summary-title">Надграждане към {plan.displayName}</h2>
                         <div className="summary-price">
                             <span className="price-amount">{formatPrice(billingCycle)}€</span>
                             <span className="price-period">за {billingCycle === 'yearly' ? 'година' : 'месец'}</span>
@@ -272,7 +291,11 @@ export default function PaymentPageClient({ plan, userId }: PaymentPageClientPro
 
                     <div className="summary-details">
                         <div className="summary-item">
-                            <span className="summary-label">План:</span>
+                            <span className="summary-label">Текущ план:</span>
+                            <span className="summary-value">{currentSubscription.plan.displayName}</span>
+                        </div>
+                        <div className="summary-item">
+                            <span className="summary-label">Нов план:</span>
                             <span className="summary-value">{plan.displayName}</span>
                         </div>
                         <div className="summary-item">

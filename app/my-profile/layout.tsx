@@ -36,10 +36,10 @@ interface NavItem {
 
 const navItems: NavItem[] = [
     {
-        id: "become-artist",
-        title: "Стани артист",
+        id: "subscription",
+        title: "Управление на абонамента",
         icon: Star,
-        href: "/become-an-artist/plans"
+        href: "/my-profile/subscription"
     },
     {
         id: "add-artwork",
