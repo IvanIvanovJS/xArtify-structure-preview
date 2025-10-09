@@ -32,7 +32,7 @@ export default function HomeHero() {
                                 onClick={() => setShowLogoutConfirm(true)}
                                 className="footer-link inline-flex items-center gap-2"
                             >
-                                <LogOut size={18} /> Изход
+                                <LogOut size={18} /> Тестов
                             </button>
                         ) : (
                             <Link href="/login" className="footer-link inline-flex items-center gap-2">
