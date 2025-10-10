@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { prisma } from "@/lib/prisma";
 import Stripe from "stripe";
+import { SubscriptionPlan } from "@prisma/client";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
     apiVersion: "2025-07-30.basil",
@@ -152,14 +153,8 @@ export async function POST(req: NextRequest) {
     }
 }
 
-async function getOrCreateStripePrice(plan: any, billingCycle: 'monthly' | 'yearly') {
+async function getOrCreateStripePrice(plan: SubscriptionPlan, billingCycle: 'monthly' | 'yearly') {
     try {
-        // Check if price already exists in Stripe
-        const existingPrices = await stripe.prices.list({
-            product: plan.id, // Using plan ID as product identifier
-            active: true,
-        });
-
         const priceKey = billingCycle === 'yearly' ? 'stripeYearlyPriceId' : 'stripePriceId';
         const existingPriceId = plan[priceKey];
 
