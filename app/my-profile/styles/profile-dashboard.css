@@ -73,24 +73,6 @@
     overflow-y: auto;
 }
 
-/* Custom scrollbar for sidebar */
-.profile-dashboard__sidebar::-webkit-scrollbar {
-    width: 6px;
-}
-
-.profile-dashboard__sidebar::-webkit-scrollbar-track {
-    background: var(--color-muted);
-}
-
-.profile-dashboard__sidebar::-webkit-scrollbar-thumb {
-    background: var(--color-primary-30);
-    border-radius: 3px;
-}
-
-.profile-dashboard__sidebar::-webkit-scrollbar-thumb:hover {
-    background: var(--color-primary-50);
-}
-
 .profile-dashboard__nav {
     flex: 1;
     padding: 1rem 0;

@@ -3,7 +3,10 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArtistSubscription, SubscriptionPlan } from "@prisma/client";
+import { getSubscriptionStatusMessage, isSubscriptionActive, getDaysUntilExpiration } from "@/lib/subscription-utils";
 import "./styles/subscription-management.css";
+import "./styles/subscription-status.css";
+import "./styles/confirmation-modal.css";
 
 interface SubscriptionManagementClientProps {
     currentSubscription: (ArtistSubscription & { plan: SubscriptionPlan }) | null;
@@ -42,15 +45,15 @@ export default function SubscriptionManagementClient({
             return;
         }
 
-        // If it's the free plan, handle downgrade
-        if (plan.name === 'Hobby') {
-            if (confirm('Сигурни ли сте, че искате да преминете към безплатния план? Ще загубите достъпа до премиум функциите.')) {
-                await handleDowngrade(planId);
-            }
+        const isDowngrade = currentSubscription && plan.monthlyPrice < currentSubscription.plan.monthlyPrice;
+
+        // For downgrades, redirect to payment page with downgrade flag
+        if (isDowngrade) {
+            router.push(`/my-profile/subscription/payment?planId=${planId}&isDowngrade=true`);
             return;
         }
 
-        // For paid plans, redirect to payment
+        // For upgrades, redirect to payment
         setSelectedPlan(planId);
         setIsLoading(true);
 
@@ -98,6 +101,71 @@ export default function SubscriptionManagementClient({
             } else {
                 const errorData = await response.json();
                 alert(`Грешка при промяна на плана: ${errorData.message}`);
+            }
+        } catch (error) {
+            console.error(error);
+            alert("Възникна грешка при свързване със сървъра.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const [showCancelConfirmation, setShowCancelConfirmation] = useState(false);
+
+    const handleCancelSubscription = async () => {
+        if (!currentSubscription) return;
+        setShowCancelConfirmation(true);
+    };
+
+    const handleConfirmCancel = async () => {
+        if (!currentSubscription) return;
+
+        setIsLoading(true);
+        try {
+            const response = await fetch("/api/subscription/cancel", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    subscriptionId: currentSubscription.id,
+                    cancelAtPeriodEnd: true
+                }),
+            });
+
+            if (response.ok) {
+                alert("Абонаментът ще бъде спрян в края на текущия период.");
+                router.refresh();
+            } else {
+                const errorData = await response.json();
+                alert(`Грешка при спиране на абонамента: ${errorData.message}`);
+            }
+        } catch (error) {
+            console.error(error);
+            alert("Възникна грешка при свързване със сървъра.");
+        } finally {
+            setIsLoading(false);
+            setShowCancelConfirmation(false);
+        }
+    };
+
+    const handleReactivateSubscription = async () => {
+        if (!currentSubscription) return;
+
+        setIsLoading(true);
+        try {
+            const response = await fetch("/api/subscription/reactivate", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    subscriptionId: currentSubscription.id
+                }),
+            });
+
+            if (response.ok) {
+                alert("Абонаментът беше реактивиран успешно!");
+                router.refresh();
+            } else {
+                const errorData = await response.json();
+                alert(`Грешка при реактивиране на абонамента: ${errorData.message}`);
             }
         } catch (error) {
             console.error(error);
@@ -178,12 +246,39 @@ export default function SubscriptionManagementClient({
                                 </span>
                             </div>
                         </div>
-                        <div className="current-plan-status">
-                            <span className={`status-badge ${currentSubscription.status}`}>
-                                {currentSubscription.status === 'active' ? 'Активен' :
-                                    currentSubscription.status === 'pending' ? 'Изчаква' :
-                                        currentSubscription.status === 'cancelled' ? 'Отменен' : 'Неактивен'}
-                            </span>
+                        {/* Subscription Status Message */}
+
+
+                        {/* Subscription Actions */}
+                        <div className="subscription-actions-wrapper">
+                            <div className="subscription-status-info">
+                                <p className="status-message">{getSubscriptionStatusMessage(currentSubscription)}</p>
+                                {currentSubscription.currentPeriodEnd && (
+                                    <p className="period-info">
+                                        {currentSubscription.cancelAtPeriodEnd ? 'Спиране на: ' : 'Следващо плащане: '}
+                                        {new Date(currentSubscription.currentPeriodEnd).toLocaleDateString('bg-BG')}
+                                    </p>
+                                )}
+                            </div>
+                            <div className="subscription-actions">
+                                {currentSubscription.cancelAtPeriodEnd ? (
+                                    <button
+                                        onClick={handleReactivateSubscription}
+                                        disabled={isLoading}
+                                        className="reactivate-button"
+                                    >
+                                        Реактивирай абонамента
+                                    </button>
+                                ) : (
+                                    <button
+                                        onClick={handleCancelSubscription}
+                                        disabled={isLoading}
+                                        className="subscription-cancel-button"
+                                    >
+                                        Спри абонамента
+                                    </button>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -276,6 +371,37 @@ export default function SubscriptionManagementClient({
                     })}
                 </div>
             </div>
+
+            {/* Cancel Confirmation Modal */}
+            {showCancelConfirmation && (
+                <div className="confirmation-modal">
+                    <div className="confirmation-content">
+                        <h3>Потвърждение за спиране</h3>
+                        <p>
+                            Сигурни ли сте, че искате да спрете абонамента? Ще загубите достъпа до премиум функциите в края на текущия период.
+                        </p>
+                        <p>
+                            Абонаментът ще остане активен до {currentSubscription?.currentPeriodEnd ? new Date(currentSubscription.currentPeriodEnd).toLocaleDateString('bg-BG') : 'края на периода'}.
+                        </p>
+                        <div className="confirmation-actions">
+                            <button
+                                onClick={() => setShowCancelConfirmation(false)}
+                                className="cancel-button"
+                                disabled={isLoading}
+                            >
+                                Отказ
+                            </button>
+                            <button
+                                onClick={handleConfirmCancel}
+                                className="subscription-cancel-button"
+                                disabled={isLoading}
+                            >
+                                {isLoading ? "Обработка..." : "Да, спри абонамента"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

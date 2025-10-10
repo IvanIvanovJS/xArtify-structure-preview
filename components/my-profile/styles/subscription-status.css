@@ -1,0 +1,132 @@
+/* Subscription Status Styles */
+.subscription-status-info {
+    margin-top: 1.5rem;
+    padding: 1.25rem;
+    background: rgba(22, 255, 228, 0.05);
+    border: 1px solid rgba(22, 255, 228, 0.2);
+    border-radius: 0.75rem;
+}
+
+.status-message {
+    color: var(--color-white-8, #e5e7eb);
+    font-size: 0.875rem;
+    margin: 0 0 0.5rem 0;
+    font-weight: 500;
+}
+
+.period-info {
+    color: var(--color-muted-foreground, #9ca3af);
+    font-size: 0.75rem;
+    margin: 0;
+}
+
+.subscription-actions-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.subscription-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.reactivate-button,
+.subscription-cancel-button {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 1px solid;
+    min-height: 44px;
+}
+
+.reactivate-button {
+    background: var(--color-primary, #16ffe4);
+    color: var(--color-background, #0b0b0f);
+    border-color: var(--color-primary, #16ffe4);
+}
+
+.reactivate-button:hover:not(:disabled) {
+    box-shadow:
+        inset 0 0px 4px 0px rgba(22, 255, 228, 0.7),
+        0 0px 12px 0px rgba(22, 255, 228, 0.7);
+}
+
+.subscription-cancel-button {
+    background: var(--color-danger-10);
+    color: var(--color-danger-80);
+    border-color: var(--color-danger);
+}
+
+.subscription-cancel-button:hover:not(:disabled) {
+    background: var(--color-danger-20);
+    color: var(--color-danger);
+    box-shadow: 0 0 12px rgba(239, 68, 68, 0.3);
+}
+
+.reactivate-button:disabled,
+.subscription-cancel-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Status Badge Styles */
+.status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.status-badge.active {
+    background: rgba(34, 197, 94, 0.2);
+    color: #22c55e;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.status-badge.pending {
+    background: rgba(251, 191, 36, 0.2);
+    color: #fbbf24;
+    border: 1px solid rgba(251, 191, 36, 0.3);
+}
+
+.status-badge.cancelled {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.status-badge.past_due {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.status-badge.expired {
+    background: rgba(107, 114, 128, 0.2);
+    color: #6b7280;
+    border: 1px solid rgba(107, 114, 128, 0.3);
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .subscription-status-info {
+        padding: 0.75rem;
+    }
+
+    .status-message {
+        font-size: 0.8rem;
+    }
+
+    .period-info {
+        font-size: 0.7rem;
+    }
+}

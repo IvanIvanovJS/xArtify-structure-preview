@@ -6,6 +6,7 @@ import { ArtistSubscription, SubscriptionPlan } from "@prisma/client";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements, PaymentElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import "../becomeAnArtist/styles/payment-page.css";
+import "./styles/confirmation-modal.css";
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY as string);
 
@@ -14,6 +15,7 @@ interface SubscriptionPaymentClientProps {
     currentSubscription: ArtistSubscription & { plan: SubscriptionPlan };
     paymentIntentId: string;
     userId: string;
+    isDowngrade?: boolean;
 }
 
 const CheckoutForm = ({
@@ -49,81 +51,41 @@ const CheckoutForm = ({
 
         setIsLoading(true);
 
-        if (isFreePlan && setupIntentId) {
-            // Handle SetupIntent for free plans
-            const { error, setupIntent } = await stripe.confirmSetup({
-                elements,
-                redirect: "if_required",
-            });
+        // Handle Stripe subscription confirmation
+        const { error, paymentIntent } = await stripe.confirmPayment({
+            elements,
+            redirect: "if_required",
+        });
 
-            if (error) {
-                setMessage(error.message || "Възникна грешка при запазване на картата.");
-                setIsLoading(false);
-                return;
-            }
+        if (error) {
+            setMessage(error.message || "Възникна грешка при плащането.");
+            setIsLoading(false);
+            return;
+        }
 
-            if (setupIntent && setupIntent.status === "succeeded") {
-                try {
-                    const response = await fetch("/api/subscription/process-upgrade", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                            planId,
-                            billingCycle,
-                            setupIntentId: setupIntent.id,
-                            currentSubscriptionId
-                        }),
-                    });
+        if (paymentIntent && paymentIntent.status === "succeeded") {
+            try {
+                const response = await fetch("/api/subscription/confirm-subscription", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        planId,
+                        billingCycle,
+                        paymentIntentId: paymentIntent.id,
+                        currentSubscriptionId
+                    }),
+                });
 
-                    if (response.ok) {
-                        alert("Планът беше успешно променен на безплатен!");
-                        router.push('/my-profile/subscription');
-                    } else {
-                        const errorData = await response.json();
-                        setMessage(`Грешка при промяна на плана: ${errorData.message}`);
-                    }
-                } catch (error) {
-                    console.error(error);
-                    setMessage("Възникна грешка при свързване със сървъра.");
+                if (response.ok) {
+                    alert("Абонаментът беше създаден успешно! Ще получавате автоматични плащания всеки " + (billingCycle === 'yearly' ? 'година' : 'месец') + ".");
+                    router.push('/my-profile/subscription');
+                } else {
+                    const errorData = await response.json();
+                    setMessage(`Грешка при създаване на абонамента: ${errorData.message}`);
                 }
-            }
-        } else {
-            // Handle PaymentIntent for paid plans
-            const { error, paymentIntent } = await stripe.confirmPayment({
-                elements,
-                redirect: "if_required",
-            });
-
-            if (error) {
-                setMessage(error.message || "Възникна грешка при плащането.");
-                setIsLoading(false);
-                return;
-            }
-
-            if (paymentIntent && paymentIntent.status === "succeeded") {
-                try {
-                    const response = await fetch("/api/subscription/process-upgrade", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                            planId,
-                            billingCycle,
-                            paymentIntentId: paymentIntent.id,
-                            currentSubscriptionId
-                        }),
-                    });
-
-                    if (response.ok) {
-                        alert("Планът беше успешно надграден!");
-                        router.push('/my-profile/subscription');
-                    } else {
-                        const errorData = await response.json();
-                        setMessage(`Грешка при надграждане на плана: ${errorData.message}`);
-                    }
-                } catch (error) {
-                    console.error(error);
-                    setMessage("Възникна грешка при свързване със сървъра.");
-                }
+            } catch (error) {
+                console.error(error);
+                setMessage("Възникна грешка при свързване със сървъра.");
             }
         }
 
@@ -179,13 +141,15 @@ export default function SubscriptionPaymentClient({
     plan,
     currentSubscription,
     paymentIntentId,
-    userId
+    userId,
+    isDowngrade = false
 }: SubscriptionPaymentClientProps) {
     const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
     const [clientSecret, setClientSecret] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [isFreePlan, setIsFreePlan] = useState(false);
     const [setupIntentId, setSetupIntentId] = useState("");
+    const [showConfirmation, setShowConfirmation] = useState(false);
     const router = useRouter();
 
     const formatPrice = (cycle: 'monthly' | 'yearly') => {
@@ -202,32 +166,70 @@ export default function SubscriptionPaymentClient({
     };
 
     const handleStartPayment = async () => {
+        if (isDowngrade) {
+            setShowConfirmation(true);
+            return;
+        }
+
         setIsLoading(true);
 
         try {
-            const response = await fetch("/api/create-payment-intent", {
+            const response = await fetch("/api/create-subscription", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     planId: plan.id,
                     billingCycle,
-                    isArtist: true,
                     isUpgrade: true,
                     currentSubscriptionId: currentSubscription.id
                 }),
             });
 
             const data = await response.json();
-            setClientSecret(data.clientSecret);
-            setIsFreePlan(data.isFreePlan || false);
-            if (data.setupIntentId) {
-                setSetupIntentId(data.setupIntentId);
+
+            if (data.isFreePlan) {
+                // For free plans, redirect back to subscription page
+                alert("Безплатният план беше активиран успешно!");
+                router.push('/my-profile/subscription');
+                return;
             }
+
+            setClientSecret(data.clientSecret);
+            setIsFreePlan(false);
         } catch (error) {
             console.error(error);
             alert("Възникна грешка при стартиране на плащането.");
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const handleConfirmDowngrade = async () => {
+        setIsLoading(true);
+        try {
+            const response = await fetch("/api/subscription/change-plan", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    planId: plan.id,
+                    billingCycle: 'monthly',
+                    isDowngrade: true
+                }),
+            });
+
+            if (response.ok) {
+                alert("Планът беше успешно променен! Текущият план ще остане активен до края на биллинг цикъла, след което ще се активира новият план.");
+                router.push('/my-profile/subscription');
+            } else {
+                const errorData = await response.json();
+                alert(`Грешка при промяна на плана: ${errorData.message}`);
+            }
+        } catch (error) {
+            console.error(error);
+            alert("Възникна грешка при свързване със сървъра.");
+        } finally {
+            setIsLoading(false);
+            setShowConfirmation(false);
         }
     };
 
@@ -257,13 +259,13 @@ export default function SubscriptionPaymentClient({
                     >
                         ← Назад
                     </button>
-                    <h1 className="payment-title">Надграждане на плана</h1>
+                    <h1 className="payment-title">{isDowngrade ? 'Понижаване на плана' : 'Надграждане на плана'}</h1>
                 </div>
 
                 <div className="payment-content">
                     <div className="payment-summary">
                         <div className="summary-header">
-                            <h2 className="summary-title">Надграждане към {plan.displayName}</h2>
+                            <h2 className="summary-title">{isDowngrade ? 'Понижаване към' : 'Надграждане към'} {plan.displayName}</h2>
                             <div className="summary-price">
                                 <span className="price-amount">{formatPrice(billingCycle)}€</span>
                                 <span className="price-period">за {billingCycle === 'yearly' ? 'година' : 'месец'}</span>
@@ -329,13 +331,13 @@ export default function SubscriptionPaymentClient({
                 >
                     ← Назад
                 </button>
-                <h1 className="payment-title">Надграждане на плана</h1>
+                <h1 className="payment-title">{isDowngrade ? 'Понижаване на плана' : 'Надграждане на плана'}</h1>
             </div>
 
             <div className="payment-content">
                 <div className="payment-summary">
                     <div className="summary-header">
-                        <h2 className="summary-title">Надграждане към {plan.displayName}</h2>
+                        <h2 className="summary-title">{isDowngrade ? 'Понижаване към' : 'Надграждане към'} {plan.displayName}</h2>
                         <div className="summary-price">
                             <span className="price-amount">{formatPrice(billingCycle)}€</span>
                             <span className="price-period">за {billingCycle === 'yearly' ? 'година' : 'месец'}</span>
@@ -399,9 +401,39 @@ export default function SubscriptionPaymentClient({
                         disabled={isLoading}
                         className="payment-button"
                     >
-                        {isLoading ? "Изчакване..." : "Продължи към плащане"}
+                        {isLoading ? "Изчакване..." : (isDowngrade ? "Понижи текущия план" : "Продължи към плащане")}
                     </button>
                 </div>
+
+                {showConfirmation && (
+                    <div className="confirmation-modal">
+                        <div className="confirmation-content">
+                            <h3>Потвърждение за понижаване</h3>
+                            <p>
+                                Сигурни ли сте, че искате да преминете от <strong>{currentSubscription.plan.displayName}</strong> към <strong>{plan.displayName}</strong>?
+                            </p>
+                            <p>
+                                Текущият план ще остане активен до края на биллинг цикъла, след което ще се активира новият план.
+                            </p>
+                            <div className="confirmation-actions">
+                                <button
+                                    onClick={() => setShowConfirmation(false)}
+                                    className="cancel-button"
+                                    disabled={isLoading}
+                                >
+                                    Отказ
+                                </button>
+                                <button
+                                    onClick={handleConfirmDowngrade}
+                                    className="confirm-button"
+                                    disabled={isLoading}
+                                >
+                                    {isLoading ? "Обработка..." : "Да, понижи плана"}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );
