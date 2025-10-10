@@ -22,13 +22,13 @@ export default function SubscriptionManagementClient({
     const router = useRouter();
 
     const formatPrice = (plan: SubscriptionPlan, cycle: 'monthly' | 'yearly') => {
-        if (plan.name === 'Free') return '0';
+        if (plan.name === 'Hobby') return '0';
         const price = cycle === 'yearly' ? plan.yearlyPrice : plan.monthlyPrice;
         return price.toFixed(0);
     };
 
     const getDiscountText = (plan: SubscriptionPlan) => {
-        if (plan.name === 'Free' || billingCycle === 'monthly') return null;
+        if (plan.name === 'Hobby' || billingCycle === 'monthly') return null;
         const savings = (plan.monthlyPrice * 12) - plan.yearlyPrice;
         return `Спестете ${savings.toFixed(0)}€ годишно`;
     };
@@ -43,7 +43,7 @@ export default function SubscriptionManagementClient({
         }
 
         // If it's the free plan, handle downgrade
-        if (plan.name === 'Free') {
+        if (plan.name === 'Hobby') {
             if (confirm('Сигурни ли сте, че искате да преминете към безплатния план? Ще загубите достъпа до премиум функциите.')) {
                 await handleDowngrade(planId);
             }

@@ -178,10 +178,10 @@ export default function ArtistProfileForm({ userId, userData, selectedPlan, paym
                             </div>
                             <div className="plan-display-price">
                                 <h2>
-                                    {selectedPlan.name === 'Free' ? '0' : selectedPlan.monthlyPrice.toFixed(0)}€
+                                    {selectedPlan.name === 'Hobby' ? '0' : selectedPlan.monthlyPrice.toFixed(0)}€
                                 </h2>
                                 <p>
-                                    {selectedPlan.name === 'Free' ? 'Безплатно' : 'на месец'}
+                                    {selectedPlan.name === 'Hobby' ? 'Безплатно' : 'на месец'}
                                 </p>
                             </div>
                         </div>

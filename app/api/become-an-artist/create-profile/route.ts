@@ -109,7 +109,7 @@ export async function POST(req: NextRequest) {
 
             // Create subscription based on plan and payment status
             if (selectedPlan) {
-                if (selectedPlan.name === 'Free') {
+                if (selectedPlan.name === 'Hobby') {
                     // Create free subscription immediately
                     await tx.artistSubscription.create({
                         data: {
