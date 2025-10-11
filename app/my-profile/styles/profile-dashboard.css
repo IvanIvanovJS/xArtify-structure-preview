@@ -62,7 +62,7 @@
 
 /* Sidebar */
 .profile-dashboard__sidebar {
-    width: 280px;
+    width: auto;
     background: var(--color-muted);
     border-right: 1px solid var(--color-primary-10);
     display: flex;
@@ -87,6 +87,7 @@
 
 .profile-dashboard__nav-item {
     margin-bottom: 0.25rem;
+    margin-right: 0.1rem;
 }
 
 .profile-dashboard__nav-link {
@@ -224,7 +225,7 @@
 /* Desktop responsive adjustments for text visibility */
 @media (max-width: 1200px) and (min-width: 769px) {
     .profile-dashboard__sidebar {
-        width: 260px;
+        width: auto;
     }
 
     .profile-dashboard__nav-label {
@@ -238,7 +239,7 @@
 
 @media (max-width: 1024px) and (min-width: 769px) {
     .profile-dashboard__sidebar {
-        width: 240px;
+        width: auto;
     }
 
     .profile-dashboard__nav-link {
@@ -260,7 +261,7 @@
 
 @media (max-width: 900px) and (min-width: 769px) {
     .profile-dashboard__sidebar {
-        width: 220px;
+        width: auto;
     }
 
     .profile-dashboard__nav-label {
@@ -287,7 +288,7 @@
         top: 0;
         left: 0;
         height: 100vh;
-        width: 280px;
+        width: auto;
         transform: translateX(-100%);
         transition: transform 0.3s ease;
         z-index: 200;
