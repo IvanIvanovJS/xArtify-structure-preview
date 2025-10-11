@@ -1,3 +1,14 @@
+-- =====================================================
+-- SUBSCRIPTION PLANS & ARTIST SUBSCRIPTIONS RLS POLICIES
+-- =====================================================
+-- Updated to support admin subscription management functionality
+-- Includes policies for:
+-- - SubscriptionPlan: Public read, admin write
+-- - ArtistSubscription: Artist own data + admin full access
+-- - PaymentIntent: User own data + admin full access  
+-- - User & ArtistProfile: Admin access for subscription analytics
+-- =====================================================
+
 -- Enable RLS on subscription plans table
 ALTER TABLE "SubscriptionPlan" ENABLE ROW LEVEL SECURITY;
 
@@ -56,7 +67,7 @@ CREATE POLICY "artist_subscriptions_insert" ON "ArtistSubscription"
     )
   );
 
--- Artists can update their own subscription
+-- Artists can update their own subscription (limited to status changes)
 CREATE POLICY "artist_subscriptions_update" ON "ArtistSubscription"
   FOR UPDATE USING (
     EXISTS (
@@ -86,9 +97,29 @@ CREATE POLICY "artist_subscriptions_admin_select" ON "ArtistSubscription"
     )
   );
 
--- Admins can update all subscriptions
+-- Admins can update all subscriptions (for management actions)
 CREATE POLICY "artist_subscriptions_admin_update" ON "ArtistSubscription"
   FOR UPDATE USING (
+    EXISTS (
+      SELECT 1 FROM "User" 
+      WHERE "User".id = auth.uid()::text 
+      AND "User".role = 'ADMIN'
+    )
+  );
+
+-- Admins can insert subscriptions (for manual creation if needed)
+CREATE POLICY "artist_subscriptions_admin_insert" ON "ArtistSubscription"
+  FOR INSERT WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM "User" 
+      WHERE "User".id = auth.uid()::text 
+      AND "User".role = 'ADMIN'
+    )
+  );
+
+-- Admins can delete subscriptions (for cleanup if needed)
+CREATE POLICY "artist_subscriptions_admin_delete" ON "ArtistSubscription"
+  FOR DELETE USING (
     EXISTS (
       SELECT 1 FROM "User" 
       WHERE "User".id = auth.uid()::text 
@@ -268,6 +299,52 @@ CREATE POLICY "payment_intents_admin_select" ON "payment_intents"
 -- Admins can update all payment intents
 CREATE POLICY "payment_intents_admin_update" ON "payment_intents"
   FOR UPDATE USING (
+    EXISTS (
+      SELECT 1 FROM "User" 
+      WHERE "User".id = auth.uid()::text 
+      AND "User".role = 'ADMIN'
+    )
+  );
+
+-- Admins can insert payment intents (for manual creation if needed)
+CREATE POLICY "payment_intents_admin_insert" ON "payment_intents"
+  FOR INSERT WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM "User" 
+      WHERE "User".id = auth.uid()::text 
+      AND "User".role = 'ADMIN'
+    )
+  );
+
+-- Admins can delete payment intents (for cleanup if needed)
+CREATE POLICY "payment_intents_admin_delete" ON "payment_intents"
+  FOR DELETE USING (
+    EXISTS (
+      SELECT 1 FROM "User" 
+      WHERE "User".id = auth.uid()::text 
+      AND "User".role = 'ADMIN'
+    )
+  );
+
+-- Enable RLS on User table for admin subscription management
+ALTER TABLE "User" ENABLE ROW LEVEL SECURITY;
+
+-- Admins can view user data for subscription management
+CREATE POLICY "users_admin_subscription_select" ON "User"
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM "User" admin_user
+      WHERE admin_user.id = auth.uid()::text 
+      AND admin_user.role = 'ADMIN'
+    )
+  );
+
+-- Enable RLS on ArtistProfile table for admin subscription management
+ALTER TABLE "ArtistProfile" ENABLE ROW LEVEL SECURITY;
+
+-- Admins can view artist profile data for subscription management
+CREATE POLICY "artist_profiles_admin_subscription_select" ON "ArtistProfile"
+  FOR SELECT USING (
     EXISTS (
       SELECT 1 FROM "User" 
       WHERE "User".id = auth.uid()::text 
