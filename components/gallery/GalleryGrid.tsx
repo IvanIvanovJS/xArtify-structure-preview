@@ -112,7 +112,7 @@ export default function GalleryGrid({
     }
 
     return (
-        <div className="gallery-grid-container">
+        <>
             {/* Paintings Grid */}
             <div className="gallery-grid">
                 <AnimatePresence mode="popLayout">
@@ -161,6 +161,6 @@ export default function GalleryGrid({
                     <p>Това са всички налични картини</p>
                 </div>
             )}
-        </div>
+        </>
     );
 }

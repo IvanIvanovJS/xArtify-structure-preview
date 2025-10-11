@@ -1,11 +1,11 @@
 // app/gallery/_components/FiltersMobileSheet.tsx
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { SlidersHorizontalIcon } from 'lucide-react';
 import UnifiedFilterDrawer from '@/components/ui/UnifiedFilterDrawer';
 import '@/components/ui/styles/unified-filter-drawer.css';
+import './styles/filters-mobile-sheet.css';
 
 // Types
 interface FilterOptions {
@@ -26,224 +26,224 @@ interface FilterOptions {
     };
 }
 
-interface FiltersMobileSheetProps {
-    filterOptions: FilterOptions;
-    searchParams: { [key: string]: string | string[] | undefined };
+interface Filters {
+    search: string;
+    author: string;
+    technique: string[];
+    subject: string[];
+    style: string[];
+    priceRange: [number, number];
+    widthRange: [number, number];
+    heightRange: [number, number];
+    tags: string[];
+    sortBy: string;
+    availability: string;
 }
 
+interface FiltersMobileSheetProps {
+    filterOptions: FilterOptions;
+    filters: Filters;
+    onFilterChange: (key: keyof Filters, value: string | string[] | [number, number]) => void;
+    clearFilters: () => void;
+}
 
 // Main Filters Mobile Sheet Component
 export default function FiltersMobileSheet({
     filterOptions,
-    searchParams
+    filters,
+    onFilterChange,
+    clearFilters
 }: FiltersMobileSheetProps): React.JSX.Element {
-    const router = useRouter();
     const [isOpen, setIsOpen] = useState(false);
 
-    // State for filter values
-    const [filters, setFilters] = useState({
-        q: (searchParams.q as string) || '',
-        author: (searchParams.author as string) || '',
-        technique: (searchParams.technique as string) || '',
-        subject: (searchParams.subject as string) || '',
-        style: (searchParams.style as string) || '',
-        priceMin: searchParams.priceMin ? parseInt(searchParams.priceMin as string) || 0 : 0,
-        priceMax: searchParams.priceMax ? parseInt(searchParams.priceMax as string) || 0 : 0,
-        widthMin: parseInt((searchParams.widthMin as string) || '0') || 0,
-        widthMax: parseInt((searchParams.widthMax as string) || '0') || 0,
-        heightMin: parseInt((searchParams.heightMin as string) || '0') || 0,
-        heightMax: parseInt((searchParams.heightMax as string) || '0') || 0,
-        tags: Array.isArray(searchParams.tags) ? searchParams.tags :
-            (searchParams.tags as string)?.split(',') || [],
-        sort: (searchParams.sort as string) || 'newest',
-        availability: (searchParams.availability as string) || '',
-    });
-
-    const updateFilters = (newFilters: Partial<typeof filters>): void => {
-        const updatedFilters = { ...filters, ...newFilters };
-        setFilters(updatedFilters);
-
-        // Build new search params
-        const newSearchParams = new URLSearchParams();
-
-        Object.entries(updatedFilters).forEach(([key, value]) => {
-            if (key === 'tags' && Array.isArray(value) && value.length > 0) {
-                newSearchParams.set(key, value.join(','));
-            } else if (key === 'priceMin' && value && value !== 0) {
-                newSearchParams.set(key, value.toString());
-            } else if (key === 'priceMax' && value && value !== (filterOptions.priceRange?.max || 10000)) {
-                newSearchParams.set(key, value.toString());
-            } else if (value && value !== '' && value !== 0) {
-                newSearchParams.set(key, value.toString());
+    // Count active filters
+    const activeFiltersCount = Object.values(filters).reduce((count, value) => {
+        if (Array.isArray(value)) {
+            if (typeof value[0] === 'number') {
+                // For range arrays, check if they're not at default values
+                if (value[0] > 0 || value[1] < 10000) {
+                    return count + 1;
+                }
+            } else {
+                return count + (value.length > 0 ? 1 : 0);
             }
-        });
-
-        // Reset to page 1 when filters change
-        newSearchParams.set('page', '1');
-
-        // Navigate to new URL
-        router.push(`/gallery?${newSearchParams.toString()}`);
-    };
-
-    const clearAllFilters = (): void => {
-        router.push('/gallery');
-        setIsOpen(false);
-    };
-
-    const closeSheet = (): void => {
-        setIsOpen(false);
-    };
-
-    const handleFilterChange = (sectionId: string, value: string | string[] | [number, number]): void => {
-        switch (sectionId) {
-            case 'sort':
-                updateFilters({ sort: value as string });
-                break;
-            case 'availability':
-                updateFilters({ availability: value as string });
-                break;
-            case 'author':
-                updateFilters({ author: value as string });
-                break;
-            case 'technique':
-                updateFilters({ technique: value as string });
-                break;
-            case 'subject':
-                updateFilters({ subject: value as string });
-                break;
-            case 'style':
-                updateFilters({ style: value as string });
-                break;
-            case 'price':
-                const priceRange = value as [number, number];
-                updateFilters({ priceMin: priceRange[0], priceMax: priceRange[1] });
-                break;
-            case 'size':
-                // Handle size range if needed
-                break;
-            case 'tags':
-                updateFilters({ tags: value as string[] });
-                break;
+        } else {
+            return count + (value !== '' && value !== 'newest' ? 1 : 0);
         }
-    };
+        return count;
+    }, 0);
 
-    const handleApply = (): void => {
+    const handleApplyFilters = () => {
         setIsOpen(false);
     };
 
-    // Prepare filter sections for UnifiedFilterDrawer
-    const filterSections = [
+    const handleClearFilters = () => {
+        clearFilters();
+        setIsOpen(false);
+    };
+
+    // Map filters to UnifiedFilterDrawer sections
+    const sections = [
+        {
+            id: 'author',
+            title: 'Художник',
+            type: 'dropdown' as const,
+            value: filters.author,
+            dropdownOptions: [
+                { value: '', label: 'Всички художници' },
+                ...filterOptions.authors.map(author => ({
+                    value: author.name,
+                    label: `${author.name} (${author.count})`
+                }))
+            ]
+        },
         {
             id: 'sort',
             title: 'Сортиране',
             type: 'dropdown' as const,
+            value: filters.sortBy,
             dropdownOptions: [
                 { value: 'newest', label: 'Най-нови' },
-                { value: 'price_asc', label: 'Цена: ниска към висока' },
-                { value: 'price_desc', label: 'Цена: висока към ниска' },
-                { value: 'title_asc', label: 'Заглавие: А-Я' },
-                { value: 'title_desc', label: 'Заглавие: Я-А' },
-            ],
-            value: filters.sort,
-            placeholder: 'Избери сортиране'
-        },
-        {
-            id: 'availability',
-            title: 'Наличност',
-            type: 'dropdown' as const,
-            dropdownOptions: [
-                { value: '', label: 'Всички картини' },
-                { value: 'new', label: 'Нови (последните 14 дни)' },
-                { value: 'promotion', label: 'На промоция' },
-                { value: 'sold', label: 'Продадени' },
-            ],
-            value: filters.availability,
-            placeholder: 'Избери наличност'
-        },
-        {
-            id: 'author',
-            title: 'Автор',
-            type: 'checkbox' as const,
-            options: filterOptions.authors.map(author => ({
-                id: author.name,
-                name: author.name,
-                count: author.count
-            })),
-            value: filters.author ? [filters.author] : []
+                { value: 'oldest', label: 'Най-стари' },
+                { value: 'price-low', label: 'Цена: ниска → висока' },
+                { value: 'price-high', label: 'Цена: висока → ниска' },
+                { value: 'title', label: 'Заглавие A-Z' }
+            ]
         },
         {
             id: 'technique',
             title: 'Техника',
             type: 'checkbox' as const,
-            options: filterOptions.techniques.map(technique => ({
+            value: filters.technique,
+            options: filterOptions.techniques.filter(t => t.count > 0).map(technique => ({
                 id: technique.name,
                 name: technique.name,
                 count: technique.count
-            })),
-            value: filters.technique ? [filters.technique] : []
+            }))
         },
         {
             id: 'subject',
             title: 'Тема',
             type: 'checkbox' as const,
-            options: filterOptions.subjects.map(subject => ({
+            value: filters.subject,
+            options: filterOptions.subjects.filter(s => s.count > 0).map(subject => ({
                 id: subject.name,
                 name: subject.name,
                 count: subject.count
-            })),
-            value: filters.subject ? [filters.subject] : []
+            }))
         },
         {
             id: 'style',
             title: 'Стил',
             type: 'checkbox' as const,
-            options: filterOptions.styles.map(style => ({
+            value: filters.style,
+            options: filterOptions.styles.filter(s => s.count > 0).map(style => ({
                 id: style.name,
                 name: style.name,
                 count: style.count
-            })),
-            value: filters.style ? [filters.style] : []
+            }))
         },
         {
             id: 'price',
-            title: 'Цена',
+            title: 'Ценови диапазон',
             type: 'range' as const,
-            value: [filters.priceMin || filterOptions.priceRange?.min || 0, filters.priceMax || filterOptions.priceRange?.max || 10000] as [number, number]
+            value: filters.priceRange
+        },
+        {
+            id: 'size',
+            title: 'Размер (в см)',
+            type: 'range' as const,
+            value: filters.widthRange
+        },
+        {
+            id: 'height',
+            title: 'Височина (в см)',
+            type: 'range' as const,
+            value: filters.heightRange
         },
         {
             id: 'tags',
             title: 'Тагове',
             type: 'checkbox' as const,
-            options: filterOptions.tags.map(tag => ({
+            value: filters.tags,
+            options: filterOptions.tags.filter(t => t.count > 0).map(tag => ({
                 id: tag.name,
                 name: tag.name,
                 count: tag.count
-            })),
-            value: filters.tags
+            }))
+        },
+        {
+            id: 'availability',
+            title: 'Наличност',
+            type: 'dropdown' as const,
+            value: filters.availability,
+            dropdownOptions: [
+                { value: '', label: 'Всички картини' },
+                { value: 'new', label: 'Нови (последните 14 дни)' },
+                { value: 'promotion', label: 'На промоция' },
+                { value: 'sold', label: 'Продадени' }
+            ]
         }
     ];
 
     return (
         <>
-            {/* Trigger Button */}
+            {/* Mobile Filter Button */}
             <button
                 onClick={() => setIsOpen(true)}
-                className="mobile-filters-button"
-                type="button"
+                className="mobile-filters-btn"
                 aria-label="Отвори филтри"
             >
                 <SlidersHorizontalIcon size={20} />
-                <span className="mobile-filters-button-text">Филтри</span>
+                <span>Филтри</span>
+                {activeFiltersCount > 0 && (
+                    <span className="filter-count-badge">
+                        {activeFiltersCount}
+                    </span>
+                )}
             </button>
 
             {/* Unified Filter Drawer */}
             <UnifiedFilterDrawer
                 isOpen={isOpen}
-                onClose={closeSheet}
-                sections={filterSections}
-                onFilterChange={handleFilterChange}
-                onClearAll={clearAllFilters}
-                onApply={handleApply}
+                onClose={() => setIsOpen(false)}
+                sections={sections}
+                onFilterChange={(sectionId, value) => {
+                    switch (sectionId) {
+                        case 'author':
+                            onFilterChange('author', value as string);
+                            break;
+                        case 'sort':
+                            onFilterChange('sortBy', value as string);
+                            break;
+                        case 'technique':
+                            onFilterChange('technique', value as string[]);
+                            break;
+                        case 'subject':
+                            onFilterChange('subject', value as string[]);
+                            break;
+                        case 'style':
+                            onFilterChange('style', value as string[]);
+                            break;
+                        case 'price':
+                            onFilterChange('priceRange', value as [number, number]);
+                            break;
+                        case 'size':
+                            onFilterChange('widthRange', value as [number, number]);
+                            break;
+                        case 'height':
+                            onFilterChange('heightRange', value as [number, number]);
+                            break;
+                        case 'tags':
+                            onFilterChange('tags', value as string[]);
+                            break;
+                        case 'availability':
+                            onFilterChange('availability', value as string);
+                            break;
+                    }
+                }}
+                onClearAll={handleClearFilters}
+                onApply={handleApplyFilters}
             />
         </>
     );

@@ -1,44 +1,55 @@
 // app/gallery/_components/ActiveChips.tsx
 'use client';
 
-import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { XIcon } from 'lucide-react';
 
 // Types
+interface Filters {
+    search: string;
+    author: string;
+    technique: string[];
+    subject: string[];
+    style: string[];
+    priceRange: [number, number];
+    widthRange: [number, number];
+    heightRange: [number, number];
+    tags: string[];
+    sortBy: string;
+    availability: string;
+}
+
 interface ActiveChipsProps {
-    searchParams: { [key: string]: string | string[] | undefined };
+    filters: Filters;
+    onFilterChange: (key: keyof Filters, value: string | string[] | [number, number]) => void;
 }
 
 // Helper function to get display label for filter values
-function getFilterDisplayLabel(key: string, value: string | string[]): string {
+function getFilterDisplayLabel(key: string, value: string | string[] | [number, number]): string {
     if (Array.isArray(value)) {
-        return value.join(', ');
+        if (typeof value[0] === 'number') {
+            // Handle range arrays
+            switch (key) {
+                case 'priceRange':
+                    return `Цена: ${value[0]} - ${value[1]} лв.`;
+                case 'widthRange':
+                    return `Ширина: ${value[0]} - ${value[1]} см`;
+                case 'heightRange':
+                    return `Височина: ${value[0]} - ${value[1]} см`;
+                default:
+                    return value.join(', ');
+            }
+        } else {
+            // Handle string arrays
+            return value.join(', ');
+        }
     }
 
     switch (key) {
-        case 'technique':
-            return `Техника: ${value}`;
-        case 'subject':
-            return `Тема: ${value}`;
-        case 'style':
-            return `Стил: ${value}`;
+        case 'search':
+            return `Търсене: "${value}"`;
         case 'author':
             return `Автор: ${value}`;
-        case 'priceMin':
-            return `Цена от: ${parseFloat(value).toFixed(0)} лв.`;
-        case 'priceMax':
-            return `Цена до: ${parseFloat(value).toFixed(0)} лв.`;
-        case 'widthMin':
-            return `Ширина от: ${parseFloat(value).toFixed(0)} см`;
-        case 'widthMax':
-            return `Ширина до: ${parseFloat(value).toFixed(0)} см`;
-        case 'heightMin':
-            return `Височина от: ${parseFloat(value).toFixed(0)} см`;
-        case 'heightMax':
-            return `Височина до: ${parseFloat(value).toFixed(0)} см`;
-        case 'q':
-            return `Търсене: "${value}"`;
         case 'availability':
             switch (value) {
                 case 'new':
@@ -50,114 +61,119 @@ function getFilterDisplayLabel(key: string, value: string | string[]): string {
                 default:
                     return `Наличност: ${value}`;
             }
+        case 'sortBy':
+            switch (value) {
+                case 'newest':
+                    return 'Сортиране: Най-нови';
+                case 'oldest':
+                    return 'Сортиране: Най-стари';
+                case 'price-low':
+                    return 'Сортиране: Цена: ниска → висока';
+                case 'price-high':
+                    return 'Сортиране: Цена: висока → ниска';
+                case 'title':
+                    return 'Сортиране: Заглавие A-Z';
+                default:
+                    return `Сортиране: ${value}`;
+            }
         default:
-            return value;
+            return `${key}: ${value}`;
     }
 }
 
-// Individual filter chip component
-function FilterChip({
-    filterKey,
-    filterValue,
-    onRemove
-}: {
-    filterKey: string;
-    filterValue: string | string[];
-    onRemove: (key: string, value: string | string[]) => void;
-}): React.JSX.Element {
-    const displayLabel = getFilterDisplayLabel(filterKey, filterValue);
-
-    return (
-        <motion.div
-            layout
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.8 }}
-            transition={{ duration: 0.2 }}
-            className="filter-chip"
-        >
-            <span className="chip-label">{displayLabel}</span>
-            <button
-                onClick={() => onRemove(filterKey, filterValue)}
-                className="chip-remove-button"
-                type="button"
-                aria-label={`Премахни филтър: ${displayLabel}`}
-            >
-                <XIcon size={14} />
-            </button>
-        </motion.div>
-    );
-}
-
-export default function ActiveChips({ searchParams }: ActiveChipsProps): React.JSX.Element {
-    const router = useRouter();
-    const currentSearchParams = useSearchParams();
-
-    // Get active filters (exclude page and sort)
-    const activeFilters = Object.entries(searchParams).filter(([key, value]) => {
-        if (key === 'page' || key === 'sort') return false;
-        if (Array.isArray(value)) return value.length > 0;
-        return value !== undefined && value !== '';
-    });
-
-    const removeFilter = (key: string, value: string | string[]): void => {
-        const newSearchParams = new URLSearchParams(currentSearchParams.toString());
-
-        if (key === 'tags' && Array.isArray(value)) {
-            // Handle tags array - remove specific tags
-            const currentTags = newSearchParams.get('tags')?.split(',') || [];
-            const remainingTags = currentTags.filter(tag => !value.includes(tag));
-
-            if (remainingTags.length > 0) {
-                newSearchParams.set('tags', remainingTags.join(','));
-            } else {
-                newSearchParams.delete('tags');
+// Helper function to check if a filter has a value
+function hasFilterValue(key: string, value: string | string[] | [number, number]): boolean {
+    if (Array.isArray(value)) {
+        if (typeof value[0] === 'number') {
+            // For range arrays, check if they're not at default values
+            const numValue = value as [number, number];
+            switch (key) {
+                case 'priceRange':
+                    return numValue[0] > 0 || numValue[1] < 10000;
+                case 'widthRange':
+                    return numValue[0] > 0 || numValue[1] < 1000;
+                case 'heightRange':
+                    return numValue[0] > 0 || numValue[1] < 1000;
+                default:
+                    return value.length > 0;
             }
         } else {
-            // Remove single filter
-            newSearchParams.delete(key);
+            return value.length > 0;
         }
+    }
+    return value !== '' && value !== 'newest';
+}
 
-        // Reset to page 1 when filters change
-        newSearchParams.set('page', '1');
+// Helper function to clear a specific filter
+function clearFilter(key: keyof Filters, onFilterChange: (key: keyof Filters, value: string | string[] | [number, number]) => void) {
+    switch (key) {
+        case 'search':
+        case 'author':
+        case 'availability':
+            onFilterChange(key, '');
+            break;
+        case 'sortBy':
+            onFilterChange(key, 'newest');
+            break;
+        case 'technique':
+        case 'subject':
+        case 'style':
+        case 'tags':
+            onFilterChange(key, []);
+            break;
+        case 'priceRange':
+            onFilterChange(key, [0, 10000]);
+            break;
+        case 'widthRange':
+            onFilterChange(key, [0, 1000]);
+            break;
+        case 'heightRange':
+            onFilterChange(key, [0, 1000]);
+            break;
+    }
+}
 
-        // Navigate to new URL
-        router.push(`/gallery?${newSearchParams.toString()}`);
-    };
+export default function ActiveChips({ filters, onFilterChange }: ActiveChipsProps): React.JSX.Element {
+    // Get all active filters
+    const activeFilters = Object.entries(filters)
+        .filter(([key, value]) => hasFilterValue(key, value))
+        .map(([key, value]) => ({
+            key: key as keyof Filters,
+            value,
+            label: getFilterDisplayLabel(key, value)
+        }));
 
-    const clearAllFilters = (): void => {
-        router.push('/gallery');
-    };
-
-    // Don't render if no active filters
     if (activeFilters.length === 0) {
-        return <></>;
+        return <div />;
     }
 
     return (
         <div className="active-filters">
             <div className="active-filters-header">
-                <h3 className="active-filters-title">
-                    Активни филтри ({activeFilters.length})
-                </h3>
-                <button
-                    onClick={clearAllFilters}
-                    className="clear-all-filters-button"
-                    type="button"
-                >
-                    Изчисти всички
-                </button>
+                <h3 className="active-filters-title">Активни филтри</h3>
+                <span className="active-filters-count">{activeFilters.length}</span>
             </div>
 
-            <div className="filter-chips-container">
-                <AnimatePresence mode="popLayout">
-                    {activeFilters.map(([key, value]) => (
-                        <FilterChip
-                            key={`${key}-${Array.isArray(value) ? value.join(',') : value}`}
-                            filterKey={key}
-                            filterValue={value || ''}
-                            onRemove={removeFilter}
-                        />
+            <div className="active-filters-chips">
+                <AnimatePresence>
+                    {activeFilters.map((filter) => (
+                        <motion.div
+                            key={filter.key}
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.8 }}
+                            transition={{ duration: 0.2 }}
+                            className="active-filter-chip"
+                        >
+                            <span className="chip-label">{filter.label}</span>
+                            <button
+                                onClick={() => clearFilter(filter.key, onFilterChange)}
+                                className="chip-remove-btn"
+                                aria-label={`Премахни филтър ${filter.label}`}
+                            >
+                                <XIcon size={14} />
+                            </button>
+                        </motion.div>
                     ))}
                 </AnimatePresence>
             </div>

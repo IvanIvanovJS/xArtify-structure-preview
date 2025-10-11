@@ -5,6 +5,99 @@ import CustomDropdown from '@/components/ui/CustomDropdown';
 import "@/components/ui/styles/global-checkbox.css";
 import "./styles/artist-profile.css";
 
+// CheckboxList component with show more functionality
+function CheckboxList({
+  items,
+  selectedItems,
+  onItemToggle,
+  showMoreThreshold = 5,
+  showMoreIncrement = 10
+}: {
+  items: Array<{ name: string; count: number }>;
+  selectedItems: string[];
+  onItemToggle: (item: string) => void;
+  showMoreThreshold?: number;
+  showMoreIncrement?: number;
+}) {
+  const [showAll, setShowAll] = useState(false);
+
+  const visibleItems = showAll ? items : items.slice(0, showMoreThreshold);
+  const hasMore = items.length > showMoreThreshold;
+
+  return (
+    <div className="checkbox-list">
+      {visibleItems.map((item) => (
+        <label key={item.name} className="custom-checkbox-container">
+          <input
+            type="checkbox"
+            className="custom-checkbox-input"
+            checked={selectedItems.includes(item.name)}
+            onChange={() => onItemToggle(item.name)}
+          />
+          <div className="custom-checkbox">
+            <svg className="custom-checkbox-icon" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+            </svg>
+          </div>
+          <span className="form-checkbox-label">{item.name} ({item.count})</span>
+        </label>
+      ))}
+
+      {hasMore && (
+        <button
+          className="show-more-btn"
+          onClick={() => setShowAll(!showAll)}
+        >
+          {showAll ? 'Покажи по-малко' : `Покажи още ${Math.min(showMoreIncrement, items.length - showMoreThreshold)}`}
+        </button>
+      )}
+    </div>
+  );
+}
+
+// TagsList component with show more functionality
+function TagsList({
+  items,
+  selectedItems,
+  onItemToggle,
+  showMoreThreshold = 5,
+  showMoreIncrement = 10
+}: {
+  items: Array<{ name: string; count: number }>;
+  selectedItems: string[];
+  onItemToggle: (item: string) => void;
+  showMoreThreshold?: number;
+  showMoreIncrement?: number;
+}) {
+  const [showAll, setShowAll] = useState(false);
+
+  const visibleItems = showAll ? items : items.slice(0, showMoreThreshold);
+  const hasMore = items.length > showMoreThreshold;
+
+  return (
+    <div className="tags-list">
+      {visibleItems.map((item) => (
+        <button
+          key={item.name}
+          className={`tag-chip ${selectedItems.includes(item.name) ? 'active' : ''}`}
+          onClick={() => onItemToggle(item.name)}
+        >
+          {item.name} ({item.count})
+        </button>
+      ))}
+
+      {hasMore && (
+        <button
+          className="show-more-btn"
+          onClick={() => setShowAll(!showAll)}
+        >
+          {showAll ? 'Покажи по-малко' : `Покажи още ${Math.min(showMoreIncrement, items.length - showMoreThreshold)}`}
+        </button>
+      )}
+    </div>
+  );
+}
+
 interface FilterOptions {
   technique: string[];
   subject: string[];
@@ -99,7 +192,7 @@ export default function ArtistProfileSidebar({
       </div>
 
       {/* Technique Filter */}
-      {techniqueOptions.length > 0 && (
+      {techniqueOptions.filter(t => t.count > 0).length > 0 && (
         <div className="filter-section">
           <button
             className="filter-section-header"
@@ -112,31 +205,20 @@ export default function ArtistProfileSidebar({
           </button>
           {expandedSections.technique && (
             <div className="filter-section-content">
-              <div className="checkbox-list">
-                {techniqueOptions.map((technique) => (
-                  <label key={technique.name} className="custom-checkbox-container">
-                    <input
-                      type="checkbox"
-                      className="custom-checkbox-input"
-                      checked={filters.technique.includes(technique.name)}
-                      onChange={() => handleMultiSelect('technique', technique.name)}
-                    />
-                    <div className="custom-checkbox">
-                      <svg className="custom-checkbox-icon" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                    <span className="form-checkbox-label">{technique.name} ({technique.count})</span>
-                  </label>
-                ))}
-              </div>
+              <CheckboxList
+                items={techniqueOptions.filter(t => t.count > 0)}
+                selectedItems={filters.technique}
+                onItemToggle={(item) => handleMultiSelect('technique', item)}
+                showMoreThreshold={5}
+                showMoreIncrement={10}
+              />
             </div>
           )}
         </div>
       )}
 
       {/* Subject Filter */}
-      {subjectOptions.length > 0 && (
+      {subjectOptions.filter(s => s.count > 0).length > 0 && (
         <div className="filter-section">
           <button
             className="filter-section-header"
@@ -149,31 +231,20 @@ export default function ArtistProfileSidebar({
           </button>
           {expandedSections.subject && (
             <div className="filter-section-content">
-              <div className="checkbox-list">
-                {subjectOptions.map((subject) => (
-                  <label key={subject.name} className="custom-checkbox-container">
-                    <input
-                      type="checkbox"
-                      className="custom-checkbox-input"
-                      checked={filters.subject.includes(subject.name)}
-                      onChange={() => handleMultiSelect('subject', subject.name)}
-                    />
-                    <div className="custom-checkbox">
-                      <svg className="custom-checkbox-icon" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                    <span className="form-checkbox-label">{subject.name} ({subject.count})</span>
-                  </label>
-                ))}
-              </div>
+              <CheckboxList
+                items={subjectOptions.filter(s => s.count > 0)}
+                selectedItems={filters.subject}
+                onItemToggle={(item) => handleMultiSelect('subject', item)}
+                showMoreThreshold={5}
+                showMoreIncrement={10}
+              />
             </div>
           )}
         </div>
       )}
 
       {/* Style Filter */}
-      {styleOptions.length > 0 && (
+      {styleOptions.filter(s => s.count > 0).length > 0 && (
         <div className="filter-section">
           <button
             className="filter-section-header"
@@ -186,24 +257,13 @@ export default function ArtistProfileSidebar({
           </button>
           {expandedSections.style && (
             <div className="filter-section-content">
-              <div className="checkbox-list">
-                {styleOptions.map((style) => (
-                  <label key={style.name} className="custom-checkbox-container">
-                    <input
-                      type="checkbox"
-                      className="custom-checkbox-input"
-                      checked={filters.style.includes(style.name)}
-                      onChange={() => handleMultiSelect('style', style.name)}
-                    />
-                    <div className="custom-checkbox">
-                      <svg className="custom-checkbox-icon" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                    <span className="form-checkbox-label">{style.name} ({style.count})</span>
-                  </label>
-                ))}
-              </div>
+              <CheckboxList
+                items={styleOptions.filter(s => s.count > 0)}
+                selectedItems={filters.style}
+                onItemToggle={(item) => handleMultiSelect('style', item)}
+                showMoreThreshold={5}
+                showMoreIncrement={10}
+              />
             </div>
           )}
         </div>
@@ -249,7 +309,7 @@ export default function ArtistProfileSidebar({
       </div>
 
       {/* Tags Filter */}
-      {allTags.length > 0 && (
+      {allTags.filter(t => t.count > 0).length > 0 && (
         <div className="filter-section">
           <button
             className="filter-section-header"
@@ -262,17 +322,13 @@ export default function ArtistProfileSidebar({
           </button>
           {expandedSections.tags && (
             <div className="filter-section-content">
-              <div className="tags-list">
-                {allTags.map((tag) => (
-                  <button
-                    key={tag.name}
-                    className={`tag-chip ${filters.tags.includes(tag.name) ? 'active' : ''}`}
-                    onClick={() => handleMultiSelect('tags', tag.name)}
-                  >
-                    {tag.name} ({tag.count})
-                  </button>
-                ))}
-              </div>
+              <TagsList
+                items={allTags.filter(t => t.count > 0)}
+                selectedItems={filters.tags}
+                onItemToggle={(item) => handleMultiSelect('tags', item)}
+                showMoreThreshold={5}
+                showMoreIncrement={10}
+              />
             </div>
           )}
         </div>
