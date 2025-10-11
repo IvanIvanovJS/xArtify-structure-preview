@@ -26,11 +26,11 @@ function useDebounce<T>(value: T, delay: number): T {
 
 // Types
 interface FilterOptions {
-    techniques: string[];
-    subjects: string[];
-    styles: string[];
-    authors: Array<{ id: string; name: string }>;
-    tags: string[];
+    techniques: Array<{ name: string; count: number }>;
+    subjects: Array<{ name: string; count: number }>;
+    styles: Array<{ name: string; count: number }>;
+    authors: Array<{ id: string; name: string; count: number }>;
+    tags: Array<{ name: string; count: number }>;
     priceRange: {
         min: number;
         max: number;
@@ -115,14 +115,14 @@ function SelectFilter({
     onChange,
     placeholder = "Избери..."
 }: {
-    options: string[];
+    options: Array<{ name: string; count: number }>;
     value: string;
     onChange: (value: string) => void;
     placeholder?: string;
 }): React.JSX.Element {
     const dropdownOptions = [
         { value: "", label: placeholder },
-        ...options.map(option => ({ value: option, label: option }))
+        ...options.map(option => ({ value: option.name, label: `${option.name} (${option.count})` }))
     ];
 
     return (
@@ -143,7 +143,7 @@ function AuthorFilter({
     value,
     onChange
 }: {
-    authors: Array<{ id: string; name: string }>;
+    authors: Array<{ id: string; name: string; count: number }>;
     value: string;
     onChange: (value: string) => void;
 }): React.JSX.Element {
@@ -151,7 +151,7 @@ function AuthorFilter({
         { value: "", label: "Всички художници" },
         ...(authors || []).filter(author => author && author.name).map(author => ({
             value: author.name,
-            label: author.name
+            label: `${author.name} (${author.count})`
         }))
     ];
 
@@ -382,7 +382,7 @@ function TagsFilter({
     selectedTags,
     onTagsChange
 }: {
-    tags: string[];
+    tags: Array<{ name: string; count: number }>;
     selectedTags: string[];
     onTagsChange: (tags: string[]) => void;
 }): React.JSX.Element {
@@ -400,12 +400,12 @@ function TagsFilter({
             <div className="tags-container">
                 {tags.map((tag) => (
                     <button
-                        key={tag}
-                        onClick={() => toggleTag(tag)}
-                        className={`tag-button ${selectedTags.includes(tag) ? 'tag-selected' : ''}`}
+                        key={tag.name}
+                        onClick={() => toggleTag(tag.name)}
+                        className={`tag-button ${selectedTags.includes(tag.name) ? 'tag-selected' : ''}`}
                         type="button"
                     >
-                        {tag}
+                        {tag.name} ({tag.count})
                     </button>
                 ))}
             </div>

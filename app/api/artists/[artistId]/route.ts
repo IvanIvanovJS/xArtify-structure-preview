@@ -222,32 +222,74 @@ export async function GET(
       }),
     ]);
 
-    // Get filter options for the artist's paintings
-    const filterOptions = await prisma.painting.findMany({
-      where: {
-        artistId: validatedParams.artistId,
-        isSold: false,
-      },
-      select: {
-        technique: true,
-        subject: true,
-        style: true,
-        tags: true,
-      },
+    // Get filter options with counts for the artist's paintings
+    const [techniqueCounts, subjectCounts, styleCounts, tagData] = await Promise.all([
+      prisma.painting.groupBy({
+        by: ['technique'],
+        _count: { technique: true },
+        where: {
+          artistId: validatedParams.artistId,
+          isSold: false,
+          technique: { not: null }
+        },
+      }),
+      prisma.painting.groupBy({
+        by: ['subject'],
+        _count: { subject: true },
+        where: {
+          artistId: validatedParams.artistId,
+          isSold: false,
+          subject: { not: null }
+        },
+      }),
+      prisma.painting.groupBy({
+        by: ['style'],
+        _count: { style: true },
+        where: {
+          artistId: validatedParams.artistId,
+          isSold: false,
+          style: { not: null }
+        },
+      }),
+      prisma.painting.findMany({
+        select: { tags: true },
+        where: {
+          artistId: validatedParams.artistId,
+          isSold: false,
+          tags: { isEmpty: false }
+        },
+      }),
+    ]);
+
+    // Count tags
+    const tagCountMap = new Map<string, number>();
+    tagData.forEach(painting => {
+      painting.tags.forEach(tag => {
+        if (tag && tag.trim().length > 0) {
+          tagCountMap.set(tag, (tagCountMap.get(tag) || 0) + 1);
+        }
+      });
     });
 
-    const uniqueTechniques = Array.from(new Set(
-      filterOptions.map(p => p.technique).filter(Boolean)
-    ));
-    const uniqueSubjects = Array.from(new Set(
-      filterOptions.map(p => p.subject).filter(Boolean)
-    ));
-    const uniqueStyles = Array.from(new Set(
-      filterOptions.map(p => p.style).filter(Boolean)
-    ));
-    const uniqueTags = Array.from(new Set(
-      filterOptions.flatMap(p => p.tags)
-    ));
+    const techniquesWithCounts = techniqueCounts.map(item => ({
+      name: item.technique!,
+      count: item._count.technique
+    })).sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+
+    const subjectsWithCounts = subjectCounts.map(item => ({
+      name: item.subject!,
+      count: item._count.subject
+    })).sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+
+    const stylesWithCounts = styleCounts.map(item => ({
+      name: item.style!,
+      count: item._count.style
+    })).sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+
+    const tagsWithCounts = Array.from(tagCountMap.entries()).map(([name, count]) => ({
+      name,
+      count
+    })).sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
 
     return NextResponse.json({
       artist: {
@@ -265,10 +307,10 @@ export async function GET(
         hasPrev: page > 1,
       },
       filterOptions: {
-        techniques: uniqueTechniques,
-        subjects: uniqueSubjects,
-        styles: uniqueStyles,
-        tags: uniqueTags,
+        techniques: techniquesWithCounts,
+        subjects: subjectsWithCounts,
+        styles: stylesWithCounts,
+        tags: tagsWithCounts,
       },
     });
 

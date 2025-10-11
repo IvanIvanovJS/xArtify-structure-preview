@@ -18,10 +18,10 @@ interface ArtistProfileSidebarProps {
   filters: FilterOptions;
   onFilterChange: (key: keyof FilterOptions, value: string | string[] | [number, number]) => void;
   clearFilters: () => void;
-  techniqueOptions: string[];
-  subjectOptions: string[];
-  styleOptions: string[];
-  allTags: string[];
+  techniqueOptions: Array<{ name: string; count: number }>;
+  subjectOptions: Array<{ name: string; count: number }>;
+  styleOptions: Array<{ name: string; count: number }>;
+  allTags: Array<{ name: string; count: number }>;
   sortOptions: Array<{ value: string; label: string }>;
 }
 
@@ -114,19 +114,19 @@ export default function ArtistProfileSidebar({
             <div className="filter-section-content">
               <div className="checkbox-list">
                 {techniqueOptions.map((technique) => (
-                  <label key={technique} className="custom-checkbox-container">
+                  <label key={technique.name} className="custom-checkbox-container">
                     <input
                       type="checkbox"
                       className="custom-checkbox-input"
-                      checked={filters.technique.includes(technique)}
-                      onChange={() => handleMultiSelect('technique', technique)}
+                      checked={filters.technique.includes(technique.name)}
+                      onChange={() => handleMultiSelect('technique', technique.name)}
                     />
                     <div className="custom-checkbox">
                       <svg className="custom-checkbox-icon" viewBox="0 0 20 20" fill="currentColor">
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                       </svg>
                     </div>
-                    <span className="form-checkbox-label">{technique}</span>
+                    <span className="form-checkbox-label">{technique.name} ({technique.count})</span>
                   </label>
                 ))}
               </div>
@@ -151,19 +151,19 @@ export default function ArtistProfileSidebar({
             <div className="filter-section-content">
               <div className="checkbox-list">
                 {subjectOptions.map((subject) => (
-                  <label key={subject} className="custom-checkbox-container">
+                  <label key={subject.name} className="custom-checkbox-container">
                     <input
                       type="checkbox"
                       className="custom-checkbox-input"
-                      checked={filters.subject.includes(subject)}
-                      onChange={() => handleMultiSelect('subject', subject)}
+                      checked={filters.subject.includes(subject.name)}
+                      onChange={() => handleMultiSelect('subject', subject.name)}
                     />
                     <div className="custom-checkbox">
                       <svg className="custom-checkbox-icon" viewBox="0 0 20 20" fill="currentColor">
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                       </svg>
                     </div>
-                    <span className="form-checkbox-label">{subject}</span>
+                    <span className="form-checkbox-label">{subject.name} ({subject.count})</span>
                   </label>
                 ))}
               </div>
@@ -188,19 +188,19 @@ export default function ArtistProfileSidebar({
             <div className="filter-section-content">
               <div className="checkbox-list">
                 {styleOptions.map((style) => (
-                  <label key={style} className="custom-checkbox-container">
+                  <label key={style.name} className="custom-checkbox-container">
                     <input
                       type="checkbox"
                       className="custom-checkbox-input"
-                      checked={filters.style.includes(style)}
-                      onChange={() => handleMultiSelect('style', style)}
+                      checked={filters.style.includes(style.name)}
+                      onChange={() => handleMultiSelect('style', style.name)}
                     />
                     <div className="custom-checkbox">
                       <svg className="custom-checkbox-icon" viewBox="0 0 20 20" fill="currentColor">
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                       </svg>
                     </div>
-                    <span className="form-checkbox-label">{style}</span>
+                    <span className="form-checkbox-label">{style.name} ({style.count})</span>
                   </label>
                 ))}
               </div>
@@ -265,11 +265,11 @@ export default function ArtistProfileSidebar({
               <div className="tags-list">
                 {allTags.map((tag) => (
                   <button
-                    key={tag}
-                    className={`tag-chip ${filters.tags.includes(tag) ? 'active' : ''}`}
-                    onClick={() => handleMultiSelect('tags', tag)}
+                    key={tag.name}
+                    className={`tag-chip ${filters.tags.includes(tag.name) ? 'active' : ''}`}
+                    onClick={() => handleMultiSelect('tags', tag.name)}
                   >
-                    {tag}
+                    {tag.name} ({tag.count})
                   </button>
                 ))}
               </div>

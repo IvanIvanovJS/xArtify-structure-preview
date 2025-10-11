@@ -82,11 +82,55 @@ export default function ArtistProfileClient({ artist }: ArtistProfileClientProps
   const [filteredPaintings, setFilteredPaintings] = useState<Painting[]>(artist.paintings);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
 
-  // Get unique filter options from paintings
-  const techniqueOptions = Array.from(new Set(artist.paintings.map(p => p.technique).filter(Boolean))) as string[];
-  const subjectOptions = Array.from(new Set(artist.paintings.map(p => p.subject).filter(Boolean))) as string[];
-  const styleOptions = Array.from(new Set(artist.paintings.map(p => p.style).filter(Boolean))) as string[];
-  const allTags = Array.from(new Set(artist.paintings.flatMap(p => p.tags)));
+  // Get unique filter options with counts from paintings
+  const techniqueCountMap = new Map<string, number>();
+  const subjectCountMap = new Map<string, number>();
+  const styleCountMap = new Map<string, number>();
+  const tagCountMap = new Map<string, number>();
+
+  artist.paintings.forEach(painting => {
+    // Count techniques
+    if (painting.technique) {
+      techniqueCountMap.set(painting.technique, (techniqueCountMap.get(painting.technique) || 0) + 1);
+    }
+
+    // Count subjects
+    if (painting.subject) {
+      subjectCountMap.set(painting.subject, (subjectCountMap.get(painting.subject) || 0) + 1);
+    }
+
+    // Count styles
+    if (painting.style) {
+      styleCountMap.set(painting.style, (styleCountMap.get(painting.style) || 0) + 1);
+    }
+
+    // Count tags
+    painting.tags.forEach(tag => {
+      if (tag && tag.trim().length > 0) {
+        tagCountMap.set(tag, (tagCountMap.get(tag) || 0) + 1);
+      }
+    });
+  });
+
+  const techniqueOptions = Array.from(techniqueCountMap.entries()).map(([name, count]) => ({
+    name,
+    count
+  })).sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+
+  const subjectOptions = Array.from(subjectCountMap.entries()).map(([name, count]) => ({
+    name,
+    count
+  })).sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+
+  const styleOptions = Array.from(styleCountMap.entries()).map(([name, count]) => ({
+    name,
+    count
+  })).sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+
+  const allTags = Array.from(tagCountMap.entries()).map(([name, count]) => ({
+    name,
+    count
+  })).sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
 
   const sortOptions = [
     { value: 'newest', label: 'Най-нови' },

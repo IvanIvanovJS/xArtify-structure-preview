@@ -55,11 +55,11 @@ interface PaintingWithArtist {
 }
 
 interface FilterOptions {
-    techniques: string[];
-    subjects: string[];
-    styles: string[];
-    authors: Array<{ id: string; name: string }>;
-    tags: string[];
+    techniques: Array<{ name: string; count: number }>;
+    subjects: Array<{ name: string; count: number }>;
+    styles: Array<{ name: string; count: number }>;
+    authors: Array<{ id: string; name: string; count: number }>;
+    tags: Array<{ name: string; count: number }>;
     priceRange: {
         min: number;
         max: number;
