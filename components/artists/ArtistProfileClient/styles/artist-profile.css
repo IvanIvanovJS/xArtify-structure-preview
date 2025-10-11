@@ -1,19 +1,17 @@
 /* Artist Profile Page Styles */
 .artist-profile-page {
     min-height: 100vh;
-    background: var(--color-background);
     color: var(--color-foreground);
 }
 
 /* Artist Header */
 .artist-header {
-    background: var(--color-muted);
+    background: transparent;
     border-bottom: 1px solid var(--color-primary-20);
     padding: 2rem 1rem;
 }
 
 .artist-header-content {
-    max-width: 1200px;
     margin: 0 auto;
     display: flex;
     flex-direction: column;
@@ -89,7 +87,7 @@
 .mobile-filter-toggle {
     display: none;
     padding: 1rem;
-    background: var(--color-muted);
+    background: transparent;
     border-bottom: 1px solid var(--color-primary-20);
 }
 
@@ -125,7 +123,6 @@
 
 /* Artist Content Layout */
 .artist-content {
-    max-width: 1200px;
     margin: 0 auto;
     padding: 2rem 1rem;
     display: grid;
@@ -135,13 +132,18 @@
 
 /* Desktop Sidebar */
 .artist-sidebar {
-    background: var(--color-muted);
+    background: transparent;
     border-radius: 1rem;
     padding: 1.5rem;
     height: fit-content;
     border: 1px solid var(--color-primary-20);
     position: sticky;
     top: 2rem;
+    width: 100%;
+    max-width: 300px;
+    min-width: 0;
+    /* Prevent overflow */
+    box-sizing: border-box;
 }
 
 .sidebar-header {
@@ -221,55 +223,41 @@
     gap: 0.75rem;
 }
 
-.checkbox-item {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    cursor: pointer;
-    padding: 0.5rem;
-    border-radius: 0.5rem;
-    transition: background-color 0.3s ease;
-}
-
-.checkbox-item:hover {
-    background: var(--color-primary-5);
-}
-
-.checkbox-item input[type="checkbox"] {
-    width: 18px;
-    height: 18px;
-    accent-color: var(--color-primary);
-    cursor: pointer;
-}
-
-.checkbox-label {
-    font-size: 0.875rem;
-    color: var(--color-foreground);
-    cursor: pointer;
-}
-
 /* Price Range */
 .price-range {
     display: flex;
     flex-direction: column;
     gap: 1rem;
+    width: 100%;
+    min-width: 0;
+    /* Prevent overflow */
 }
 
 .price-inputs {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    width: 100%;
+    min-width: 0;
+    /* Prevent overflow */
 }
 
 .price-input {
     flex: 1;
-    background: var(--color-background);
+    min-width: 0;
+    /* Allow shrinking */
+    max-width: 100px;
+    /* Prevent excessive width */
+    background: transparent;
     border: 1px solid var(--color-primary-30);
     color: var(--color-foreground);
-    padding: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    /* Reduced padding for mobile */
     border-radius: 0.5rem;
     font-size: 0.875rem;
     transition: border-color 0.3s ease;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .price-input:focus {
@@ -281,6 +269,9 @@
 .price-separator {
     color: var(--color-muted-foreground);
     font-weight: 500;
+    flex-shrink: 0;
+    /* Don't shrink the separator */
+    white-space: nowrap;
 }
 
 .price-range-display {
@@ -288,8 +279,12 @@
     font-size: 0.875rem;
     color: var(--color-muted-foreground);
     padding: 0.5rem;
-    background: var(--color-primary-5);
+    background: var(--color-primary-10);
     border-radius: 0.5rem;
+    width: 100%;
+    box-sizing: border-box;
+    word-break: break-word;
+    /* Handle long text */
 }
 
 /* Tags */
@@ -300,7 +295,7 @@
 }
 
 .tag-chip {
-    background: var(--color-background);
+    background: transparent;
     border: 1px solid var(--color-primary-30);
     color: var(--color-foreground);
     padding: 0.5rem 0.75rem;
@@ -346,126 +341,181 @@
     font-weight: 400;
 }
 
-/* Paintings Grid */
+/* Paintings Grid - Match Gallery Grid */
 .paintings-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 2rem;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 2rem;
 }
 
-.painting-card {
-    background: var(--color-muted);
+/* Artist Profile Artwork Card */
+.artist-profile-artwork-card {
+    background: transparent;
     border-radius: 1rem;
     overflow: hidden;
     border: 1px solid var(--color-primary-20);
     transition: all 0.3s ease;
+    cursor: pointer;
 }
 
-.painting-card:hover {
+.artist-profile-artwork-card:hover {
     transform: translateY(-4px);
     box-shadow: 0 8px 25px var(--color-primary-20);
     border-color: var(--color-primary-40);
 }
 
-.painting-link {
-    display: block;
-    text-decoration: none;
-    color: inherit;
+.artist-profile-artwork-card.selected {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px var(--color-primary-20);
 }
 
-.painting-image-container {
+.artist-profile-artwork-image-container {
     position: relative;
     width: 100%;
-    height: 280px;
+    aspect-ratio: 1/1;
     overflow: hidden;
+    background: var(--color-background);
 }
 
-.painting-image {
-    transition: opacity 0.5s ease;
+.artist-profile-artwork-main-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+    background: var(--color-muted);
 }
 
-.painting-image-hover {
-    position: absolute;
-    top: 0;
-    left: 0;
-    opacity: 0;
-    transition: opacity 0.5s ease;
+.artist-profile-artwork-card:hover .artist-profile-artwork-main-image {
+    transform: scale(1.05);
 }
 
-.painting-card:hover .painting-image {
-    opacity: 0;
-}
-
-.painting-card:hover .painting-image-hover {
-    opacity: 1;
-}
-
-.sale-badge {
+.artist-profile-artwork-tag {
     position: absolute;
     top: 1rem;
-    right: 1rem;
-    background: var(--color-promotion);
-    color: white;
+    left: 1rem;
     padding: 0.5rem 0.75rem;
     border-radius: 0.5rem;
-    font-size: 0.875rem;
+    font-size: 0.75rem;
     font-weight: 600;
-    box-shadow: 0 2px 8px rgba(255, 112, 22, 0.3);
+    z-index: 2;
 }
 
-.painting-info {
+.artist-profile-artwork-tag--new {
+    background: var(--color-primary);
+    color: var(--color-background);
+}
+
+.artist-profile-artwork-tag--sold {
+    background: var(--color-muted-foreground);
+    color: var(--color-background);
+}
+
+.artist-profile-artwork-thumbnail-container {
+    position: absolute;
+    bottom: 1rem;
+    right: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    z-index: 2;
+}
+
+.artist-profile-artwork-thumbnail {
+    border-radius: 0.25rem;
+}
+
+.artist-profile-artwork-image-count {
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.artist-profile-artwork-content {
     padding: 1.5rem;
 }
 
-.painting-title {
+.artist-profile-artwork-title {
     font-size: 1.25rem;
     font-weight: 600;
     color: var(--color-foreground);
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
     line-height: 1.3;
 }
 
-.painting-price {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
+.artist-profile-artwork-artist {
+    font-size: 0.875rem;
+    color: var(--color-muted-foreground);
+    margin-bottom: 0.5rem;
+}
+
+.artist-profile-artwork-artist-link {
+    color: var(--color-primary);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.artist-profile-artwork-artist-link:hover {
+    color: var(--color-primary-80);
+}
+
+.artist-profile-artwork-dimensions {
+    font-size: 0.875rem;
+    color: var(--color-muted-foreground);
     margin-bottom: 1rem;
 }
 
-.final-price {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--color-primary);
+.artist-profile-artwork-pricing {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
 }
 
-.original-price {
-    font-size: 1rem;
+.artist-profile-artwork-price--original {
+    font-size: 0.875rem;
     color: var(--color-muted-foreground);
     text-decoration: line-through;
 }
 
-.price {
+.artist-profile-artwork-price--original.hidden {
+    display: none;
+}
+
+.artist-profile-artwork-price-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.artist-profile-artwork-price {
     font-size: 1.5rem;
     font-weight: 700;
     color: var(--color-foreground);
 }
 
-.price-eur {
-    font-size: 0.875rem;
-    color: var(--color-muted-foreground);
+.artist-profile-artwork-discount-tag {
+    background: var(--color-promotion);
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 600;
 }
 
-.painting-details {
+.artist-profile-artwork-price-eur-container {
     display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
+    align-items: center;
+    justify-content: space-between;
 }
 
-.painting-dimensions,
-.painting-technique {
+.artist-profile-artwork-price-eur {
     font-size: 0.875rem;
     color: var(--color-muted-foreground);
 }
+
 
 /* No Paintings State */
 .no-paintings {
@@ -490,6 +540,9 @@
     background: rgba(0, 0, 0, 0.5);
     z-index: 1000;
     backdrop-filter: blur(4px);
+    width: 100vw;
+    height: 100vh;
+    box-sizing: border-box;
 }
 
 .mobile-filters {
@@ -497,12 +550,16 @@
     bottom: 0;
     left: 0;
     right: 0;
-    background: var(--color-muted);
+    background: transparent;
     border-top: 1px solid var(--color-primary-20);
     border-radius: 1rem 1rem 0 0;
     max-height: 80vh;
     display: flex;
     flex-direction: column;
+    width: 100%;
+    box-sizing: border-box;
+    min-width: 0;
+    /* Prevent overflow */
 }
 
 .mobile-filters-header {
@@ -625,7 +682,7 @@
 }
 
 .faq-item {
-    background: var(--color-muted);
+    background: transparent;
     border-radius: 1rem;
     padding: 2rem;
     border: 1px solid var(--color-primary-20);
@@ -645,14 +702,15 @@
 }
 
 /* Responsive Design */
+@media (max-width: 1200px) {
+    .paintings-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
 @media (max-width: 1024px) {
     .artist-content {
         grid-template-columns: 250px 1fr;
-        gap: 1.5rem;
-    }
-
-    .paintings-grid {
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
         gap: 1.5rem;
     }
 }
@@ -690,25 +748,48 @@
     }
 
     .paintings-grid {
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        grid-template-columns: repeat(2, 1fr);
         gap: 1rem;
     }
 
-    .painting-image-container {
-        height: 200px;
-    }
 
-    .painting-info {
+    .artist-profile-artwork-content {
         padding: 1rem;
     }
 
-    .painting-title {
+    .artist-profile-artwork-title {
         font-size: 1.125rem;
     }
 
-    .final-price,
-    .price {
+    .artist-profile-artwork-price {
         font-size: 1.25rem;
+    }
+
+    /* Mobile Price Range Fixes */
+    .price-inputs {
+        gap: 0.25rem;
+        /* Reduce gap on mobile */
+    }
+
+    .price-input {
+        padding: 0.5rem;
+        /* Smaller padding on mobile */
+        font-size: 0.8rem;
+        /* Smaller font on mobile */
+        max-width: 80px;
+        /* Smaller max width on mobile */
+    }
+
+    .price-separator {
+        font-size: 0.8rem;
+        /* Smaller separator on mobile */
+    }
+
+    .price-range-display {
+        font-size: 0.8rem;
+        /* Smaller display text on mobile */
+        padding: 0.4rem;
+        /* Smaller padding on mobile */
     }
 }
 
@@ -727,11 +808,35 @@
     }
 
     .paintings-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
     }
 
-    .painting-image-container {
-        height: 250px;
+    /* Extra Small Mobile Price Range Fixes */
+    .price-inputs {
+        gap: 0.2rem;
+        /* Even smaller gap */
+    }
+
+    .price-input {
+        padding: 0.4rem;
+        /* Even smaller padding */
+        font-size: 0.75rem;
+        /* Even smaller font */
+        max-width: 70px;
+        /* Even smaller max width */
+    }
+
+    .price-separator {
+        font-size: 0.75rem;
+        /* Even smaller separator */
+    }
+
+    .price-range-display {
+        font-size: 0.75rem;
+        /* Even smaller display text */
+        padding: 0.3rem;
+        /* Even smaller padding */
     }
 
     .faqs-section {

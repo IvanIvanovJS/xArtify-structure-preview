@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
-import { bgnToEur } from '@/lib/currency';
+import ArtistProfileArtworkCard from './ArtistProfileArtworkCard';
 import ArtistProfileSidebar from './ArtistProfileSidebar';
 import ArtistProfileMobileFilters from './ArtistProfileMobileFilters';
 import "./styles/artist-profile.css";
@@ -36,6 +35,14 @@ interface Painting {
   finalPrice: number | null;
   originalPrice: number | null;
   createdAt: Date;
+  urlTitle?: string;
+  isSold: boolean;
+  artist?: {
+    id: string;
+    user: {
+      name: string | null;
+    };
+  };
 }
 
 interface Tag {
@@ -175,20 +182,25 @@ export default function ArtistProfileClient({ artist }: ArtistProfileClientProps
     });
   };
 
-  const getDisplayPrice = (painting: Painting) => {
-    if (painting.isOnSale && painting.finalPrice) {
-      return {
-        price: painting.finalPrice,
-        originalPrice: painting.originalPrice || painting.price,
-        isOnSale: true,
-        salePercentage: painting.salePercentage
-      };
-    }
+  // Convert Painting to PaintingWithArtist format for ArtworkCard
+  const convertToArtworkCardFormat = (painting: Painting) => {
     return {
-      price: painting.price,
-      originalPrice: null,
-      isOnSale: false,
-      salePercentage: null
+      ...painting,
+      description: null,
+      dimensions: null,
+      materials: null,
+      artistId: artist.id,
+      slug: null,
+      urlTitle: painting.urlTitle || painting.id,
+      updatedAt: painting.createdAt,
+      artist: {
+        id: artist.id,
+        bio: artist.bio,
+        user: {
+          name: artist.user.name,
+          email: null
+        }
+      }
     };
   };
 
@@ -277,60 +289,13 @@ export default function ArtistProfileClient({ artist }: ArtistProfileClientProps
 
           {filteredPaintings.length > 0 ? (
             <div className="paintings-grid">
-              {filteredPaintings.map((painting) => {
-                const priceInfo = getDisplayPrice(painting);
-                return (
-                  <div key={painting.id} className="painting-card">
-                    <Link href={`/gallery/${painting.id}`} className="painting-link">
-                      <div className="painting-image-container">
-                        <Image
-                          src={painting.images[0]}
-                          alt={painting.title}
-                          fill
-                          style={{ objectFit: "cover" }}
-                          className="painting-image"
-                        />
-                        {painting.images.length > 1 && (
-                          <Image
-                            src={painting.images[1]}
-                            alt={painting.title}
-                            fill
-                            style={{ objectFit: "cover" }}
-                            className="painting-image-hover"
-                          />
-                        )}
-                        {priceInfo.isOnSale && (
-                          <div className="sale-badge">
-                            -{priceInfo.salePercentage}%
-                          </div>
-                        )}
-                      </div>
-                      <div className="painting-info">
-                        <h3 className="painting-title">{painting.title}</h3>
-                        <div className="painting-price">
-                          {priceInfo.isOnSale ? (
-                            <>
-                              <span className="final-price">{priceInfo.price.toFixed(2)} лв.</span>
-                              <span className="original-price">{priceInfo.originalPrice?.toFixed(2)} лв.</span>
-                            </>
-                          ) : (
-                            <span className="price">{priceInfo.price.toFixed(2)} лв.</span>
-                          )}
-                          <span className="price-eur">{bgnToEur(priceInfo.price).toFixed(2)} €</span>
-                        </div>
-                        <div className="painting-details">
-                          <span className="painting-dimensions">
-                            {painting.widthCm} × {painting.heightCm} см
-                          </span>
-                          {painting.technique && (
-                            <span className="painting-technique">{painting.technique}</span>
-                          )}
-                        </div>
-                      </div>
-                    </Link>
-                  </div>
-                );
-              })}
+              {filteredPaintings.map((painting) => (
+                <ArtistProfileArtworkCard
+                  key={painting.id}
+                  painting={convertToArtworkCardFormat(painting)}
+                  showSold={false}
+                />
+              ))}
             </div>
           ) : (
             <div className="no-paintings">

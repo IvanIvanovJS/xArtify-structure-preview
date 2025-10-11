@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { SubscriptionPlan, User, PaymentIntent } from "@prisma/client";
@@ -63,7 +63,6 @@ export default function ArtistProfileForm({ userId, userData, selectedPlan, paym
         faqs: [] as FAQItem[]
     });
 
-    const [isValidPhone, setIsValidPhone] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -287,7 +286,6 @@ export default function ArtistProfileForm({ userId, userData, selectedPlan, paym
                                 value={formData.phoneNumber}
                                 onChange={(value) => {
                                     setFormData(prev => ({ ...prev, phoneNumber: value || "" }));
-                                    setIsValidPhone(value ? isValidPhoneNumber(value) : false);
                                 }}
                                 className="phone-input"
                             />

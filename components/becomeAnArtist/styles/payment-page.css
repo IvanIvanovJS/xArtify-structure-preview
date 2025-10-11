@@ -49,12 +49,22 @@
     min-height: calc(100vh - 200px);
 }
 
+.payment-right-column {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    position: relative;
+    top: 2rem;
+    max-height: calc(100vh - 4rem);
+    overflow-y: auto;
+}
+
 .payment-summary {
     background: var(--color-white-1);
     border: 1px solid var(--color-primary-30);
     border-radius: 1rem;
     padding: 2rem;
-    position: sticky;
+    position: relative;
     top: 2rem;
     max-height: calc(100vh - 4rem);
     overflow-y: auto;
@@ -182,6 +192,11 @@
 .payment-actions {
     display: flex;
     justify-content: flex-end;
+    position: static;
+    background: transparent;
+    padding: 0;
+    border: none;
+    margin-top: 0;
 }
 
 .payment-button {
@@ -373,16 +388,6 @@
     .billing-selection {
         margin-bottom: 1rem;
     }
-
-    .payment-actions {
-        position: sticky;
-        bottom: 2rem;
-        background: var(--color-white-1);
-        padding: 1rem;
-        border-radius: 0.5rem;
-        border: 1px solid var(--color-primary-30);
-        margin-top: 1rem;
-    }
 }
 
 /* Mobile Responsiveness */
@@ -394,6 +399,12 @@
 
     .payment-summary {
         position: static;
+    }
+
+    .payment-right-column {
+        position: static;
+        max-height: none;
+        overflow-y: visible;
     }
 
     .payment-actions {
@@ -509,21 +520,25 @@
 }
 
 /* Custom Scrollbar */
-.payment-form-container::-webkit-scrollbar {
+.payment-form-container::-webkit-scrollbar,
+.payment-right-column::-webkit-scrollbar {
     width: 6px;
 }
 
-.payment-form-container::-webkit-scrollbar-track {
+.payment-form-container::-webkit-scrollbar-track,
+.payment-right-column::-webkit-scrollbar-track {
     background: rgba(255, 255, 255, 0.1);
     border-radius: 3px;
 }
 
-.payment-form-container::-webkit-scrollbar-thumb {
+.payment-form-container::-webkit-scrollbar-thumb,
+.payment-right-column::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.3);
     border-radius: 3px;
 }
 
-.payment-form-container::-webkit-scrollbar-thumb:hover {
+.payment-form-container::-webkit-scrollbar-thumb:hover,
+.payment-right-column::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.5);
 }
 

@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import ArtistProfileClient from "@/components/artists/ArtistProfileClient";
+import ArtistProfileClient from "@/components/artists/ArtistProfileClient/ArtistProfileClient";
 import { notFound } from "next/navigation";
 
 export const runtime = "nodejs";
@@ -32,6 +32,19 @@ export default async function ArtistProfilePage({ params }: ArtistProfilePagePro
             }
         },
     });
+
+    // Add artist property to each painting for type compatibility
+    if (artist) {
+        artist.paintings = artist.paintings.map(painting => ({
+            ...painting,
+            artist: {
+                id: artist.id,
+                user: {
+                    name: artist.user.name
+                }
+            }
+        }));
+    }
 
     if (!artist) {
         notFound();
