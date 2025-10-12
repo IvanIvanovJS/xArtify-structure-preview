@@ -47,14 +47,9 @@
     border-color: var(--color-primary);
 }
 
-.filter-section {
-    margin-bottom: 1rem;
-    padding-bottom: 1rem;
-}
 
 .filter-section:last-child {
     border-bottom: none;
-    margin-bottom: 0;
 }
 
 .filter-section-header {
@@ -219,8 +214,13 @@
 .price-range-display {
     text-align: center;
     font-size: 0.875rem;
-    color: var(--color-primary);
-    font-weight: 500;
+    color: var(--color-muted-foreground);
+    padding: 0.5rem;
+    background: var(--color-primary-10);
+    border-radius: 0.5rem;
+    width: 100%;
+    box-sizing: border-box;
+    word-break: break-word;
 }
 
 /* Size Range */
