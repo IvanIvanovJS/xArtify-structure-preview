@@ -65,18 +65,29 @@ interface FilterOptions {
   subject: string[];
   style: string[];
   priceRange: [number, number];
+  widthRange: [number, number];
+  heightRange: [number, number];
   tags: string[];
   sortBy: string;
+  availability: string;
 }
 
 export default function ArtistProfileClient({ artist }: ArtistProfileClientProps) {
+  // Calculate max values from actual paintings
+  const maxPrice = Math.max(...artist.paintings.map(p => p.isOnSale && p.finalPrice ? p.finalPrice : p.price));
+  const maxWidth = Math.max(...artist.paintings.map(p => p.widthCm || 0));
+  const maxHeight = Math.max(...artist.paintings.map(p => p.heightCm || 0));
+
   const [filters, setFilters] = useState<FilterOptions>({
     technique: [],
     subject: [],
     style: [],
-    priceRange: [0, 10000],
+    priceRange: [0, maxPrice],
+    widthRange: [0, maxWidth],
+    heightRange: [0, maxHeight],
     tags: [],
-    sortBy: 'newest'
+    sortBy: 'newest',
+    availability: ''
   });
 
   const [filteredPaintings, setFilteredPaintings] = useState<Painting[]>(artist.paintings);
@@ -165,17 +176,56 @@ export default function ArtistProfileClient({ artist }: ArtistProfileClientProps
       );
     }
 
-    // Apply price range filter
-    filtered = filtered.filter(painting => {
-      const price = painting.isOnSale && painting.finalPrice ? painting.finalPrice : painting.price;
-      return price >= filters.priceRange[0] && price <= filters.priceRange[1];
-    });
+    // Apply price range filter - apply only if different from default [0, maxPrice]
+    if (filters.priceRange[0] > 0 || filters.priceRange[1] < maxPrice) {
+      filtered = filtered.filter(painting => {
+        const price = painting.isOnSale && painting.finalPrice ? painting.finalPrice : painting.price;
+        return price >= filters.priceRange[0] && price <= filters.priceRange[1];
+      });
+    }
+
+    // Apply width range filter - apply only if different from default [0, maxWidth]
+    if (filters.widthRange[0] > 0 || filters.widthRange[1] < maxWidth) {
+      filtered = filtered.filter(painting => {
+        const width = painting.widthCm || 0;
+        return width >= filters.widthRange[0] && width <= filters.widthRange[1];
+      });
+    }
+
+    // Apply height range filter - apply only if different from default [0, maxHeight]
+    if (filters.heightRange[0] > 0 || filters.heightRange[1] < maxHeight) {
+      filtered = filtered.filter(painting => {
+        const height = painting.heightCm || 0;
+        return height >= filters.heightRange[0] && height <= filters.heightRange[1];
+      });
+    }
 
     // Apply tags filter
     if (filters.tags.length > 0) {
       filtered = filtered.filter(painting =>
         filters.tags.some(tag => painting.tags.includes(tag))
       );
+    }
+
+    // Apply availability filter
+    if (filters.availability) {
+      const now = new Date();
+      const fourteenDaysAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
+
+      switch (filters.availability) {
+        case 'new':
+          filtered = filtered.filter(painting => {
+            const createdAt = new Date(painting.createdAt);
+            return createdAt >= fourteenDaysAgo;
+          });
+          break;
+        case 'promotion':
+          filtered = filtered.filter(painting => painting.isOnSale);
+          break;
+        case 'sold':
+          filtered = filtered.filter(painting => painting.isSold);
+          break;
+      }
     }
 
     // Apply sorting
@@ -206,7 +256,7 @@ export default function ArtistProfileClient({ artist }: ArtistProfileClientProps
     }
 
     setFilteredPaintings(filtered);
-  }, [filters, artist.paintings]);
+  }, [filters, artist.paintings, maxPrice, maxWidth, maxHeight]);
 
   const handleFilterChange = (key: keyof FilterOptions, value: string | string[] | [number, number]) => {
     setFilters(prev => ({
@@ -220,9 +270,12 @@ export default function ArtistProfileClient({ artist }: ArtistProfileClientProps
       technique: [],
       subject: [],
       style: [],
-      priceRange: [0, 10000],
+      priceRange: [0, maxPrice],
+      widthRange: [0, maxWidth],
+      heightRange: [0, maxHeight],
       tags: [],
-      sortBy: 'newest'
+      sortBy: 'newest',
+      availability: ''
     });
   };
 
@@ -305,6 +358,9 @@ export default function ArtistProfileClient({ artist }: ArtistProfileClientProps
           styleOptions={styleOptions}
           allTags={allTags}
           sortOptions={sortOptions}
+          maxPrice={maxPrice}
+          maxWidth={maxWidth}
+          maxHeight={maxHeight}
         />
 
         {/* Mobile Filters */}
@@ -318,6 +374,9 @@ export default function ArtistProfileClient({ artist }: ArtistProfileClientProps
             styleOptions={styleOptions}
             allTags={allTags}
             sortOptions={sortOptions}
+            maxPrice={maxPrice}
+            maxWidth={maxWidth}
+            maxHeight={maxHeight}
             onClose={() => setShowMobileFilters(false)}
           />
         )}

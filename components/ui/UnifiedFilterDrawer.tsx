@@ -5,7 +5,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { createPortal } from 'react-dom';
 import { XIcon, ChevronDownIcon } from 'lucide-react';
 import CustomDropdown from '@/components/ui/CustomDropdown';
+import AppliedFiltersSection from '@/components/ui/AppliedFiltersSection';
 import "@/components/ui/styles/global-checkbox.css";
+import "@/components/ui/styles/applied-filters-section.css";
 
 // Types
 interface FilterOption {
@@ -17,12 +19,23 @@ interface FilterOption {
 interface FilterSection {
     id: string;
     title: string;
-    type: 'dropdown' | 'checkbox' | 'range';
+    type: 'dropdown' | 'checkbox' | 'range' | 'size';
     options?: FilterOption[];
     dropdownOptions?: Array<{ value: string; label: string }>;
     value?: string | string[] | [number, number];
     placeholder?: string;
     showMore?: boolean;
+    widthValue?: [number, number];
+    heightValue?: [number, number];
+    widthMax?: number;
+    heightMax?: number;
+}
+
+interface AppliedFilter {
+    key: string;
+    label: string;
+    value: string;
+    onRemove: () => void;
 }
 
 interface UnifiedFilterDrawerProps {
@@ -32,19 +45,26 @@ interface UnifiedFilterDrawerProps {
     onFilterChange: (sectionId: string, value: string | string[] | [number, number]) => void;
     onClearAll: () => void;
     onApply: () => void;
+    appliedFilters?: AppliedFilter[];
 }
 
 // Show More Button Component
 function ShowMoreButton({
     isExpanded,
     onToggle,
-    hasMore
+    hasMore,
+    totalCount,
+    visibleCount
 }: {
     isExpanded: boolean;
     onToggle: () => void;
     hasMore: boolean;
+    totalCount: number;
+    visibleCount: number;
 }): React.JSX.Element {
     if (!hasMore) return <></>;
+
+    const remainingCount = totalCount - visibleCount;
 
     return (
         <button
@@ -52,12 +72,12 @@ function ShowMoreButton({
             className="show-more-button"
             type="button"
         >
-            {isExpanded ? 'Покажи по-малко' : 'Покажи повече'}
+            {isExpanded ? 'Покажи по-малко' : `Покажи още ${remainingCount}`}
         </button>
     );
 }
 
-// Checkbox List Component
+// Checkbox List Component with infinite pagination
 function CheckboxList({
     options,
     selectedValues,
@@ -69,9 +89,19 @@ function CheckboxList({
     onSelectionChange: (values: string[]) => void;
     expanded?: boolean;
 }): React.JSX.Element {
-    const [isExpanded, setIsExpanded] = useState(expanded);
-    const visibleOptions = isExpanded ? options : options.slice(0, 5);
-    const hasMore = options.length > 5;
+    const [visibleCount, setVisibleCount] = useState(5);
+    const visibleOptions = options.slice(0, visibleCount);
+    const hasMore = visibleCount < options.length;
+    const isExpanded = visibleCount > 5;
+
+    const showMore = () => {
+        const nextCount = Math.min(visibleCount + 10, options.length);
+        setVisibleCount(nextCount);
+    };
+
+    const showLess = () => {
+        setVisibleCount(5);
+    };
 
     const toggleOption = (optionId: string): void => {
         const newValues = selectedValues.includes(optionId)
@@ -108,11 +138,26 @@ function CheckboxList({
                     </div>
                 ))}
             </div>
-            <ShowMoreButton
-                isExpanded={isExpanded}
-                onToggle={() => setIsExpanded(!isExpanded)}
-                hasMore={hasMore}
-            />
+
+            {hasMore && (
+                <button
+                    className="show-more-button"
+                    onClick={showMore}
+                    type="button"
+                >
+                    Покажи още {Math.min(10, options.length - visibleCount)}
+                </button>
+            )}
+
+            {isExpanded && (
+                <button
+                    className="show-less-button"
+                    onClick={showLess}
+                    type="button"
+                >
+                    Покажи по-малко
+                </button>
+            )}
         </div>
     );
 }
@@ -184,6 +229,92 @@ function RangeInput({
     );
 }
 
+// Size Range Input Component (for width and height)
+function SizeRangeInput({
+    widthValue,
+    heightValue,
+    onWidthChange,
+    onHeightChange,
+    widthMax = 1000,
+    heightMax = 1000
+}: {
+    widthValue: [number, number];
+    heightValue: [number, number];
+    onWidthChange: (value: [number, number]) => void;
+    onHeightChange: (value: [number, number]) => void;
+    widthMax?: number;
+    heightMax?: number;
+}): React.JSX.Element {
+    return (
+        <div className="size-range-container">
+            <div className="size-range">
+                <div className="size-inputs">
+                    <div className="size-input-group">
+                        <label className="size-input-label">Ширина</label>
+                        <div className="size-inputs-row">
+                            <input
+                                type="number"
+                                placeholder="От"
+                                value={widthValue[0] || ''}
+                                onChange={(e) => {
+                                    const newValue: [number, number] = [parseFloat(e.target.value) || 0, widthValue[1]];
+                                    onWidthChange(newValue);
+                                }}
+                                className="size-input"
+                                min="0"
+                                max={widthMax}
+                            />
+                            <span className="size-separator">-</span>
+                            <input
+                                type="number"
+                                placeholder={`До ${widthMax}`}
+                                value={widthValue[1] || ''}
+                                onChange={(e) => {
+                                    const newValue: [number, number] = [widthValue[0], parseFloat(e.target.value) || 0];
+                                    onWidthChange(newValue);
+                                }}
+                                className="size-input"
+                                min="0"
+                                max={widthMax}
+                            />
+                        </div>
+                    </div>
+                    <div className="size-input-group">
+                        <label className="size-input-label">Височина</label>
+                        <div className="size-inputs-row">
+                            <input
+                                type="number"
+                                placeholder="От"
+                                value={heightValue[0] || ''}
+                                onChange={(e) => {
+                                    const newValue: [number, number] = [parseFloat(e.target.value) || 0, heightValue[1]];
+                                    onHeightChange(newValue);
+                                }}
+                                className="size-input"
+                                min="0"
+                                max={heightMax}
+                            />
+                            <span className="size-separator">-</span>
+                            <input
+                                type="number"
+                                placeholder={`До ${heightMax}`}
+                                value={heightValue[1] || ''}
+                                onChange={(e) => {
+                                    const newValue: [number, number] = [heightValue[0], parseFloat(e.target.value) || 0];
+                                    onHeightChange(newValue);
+                                }}
+                                className="size-input"
+                                min="0"
+                                max={heightMax}
+                            />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 // Filter Section Component
 function FilterSectionComponent({
     section,
@@ -222,6 +353,18 @@ function FilterSectionComponent({
                     />
                 );
 
+            case 'size':
+                return (
+                    <SizeRangeInput
+                        widthValue={section.widthValue || [0, 1000]}
+                        heightValue={section.heightValue || [0, 1000]}
+                        onWidthChange={(value) => onFilterChange('width', value)}
+                        onHeightChange={(value) => onFilterChange('height', value)}
+                        widthMax={section.widthMax || 1000}
+                        heightMax={section.heightMax || 1000}
+                    />
+                );
+
             default:
                 return null;
         }
@@ -247,7 +390,8 @@ export default function UnifiedFilterDrawer({
     sections,
     onFilterChange,
     onClearAll,
-    onApply
+    onApply,
+    appliedFilters = []
 }: UnifiedFilterDrawerProps): React.JSX.Element {
     const [mounted, setMounted] = useState(false);
 
@@ -300,6 +444,18 @@ export default function UnifiedFilterDrawer({
 
                         {/* Content */}
                         <div className="filter-drawer-content">
+                            {/* Applied Filters Section */}
+                            {appliedFilters.length > 0 && (
+                                <>
+                                    <AppliedFiltersSection
+                                        appliedFilters={appliedFilters}
+                                        onClearAll={onClearAll}
+                                        className="mobile-applied-filters"
+                                    />
+                                    <div className="section-separator"></div>
+                                </>
+                            )}
+
                             {sections.map((section, index) => (
                                 <div key={section.id}>
                                     <FilterSectionComponent
@@ -315,13 +471,6 @@ export default function UnifiedFilterDrawer({
 
                         {/* Footer */}
                         <div className="filter-drawer-footer">
-                            <button
-                                onClick={onClearAll}
-                                className="filter-clear-button"
-                                type="button"
-                            >
-                                Изчисти всички
-                            </button>
                             <button
                                 onClick={onApply}
                                 className="filter-apply-button"

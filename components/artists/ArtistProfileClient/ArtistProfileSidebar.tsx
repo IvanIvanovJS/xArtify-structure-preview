@@ -2,10 +2,12 @@
 
 import { useState } from 'react';
 import CustomDropdown from '@/components/ui/CustomDropdown';
+import AppliedFiltersSection from '@/components/ui/AppliedFiltersSection';
 import "@/components/ui/styles/global-checkbox.css";
+import "@/components/ui/styles/applied-filters-section.css";
 import "./styles/artist-profile.css";
 
-// CheckboxList component with show more functionality
+// CheckboxList component with infinite pagination
 function CheckboxList({
   items,
   selectedItems,
@@ -19,10 +21,20 @@ function CheckboxList({
   showMoreThreshold?: number;
   showMoreIncrement?: number;
 }) {
-  const [showAll, setShowAll] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(showMoreThreshold);
 
-  const visibleItems = showAll ? items : items.slice(0, showMoreThreshold);
-  const hasMore = items.length > showMoreThreshold;
+  const visibleItems = items.slice(0, visibleCount);
+  const hasMore = visibleCount < items.length;
+  const isExpanded = visibleCount > showMoreThreshold;
+
+  const showMore = () => {
+    const nextCount = Math.min(visibleCount + showMoreIncrement, items.length);
+    setVisibleCount(nextCount);
+  };
+
+  const showLess = () => {
+    setVisibleCount(showMoreThreshold);
+  };
 
   return (
     <div className="checkbox-list">
@@ -46,16 +58,25 @@ function CheckboxList({
       {hasMore && (
         <button
           className="show-more-btn"
-          onClick={() => setShowAll(!showAll)}
+          onClick={showMore}
         >
-          {showAll ? 'Покажи по-малко' : `Покажи още ${Math.min(showMoreIncrement, items.length - showMoreThreshold)}`}
+          Покажи още {Math.min(showMoreIncrement, items.length - visibleCount)}
+        </button>
+      )}
+
+      {isExpanded && (
+        <button
+          className="show-less-btn"
+          onClick={showLess}
+        >
+          Покажи по-малко
         </button>
       )}
     </div>
   );
 }
 
-// TagsList component with show more functionality
+// TagsList component with infinite pagination
 function TagsList({
   items,
   selectedItems,
@@ -69,10 +90,20 @@ function TagsList({
   showMoreThreshold?: number;
   showMoreIncrement?: number;
 }) {
-  const [showAll, setShowAll] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(showMoreThreshold);
 
-  const visibleItems = showAll ? items : items.slice(0, showMoreThreshold);
-  const hasMore = items.length > showMoreThreshold;
+  const visibleItems = items.slice(0, visibleCount);
+  const hasMore = visibleCount < items.length;
+  const isExpanded = visibleCount > showMoreThreshold;
+
+  const showMore = () => {
+    const nextCount = Math.min(visibleCount + showMoreIncrement, items.length);
+    setVisibleCount(nextCount);
+  };
+
+  const showLess = () => {
+    setVisibleCount(showMoreThreshold);
+  };
 
   return (
     <div className="tags-list">
@@ -89,9 +120,18 @@ function TagsList({
       {hasMore && (
         <button
           className="show-more-btn"
-          onClick={() => setShowAll(!showAll)}
+          onClick={showMore}
         >
-          {showAll ? 'Покажи по-малко' : `Покажи още ${Math.min(showMoreIncrement, items.length - showMoreThreshold)}`}
+          Покажи още {Math.min(showMoreIncrement, items.length - visibleCount)}
+        </button>
+      )}
+
+      {isExpanded && (
+        <button
+          className="show-less-btn"
+          onClick={showLess}
+        >
+          Покажи по-малко
         </button>
       )}
     </div>
@@ -103,8 +143,11 @@ interface FilterOptions {
   subject: string[];
   style: string[];
   priceRange: [number, number];
+  widthRange: [number, number];
+  heightRange: [number, number];
   tags: string[];
   sortBy: string;
+  availability: string;
 }
 
 interface ArtistProfileSidebarProps {
@@ -116,6 +159,9 @@ interface ArtistProfileSidebarProps {
   styleOptions: Array<{ name: string; count: number }>;
   allTags: Array<{ name: string; count: number }>;
   sortOptions: Array<{ value: string; label: string }>;
+  maxPrice: number;
+  maxWidth: number;
+  maxHeight: number;
 }
 
 export default function ArtistProfileSidebar({
@@ -126,15 +172,20 @@ export default function ArtistProfileSidebar({
   subjectOptions,
   styleOptions,
   allTags,
-  sortOptions
+  sortOptions,
+  maxPrice,
+  maxWidth,
+  maxHeight
 }: ArtistProfileSidebarProps) {
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     technique: true,
     subject: true,
     style: true,
     price: true,
+    size: true,
     tags: true,
-    sort: true
+    sort: true,
+    availability: true
   });
 
   const toggleSection = (section: string) => {
@@ -154,18 +205,169 @@ export default function ArtistProfileSidebar({
 
   const handlePriceRangeChange = (index: number, value: string) => {
     const newRange: [number, number] = [...filters.priceRange];
-    newRange[index] = parseFloat(value) || 0;
+    const numValue = parseFloat(value) || 0;
+    // Ensure the value doesn't exceed maxPrice
+    newRange[index] = Math.min(numValue, maxPrice);
     onFilterChange('priceRange', newRange);
+  };
+
+  const handleWidthRangeChange = (index: number, value: string) => {
+    const newRange: [number, number] = [...filters.widthRange];
+    const numValue = parseFloat(value) || 0;
+    // Ensure the value doesn't exceed maxWidth
+    newRange[index] = Math.min(numValue, maxWidth);
+    onFilterChange('widthRange', newRange);
+  };
+
+  const handleHeightRangeChange = (index: number, value: string) => {
+    const newRange: [number, number] = [...filters.heightRange];
+    const numValue = parseFloat(value) || 0;
+    // Ensure the value doesn't exceed maxHeight
+    newRange[index] = Math.min(numValue, maxHeight);
+    onFilterChange('heightRange', newRange);
+  };
+
+  // Generate applied filters for display
+  const getAppliedFilters = () => {
+    const applied: Array<{ key: string; label: string; value: string; onRemove: () => void }> = [];
+
+    // Sort filter (only if not default)
+    if (filters.sortBy && filters.sortBy !== 'newest') {
+      const sortLabels: Record<string, string> = {
+        'oldest': 'Най-стари',
+        'price-low': 'Цена: ниска → висока',
+        'price-high': 'Цена: висока → ниска',
+        'title': 'Заглавие A-Z'
+      };
+      applied.push({
+        key: 'sortBy',
+        label: `Сортиране: ${sortLabels[filters.sortBy] || filters.sortBy}`,
+        value: filters.sortBy,
+        onRemove: () => onFilterChange('sortBy', 'newest')
+      });
+    }
+
+    // Technique filters
+    filters.technique.forEach(technique => {
+      applied.push({
+        key: `technique-${technique}`,
+        label: `Техника: ${technique}`,
+        value: technique,
+        onRemove: () => {
+          const newTechniques = filters.technique.filter(t => t !== technique);
+          onFilterChange('technique', newTechniques);
+        }
+      });
+    });
+
+    // Subject filters
+    filters.subject.forEach(subject => {
+      applied.push({
+        key: `subject-${subject}`,
+        label: `Тема: ${subject}`,
+        value: subject,
+        onRemove: () => {
+          const newSubjects = filters.subject.filter(s => s !== subject);
+          onFilterChange('subject', newSubjects);
+        }
+      });
+    });
+
+    // Style filters
+    filters.style.forEach(style => {
+      applied.push({
+        key: `style-${style}`,
+        label: `Стил: ${style}`,
+        value: style,
+        onRemove: () => {
+          const newStyles = filters.style.filter(s => s !== style);
+          onFilterChange('style', newStyles);
+        }
+      });
+    });
+
+    // Price range filter - only show if different from default [0, maxPrice]
+    if (filters.priceRange[0] > 0 || filters.priceRange[1] < maxPrice) {
+      applied.push({
+        key: 'priceRange',
+        label: `Цена: ${filters.priceRange[0]} - ${filters.priceRange[1]} лв.`,
+        value: `${filters.priceRange[0]}-${filters.priceRange[1]}`,
+        onRemove: () => onFilterChange('priceRange', [0, maxPrice])
+      });
+    }
+
+    // Width range filter - only show if different from default [0, maxWidth]
+    if (filters.widthRange[0] > 0 || filters.widthRange[1] < maxWidth) {
+      applied.push({
+        key: 'widthRange',
+        label: `Ширина: ${filters.widthRange[0]} - ${filters.widthRange[1]} см`,
+        value: `${filters.widthRange[0]}-${filters.widthRange[1]}`,
+        onRemove: () => onFilterChange('widthRange', [0, maxWidth])
+      });
+    }
+
+    // Height range filter - only show if different from default [0, maxHeight]
+    if (filters.heightRange[0] > 0 || filters.heightRange[1] < maxHeight) {
+      applied.push({
+        key: 'heightRange',
+        label: `Височина: ${filters.heightRange[0]} - ${filters.heightRange[1]} см`,
+        value: `${filters.heightRange[0]}-${filters.heightRange[1]}`,
+        onRemove: () => onFilterChange('heightRange', [0, maxHeight])
+      });
+    }
+
+    // Tags filters
+    filters.tags.forEach(tag => {
+      applied.push({
+        key: `tag-${tag}`,
+        label: `Таг: ${tag}`,
+        value: tag,
+        onRemove: () => {
+          const newTags = filters.tags.filter(t => t !== tag);
+          onFilterChange('tags', newTags);
+        }
+      });
+    });
+
+    // Availability filter
+    if (filters.availability) {
+      let availabilityLabel = '';
+      switch (filters.availability) {
+        case 'new':
+          availabilityLabel = 'Наличност: Нови (последните 14 дни)';
+          break;
+        case 'promotion':
+          availabilityLabel = 'Наличност: На промоция';
+          break;
+        case 'sold':
+          availabilityLabel = 'Наличност: Продадени';
+          break;
+        default:
+          availabilityLabel = `Наличност: ${filters.availability}`;
+      }
+
+      applied.push({
+        key: 'availability',
+        label: availabilityLabel,
+        value: filters.availability,
+        onRemove: () => onFilterChange('availability', '')
+      });
+    }
+
+    return applied;
   };
 
   return (
     <aside className="artist-sidebar">
       <div className="sidebar-header">
         <h3>Филтри</h3>
-        <button onClick={clearFilters} className="clear-filters-btn">
-          Изчисти всички
-        </button>
       </div>
+
+      {/* Applied Filters Section */}
+      <AppliedFiltersSection
+        appliedFilters={getAppliedFilters()}
+        onClearAll={clearFilters}
+      />
 
       {/* Sort By */}
       <div className="filter-section">
@@ -187,6 +389,147 @@ export default function ArtistProfileSidebar({
               placeholder="Избери сортиране"
               aria-label="Сортиране на картини"
             />
+          </div>
+        )}
+      </div>
+
+      {/* Availability Filter */}
+      <div className="filter-section">
+        <button
+          className="filter-section-header"
+          onClick={() => toggleSection('availability')}
+        >
+          <span>Наличност</span>
+          <svg className={`section-icon ${expandedSections.availability ? 'expanded' : ''}`} viewBox="0 0 24 24">
+            <path d="M7 10l5 5 5-5z" />
+          </svg>
+        </button>
+        {expandedSections.availability && (
+          <div className="filter-section-content">
+            <CustomDropdown
+              options={[
+                { value: '', label: 'Всички картини' },
+                { value: 'new', label: 'Нови (последните 14 дни)' },
+                { value: 'promotion', label: 'На промоция' },
+                { value: 'sold', label: 'Продадени' },
+              ]}
+              value={filters.availability}
+              onChange={(value) => onFilterChange('availability', value)}
+              placeholder="Избери наличност"
+              aria-label="Наличност на картини"
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Price Range Filter */}
+      <div className="filter-section">
+        <button
+          className="filter-section-header"
+          onClick={() => toggleSection('price')}
+        >
+          <span>Ценови диапазон</span>
+          <svg className={`section-icon ${expandedSections.price ? 'expanded' : ''}`} viewBox="0 0 24 24">
+            <path d="M7 10l5 5 5-5z" />
+          </svg>
+        </button>
+        {expandedSections.price && (
+          <div className="filter-section-content">
+            <div className="price-range">
+              <div className="price-inputs">
+                <input
+                  type="number"
+                  placeholder="От"
+                  value={filters.priceRange[0] || ''}
+                  onChange={(e) => handlePriceRangeChange(0, e.target.value)}
+                  className="price-input"
+                  min="0"
+                  max={maxPrice}
+                />
+                <span className="price-separator">-</span>
+                <input
+                  type="number"
+                  placeholder={`До ${maxPrice}`}
+                  value={filters.priceRange[1] || ''}
+                  onChange={(e) => handlePriceRangeChange(1, e.target.value)}
+                  className="price-input"
+                  min="0"
+                  max={maxPrice}
+                />
+              </div>
+              <div className="price-range-display">
+                {filters.priceRange[0]} - {filters.priceRange[1]} лв.
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Size Range Filter */}
+      <div className="filter-section">
+        <button
+          className="filter-section-header"
+          onClick={() => toggleSection('size')}
+        >
+          <span>Размер (в см)</span>
+          <svg className={`section-icon ${expandedSections.size ? 'expanded' : ''}`} viewBox="0 0 24 24">
+            <path d="M7 10l5 5 5-5z" />
+          </svg>
+        </button>
+        {expandedSections.size && (
+          <div className="filter-section-content">
+            <div className="size-range">
+              <div className="size-inputs">
+                <div className="size-input-group">
+                  <label className="size-input-label">Ширина</label>
+                  <div className="size-inputs-row">
+                    <input
+                      type="number"
+                      placeholder="От"
+                      value={filters.widthRange[0] || ''}
+                      onChange={(e) => handleWidthRangeChange(0, e.target.value)}
+                      className="size-input"
+                      min="0"
+                      max={maxWidth}
+                    />
+                    <span className="size-separator">-</span>
+                    <input
+                      type="number"
+                      placeholder={`До ${maxWidth}`}
+                      value={filters.widthRange[1] || ''}
+                      onChange={(e) => handleWidthRangeChange(1, e.target.value)}
+                      className="size-input"
+                      min="0"
+                      max={maxWidth}
+                    />
+                  </div>
+                </div>
+                <div className="size-input-group">
+                  <label className="size-input-label">Височина</label>
+                  <div className="size-inputs-row">
+                    <input
+                      type="number"
+                      placeholder="От"
+                      value={filters.heightRange[0] || ''}
+                      onChange={(e) => handleHeightRangeChange(0, e.target.value)}
+                      className="size-input"
+                      min="0"
+                      max={maxHeight}
+                    />
+                    <span className="size-separator">-</span>
+                    <input
+                      type="number"
+                      placeholder={`До ${maxHeight}`}
+                      value={filters.heightRange[1] || ''}
+                      onChange={(e) => handleHeightRangeChange(1, e.target.value)}
+                      className="size-input"
+                      min="0"
+                      max={maxHeight}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </div>
@@ -269,44 +612,7 @@ export default function ArtistProfileSidebar({
         </div>
       )}
 
-      {/* Price Range Filter */}
-      <div className="filter-section">
-        <button
-          className="filter-section-header"
-          onClick={() => toggleSection('price')}
-        >
-          <span>Ценови диапазон</span>
-          <svg className={`section-icon ${expandedSections.price ? 'expanded' : ''}`} viewBox="0 0 24 24">
-            <path d="M7 10l5 5 5-5z" />
-          </svg>
-        </button>
-        {expandedSections.price && (
-          <div className="filter-section-content">
-            <div className="price-range">
-              <div className="price-inputs">
-                <input
-                  type="number"
-                  placeholder="От"
-                  value={filters.priceRange[0] || ''}
-                  onChange={(e) => handlePriceRangeChange(0, e.target.value)}
-                  className="price-input"
-                />
-                <span className="price-separator">-</span>
-                <input
-                  type="number"
-                  placeholder="До"
-                  value={filters.priceRange[1] || ''}
-                  onChange={(e) => handlePriceRangeChange(1, e.target.value)}
-                  className="price-input"
-                />
-              </div>
-              <div className="price-range-display">
-                {filters.priceRange[0]} - {filters.priceRange[1]} лв.
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
+
 
       {/* Tags Filter */}
       {allTags.filter(t => t.count > 0).length > 0 && (

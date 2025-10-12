@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import GalleryGrid from './GalleryGrid';
 import FiltersSidebar from './FiltersSidebar';
 import FiltersMobileSheet from './FiltersMobileSheet';
-import ActiveChips from './ActiveChips';
 import './styles/gallery-page.css';
 
 interface PaintingWithArtist {
@@ -81,15 +80,21 @@ interface GalleryClientProps {
 export default function GalleryClient({ initialPaintings, filterOptions }: GalleryClientProps) {
     const [paintings, setPaintings] = useState<PaintingWithArtist[]>(initialPaintings);
     const [filteredPaintings, setFilteredPaintings] = useState<PaintingWithArtist[]>(initialPaintings);
+
+    // Calculate max values from actual paintings
+    const maxPrice = Math.max(...initialPaintings.map(p => p.isOnSale && p.finalPrice ? p.finalPrice : p.price));
+    const maxWidth = Math.max(...initialPaintings.map(p => p.widthCm || 0));
+    const maxHeight = Math.max(...initialPaintings.map(p => p.heightCm || 0));
+
     const [filters, setFilters] = useState<Filters>({
         search: '',
         author: '',
         technique: [],
         subject: [],
         style: [],
-        priceRange: [filterOptions.priceRange.min, filterOptions.priceRange.max],
-        widthRange: [filterOptions.sizeRange.widthMin, filterOptions.sizeRange.widthMax],
-        heightRange: [filterOptions.sizeRange.heightMin, filterOptions.sizeRange.heightMax],
+        priceRange: [0, maxPrice],
+        widthRange: [0, maxWidth],
+        heightRange: [0, maxHeight],
         tags: [],
         sortBy: 'newest',
         availability: ''
@@ -109,9 +114,9 @@ export default function GalleryClient({ initialPaintings, filterOptions }: Galle
             technique: [],
             subject: [],
             style: [],
-            priceRange: [filterOptions.priceRange.min, filterOptions.priceRange.max],
-            widthRange: [filterOptions.sizeRange.widthMin, filterOptions.sizeRange.widthMax],
-            heightRange: [filterOptions.sizeRange.heightMin, filterOptions.sizeRange.heightMax],
+            priceRange: [0, maxPrice],
+            widthRange: [0, maxWidth],
+            heightRange: [0, maxHeight],
             tags: [],
             sortBy: 'newest',
             availability: ''
@@ -160,19 +165,28 @@ export default function GalleryClient({ initialPaintings, filterOptions }: Galle
             );
         }
 
-        // Price range filter
-        filtered = filtered.filter(painting => {
-            const price = painting.isOnSale && painting.finalPrice ? painting.finalPrice : painting.price;
-            return price >= filters.priceRange[0] && price <= filters.priceRange[1];
-        });
+        // Price range filter - apply only if different from default [0, maxPrice]
+        if (filters.priceRange[0] > 0 || filters.priceRange[1] < maxPrice) {
+            filtered = filtered.filter(painting => {
+                const price = painting.isOnSale && painting.finalPrice ? painting.finalPrice : painting.price;
+                return price >= filters.priceRange[0] && price <= filters.priceRange[1];
+            });
+        }
 
-        // Size filters
-        filtered = filtered.filter(painting => {
-            const width = painting.widthCm || 0;
-            const height = painting.heightCm || 0;
-            return width >= filters.widthRange[0] && width <= filters.widthRange[1] &&
-                height >= filters.heightRange[0] && height <= filters.heightRange[1];
-        });
+        // Size filters - apply only if different from default [0, maxWidth/maxHeight]
+        if (filters.widthRange[0] > 0 || filters.widthRange[1] < maxWidth) {
+            filtered = filtered.filter(painting => {
+                const width = painting.widthCm || 0;
+                return width >= filters.widthRange[0] && width <= filters.widthRange[1];
+            });
+        }
+
+        if (filters.heightRange[0] > 0 || filters.heightRange[1] < maxHeight) {
+            filtered = filtered.filter(painting => {
+                const height = painting.heightCm || 0;
+                return height >= filters.heightRange[0] && height <= filters.heightRange[1];
+            });
+        }
 
         // Tags filter
         if (filters.tags.length > 0) {
@@ -228,7 +242,7 @@ export default function GalleryClient({ initialPaintings, filterOptions }: Galle
         }
 
         setFilteredPaintings(filtered);
-    }, [paintings, filters]);
+    }, [paintings, filters, maxPrice, maxWidth, maxHeight]);
 
     return (
         <div className="gallery-page">
@@ -241,8 +255,6 @@ export default function GalleryClient({ initialPaintings, filterOptions }: Galle
                 </p>
             </div>
 
-            {/* Active Filters Chips */}
-            <ActiveChips filters={filters} onFilterChange={handleFilterChange} />
 
             {/* Main Content */}
             <div className="gallery-main">

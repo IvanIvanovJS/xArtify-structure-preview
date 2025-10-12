@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { SlidersHorizontalIcon } from 'lucide-react';
 import UnifiedFilterDrawer from '@/components/ui/UnifiedFilterDrawer';
 import '@/components/ui/styles/unified-filter-drawer.css';
+import '@/components/ui/styles/applied-filters-section.css';
 import './styles/filters-mobile-sheet.css';
 
 // Types
@@ -82,6 +83,149 @@ export default function FiltersMobileSheet({
         setIsOpen(false);
     };
 
+    // Generate applied filters for display
+    const getAppliedFilters = () => {
+        const applied: Array<{ key: string; label: string; value: string; onRemove: () => void }> = [];
+
+        // Search filter
+        if (filters.search) {
+            applied.push({
+                key: 'search',
+                label: `Търсене: "${filters.search}"`,
+                value: filters.search,
+                onRemove: () => onFilterChange('search', '')
+            });
+        }
+
+        // Author filter
+        if (filters.author) {
+            applied.push({
+                key: 'author',
+                label: `Художник: ${filters.author}`,
+                value: filters.author,
+                onRemove: () => onFilterChange('author', '')
+            });
+        }
+
+        // Sort filter (only if not default)
+        if (filters.sortBy && filters.sortBy !== 'newest') {
+            const sortLabels: Record<string, string> = {
+                'oldest': 'Най-стари',
+                'price-low': 'Цена: ниска → висока',
+                'price-high': 'Цена: висока → ниска',
+                'title': 'Заглавие A-Z'
+            };
+            applied.push({
+                key: 'sortBy',
+                label: `Сортиране: ${sortLabels[filters.sortBy] || filters.sortBy}`,
+                value: filters.sortBy,
+                onRemove: () => onFilterChange('sortBy', 'newest')
+            });
+        }
+
+        // Technique filters
+        filters.technique.forEach(technique => {
+            applied.push({
+                key: `technique-${technique}`,
+                label: `Техника: ${technique}`,
+                value: technique,
+                onRemove: () => {
+                    const newTechniques = filters.technique.filter(t => t !== technique);
+                    onFilterChange('technique', newTechniques);
+                }
+            });
+        });
+
+        // Subject filters
+        filters.subject.forEach(subject => {
+            applied.push({
+                key: `subject-${subject}`,
+                label: `Тема: ${subject}`,
+                value: subject,
+                onRemove: () => {
+                    const newSubjects = filters.subject.filter(s => s !== subject);
+                    onFilterChange('subject', newSubjects);
+                }
+            });
+        });
+
+        // Style filters
+        filters.style.forEach(style => {
+            applied.push({
+                key: `style-${style}`,
+                label: `Стил: ${style}`,
+                value: style,
+                onRemove: () => {
+                    const newStyles = filters.style.filter(s => s !== style);
+                    onFilterChange('style', newStyles);
+                }
+            });
+        });
+
+        // Price range filter - only show if different from default [0, maxPrice]
+        const maxPrice = filterOptions.priceRange.max;
+        if (filters.priceRange[0] > 0 || filters.priceRange[1] < maxPrice) {
+            applied.push({
+                key: 'priceRange',
+                label: `Цена: ${filters.priceRange[0]} - ${filters.priceRange[1]} лв.`,
+                value: `${filters.priceRange[0]}-${filters.priceRange[1]}`,
+                onRemove: () => onFilterChange('priceRange', [0, maxPrice])
+            });
+        }
+
+        // Width range filter - only show if different from default [0, maxWidth]
+        const maxWidth = filterOptions.sizeRange.widthMax;
+        if (filters.widthRange[0] > 0 || filters.widthRange[1] < maxWidth) {
+            applied.push({
+                key: 'widthRange',
+                label: `Ширина: ${filters.widthRange[0]} - ${filters.widthRange[1]} см`,
+                value: `${filters.widthRange[0]}-${filters.widthRange[1]}`,
+                onRemove: () => onFilterChange('widthRange', [0, maxWidth])
+            });
+        }
+
+        // Height range filter - only show if different from default [0, maxHeight]
+        const maxHeight = filterOptions.sizeRange.heightMax;
+        if (filters.heightRange[0] > 0 || filters.heightRange[1] < maxHeight) {
+            applied.push({
+                key: 'heightRange',
+                label: `Височина: ${filters.heightRange[0]} - ${filters.heightRange[1]} см`,
+                value: `${filters.heightRange[0]}-${filters.heightRange[1]}`,
+                onRemove: () => onFilterChange('heightRange', [0, maxHeight])
+            });
+        }
+
+        // Tags filters
+        filters.tags.forEach(tag => {
+            applied.push({
+                key: `tag-${tag}`,
+                label: `Таг: ${tag}`,
+                value: tag,
+                onRemove: () => {
+                    const newTags = filters.tags.filter(t => t !== tag);
+                    onFilterChange('tags', newTags);
+                }
+            });
+        });
+
+        // Availability filter
+        if (filters.availability) {
+            const availabilityLabels: Record<string, string> = {
+                'new': 'Нови (последните 14 дни)',
+                'promotion': 'На промоция',
+                'sold': 'Продадени'
+            };
+            applied.push({
+                key: 'availability',
+                label: `Наличност: ${availabilityLabels[filters.availability] || filters.availability}`,
+                value: filters.availability,
+                onRemove: () => onFilterChange('availability', '')
+            });
+        }
+
+        return applied;
+    };
+
     // Map filters to UnifiedFilterDrawer sections
     const sections = [
         {
@@ -109,6 +253,33 @@ export default function FiltersMobileSheet({
                 { value: 'price-high', label: 'Цена: висока → ниска' },
                 { value: 'title', label: 'Заглавие A-Z' }
             ]
+        },
+        {
+            id: 'availability',
+            title: 'Наличност',
+            type: 'dropdown' as const,
+            value: filters.availability,
+            dropdownOptions: [
+                { value: '', label: 'Всички картини' },
+                { value: 'new', label: 'Нови (последните 14 дни)' },
+                { value: 'promotion', label: 'На промоция' },
+                { value: 'sold', label: 'Продадени' }
+            ]
+        },
+        {
+            id: 'price',
+            title: 'Ценови диапазон',
+            type: 'range' as const,
+            value: filters.priceRange
+        },
+        {
+            id: 'size',
+            title: 'Размер (в см)',
+            type: 'size' as const,
+            widthValue: filters.widthRange,
+            heightValue: filters.heightRange,
+            widthMax: 1000,
+            heightMax: 1000
         },
         {
             id: 'technique',
@@ -144,24 +315,6 @@ export default function FiltersMobileSheet({
             }))
         },
         {
-            id: 'price',
-            title: 'Ценови диапазон',
-            type: 'range' as const,
-            value: filters.priceRange
-        },
-        {
-            id: 'size',
-            title: 'Размер (в см)',
-            type: 'range' as const,
-            value: filters.widthRange
-        },
-        {
-            id: 'height',
-            title: 'Височина (в см)',
-            type: 'range' as const,
-            value: filters.heightRange
-        },
-        {
             id: 'tags',
             title: 'Тагове',
             type: 'checkbox' as const,
@@ -171,18 +324,6 @@ export default function FiltersMobileSheet({
                 name: tag.name,
                 count: tag.count
             }))
-        },
-        {
-            id: 'availability',
-            title: 'Наличност',
-            type: 'dropdown' as const,
-            value: filters.availability,
-            dropdownOptions: [
-                { value: '', label: 'Всички картини' },
-                { value: 'new', label: 'Нови (последните 14 дни)' },
-                { value: 'promotion', label: 'На промоция' },
-                { value: 'sold', label: 'Продадени' }
-            ]
         }
     ];
 
@@ -244,6 +385,7 @@ export default function FiltersMobileSheet({
                 }}
                 onClearAll={handleClearFilters}
                 onApply={handleApplyFilters}
+                appliedFilters={getAppliedFilters()}
             />
         </>
     );
