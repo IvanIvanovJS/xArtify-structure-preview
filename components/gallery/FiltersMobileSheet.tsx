@@ -63,12 +63,26 @@ export default function FiltersMobileSheet({
     const [isOpen, setIsOpen] = useState(false);
 
     // Count active filters
-    const activeFiltersCount = Object.values(filters).reduce((count, value) => {
+    const activeFiltersCount = Object.entries(filters).reduce((count, [key, value]) => {
         if (Array.isArray(value)) {
             if (typeof value[0] === 'number') {
                 // For range arrays, check if they're not at default values
-                if (value[0] > 0 || value[1] < 10000) {
-                    return count + 1;
+                const maxPrice = filterOptions.priceRange.max;
+                const maxWidth = filterOptions.sizeRange.widthMax;
+                const maxHeight = filterOptions.sizeRange.heightMax;
+
+                if (key === 'priceRange') {
+                    if (value[0] > 0 || value[1] < maxPrice) {
+                        return count + 1;
+                    }
+                } else if (key === 'widthRange') {
+                    if (value[0] > 0 || value[1] < maxWidth) {
+                        return count + 1;
+                    }
+                } else if (key === 'heightRange') {
+                    if (value[0] > 0 || value[1] < maxHeight) {
+                        return count + 1;
+                    }
                 }
             } else {
                 return count + (value.length > 0 ? 1 : 0);
@@ -338,7 +352,7 @@ export default function FiltersMobileSheet({
             <div className="mobile-filters-container">
                 <button
                     onClick={() => setIsOpen(true)}
-                    className="mobile-filters-btn"
+                    className={`mobile-filters-btn ${activeFiltersCount > 0 ? 'has-active-filters' : ''}`}
                     aria-label="Отвори филтри"
                 >
                     <SlidersHorizontalIcon size={20} />

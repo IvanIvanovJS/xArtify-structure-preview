@@ -92,7 +92,6 @@ export default function ArtistProfileClient({ artist }: ArtistProfileClientProps
   });
 
   const [filteredPaintings, setFilteredPaintings] = useState<Painting[]>(artist.paintings);
-  const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
 
   // Get unique filter options with counts from paintings
@@ -335,19 +334,6 @@ export default function ArtistProfileClient({ artist }: ArtistProfileClientProps
         </div>
       </div>
 
-      {/* Mobile Filter Toggle */}
-      <div className="mobile-filter-toggle">
-        <button
-          onClick={() => setShowMobileFilters(!showMobileFilters)}
-          className="filter-toggle-btn"
-          aria-label="Покажи филтри"
-        >
-          <span>Филтри</span>
-          <svg className={`filter-icon ${showMobileFilters ? 'rotated' : ''}`} viewBox="0 0 24 24">
-            <path d="M7 10l5 5 5-5z" />
-          </svg>
-        </button>
-      </div>
 
       <div className="artist-content">
         {/* Desktop Sidebar */}
@@ -368,7 +354,7 @@ export default function ArtistProfileClient({ artist }: ArtistProfileClientProps
         />
 
         {/* Mobile Filters */}
-        {showMobileFilters && (
+        <div className="artist-sidebar-mobile">
           <ArtistProfileMobileFilters
             filters={filters}
             onFilterChange={handleFilterChange}
@@ -381,11 +367,11 @@ export default function ArtistProfileClient({ artist }: ArtistProfileClientProps
             maxPrice={maxPrice}
             maxWidth={maxWidth}
             maxHeight={maxHeight}
-            onClose={() => setShowMobileFilters(false)}
+            onClose={() => { }}
             viewMode={viewMode}
             onViewModeChange={setViewMode}
           />
-        )}
+        </div>
 
         {/* Paintings Grid */}
         <div className="paintings-section">

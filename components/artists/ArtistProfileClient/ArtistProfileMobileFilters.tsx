@@ -1,9 +1,12 @@
 'use client';
 
-
+import { useState } from 'react';
+import { SlidersHorizontalIcon } from 'lucide-react';
 import UnifiedFilterDrawer from '@/components/ui/UnifiedFilterDrawer';
 import ViewModeControls, { type ViewMode } from '@/components/ui/ViewModeControls';
 import '@/components/ui/styles/unified-filter-drawer.css';
+import '@/components/ui/styles/applied-filters-section.css';
+import './styles/artist-profile.css';
 
 interface FilterOptions {
   technique: string[];
@@ -50,6 +53,43 @@ export default function ArtistProfileMobileFilters({
   viewMode,
   onViewModeChange
 }: ArtistProfileMobileFiltersProps) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  // Count active filters - same logic as FiltersMobileSheet
+  const activeFiltersCount = Object.entries(filters).reduce((count, [key, value]) => {
+    if (Array.isArray(value)) {
+      if (typeof value[0] === 'number') {
+        // For range arrays, check if they're not at default values
+        if (key === 'priceRange') {
+          if (value[0] > 0 || value[1] < maxPrice) {
+            return count + 1;
+          }
+        } else if (key === 'widthRange') {
+          if (value[0] > 0 || value[1] < maxWidth) {
+            return count + 1;
+          }
+        } else if (key === 'heightRange') {
+          if (value[0] > 0 || value[1] < maxHeight) {
+            return count + 1;
+          }
+        }
+      } else {
+        return count + (value.length > 0 ? 1 : 0);
+      }
+    } else {
+      return count + (value !== '' && value !== 'newest' ? 1 : 0);
+    }
+    return count;
+  }, 0);
+
+  const handleApplyFilters = () => {
+    setIsOpen(false);
+  };
+
+  const handleClearFilters = () => {
+    clearFilters();
+    setIsOpen(false);
+  };
   const handleFilterChange = (sectionId: string, value: string | string[] | [number, number]): void => {
     switch (sectionId) {
       case 'sort':
@@ -82,9 +122,6 @@ export default function ArtistProfileMobileFilters({
     }
   };
 
-  const handleApply = (): void => {
-    onClose();
-  };
 
   // Generate applied filters for display
   const getAppliedFilters = () => {
@@ -309,23 +346,39 @@ export default function ArtistProfileMobileFilters({
   });
 
   return (
-    <div className="artist-mobile-filters-wrapper">
-      <div className="artist-mobile-filters-header">
+    <>
+      {/* Mobile Filter Button */}
+      <div className="mobile-filters-container">
+        <button
+          onClick={() => setIsOpen(true)}
+          className={`mobile-filters-btn ${activeFiltersCount > 0 ? 'has-active-filters' : ''}`}
+          aria-label="Отвори филтри"
+        >
+          <SlidersHorizontalIcon size={20} />
+          <span>Филтри</span>
+          {activeFiltersCount > 0 && (
+            <span className="filter-count-badge">
+              {activeFiltersCount}
+            </span>
+          )}
+        </button>
+
         <ViewModeControls
           currentView={viewMode}
           onViewChange={onViewModeChange}
         />
       </div>
 
+      {/* Unified Filter Drawer */}
       <UnifiedFilterDrawer
-        isOpen={true}
-        onClose={onClose}
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
         sections={filterSections}
         onFilterChange={handleFilterChange}
-        onClearAll={clearFilters}
-        onApply={handleApply}
+        onClearAll={handleClearFilters}
+        onApply={handleApplyFilters}
         appliedFilters={getAppliedFilters()}
       />
-    </div>
+    </>
   );
 }

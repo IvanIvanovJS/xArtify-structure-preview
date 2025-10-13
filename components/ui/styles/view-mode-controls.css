@@ -28,9 +28,8 @@
 }
 
 .view-mode-btn.active {
-    background: var(--color-primary-10);
-    border-color: var(--color-primary);
-    color: var(--color-primary);
+    border-color: var(--color-primary-20);
+    color: var(--color-primary-70);
     box-shadow: 0 0 0 2px var(--color-primary-20);
 }
 
