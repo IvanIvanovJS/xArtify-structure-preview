@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { JSX } from 'react';
 import './styles/view-mode-controls.css';
 
 export type ViewMode = 'grid' | 'large';
