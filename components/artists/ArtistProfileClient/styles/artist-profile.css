@@ -137,6 +137,8 @@
     padding: 1.5rem;
     height: fit-content;
     border: 1px solid var(--color-primary-20);
+    border-top: 2px solid var(--color-primary-20);
+    border-bottom: 2px solid var(--color-primary-20);
     position: sticky;
     top: 2rem;
     width: 100%;
@@ -337,9 +339,18 @@
 /* Paintings Grid - Match Gallery Grid */
 .paintings-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
     gap: 1.5rem;
     margin-bottom: 2rem;
+}
+
+/* Normal Grid View (4 columns) */
+.paintings-grid-normal {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+/* Large Grid View (2 columns) */
+.paintings-grid-large {
+    grid-template-columns: repeat(2, 1fr);
 }
 
 /* Artist Profile Artwork Card */
@@ -522,6 +533,20 @@
     margin-bottom: 2rem;
 }
 
+/* Artist Mobile Filters Wrapper */
+.artist-mobile-filters-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.artist-mobile-filters-header {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 0 1rem;
+}
+
 /* Mobile Filters */
 .mobile-filters-overlay {
     display: none;
@@ -696,8 +721,12 @@
 
 /* Responsive Design */
 @media (max-width: 1200px) {
-    .paintings-grid {
+    .paintings-grid-normal {
         grid-template-columns: repeat(3, 1fr);
+    }
+
+    .paintings-grid-large {
+        grid-template-columns: repeat(2, 1fr);
     }
 }
 
@@ -740,8 +769,13 @@
         display: block;
     }
 
-    .paintings-grid {
+    .paintings-grid-normal {
         grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+
+    .paintings-grid-large {
+        grid-template-columns: repeat(1, 1fr);
         gap: 1rem;
     }
 
@@ -800,8 +834,13 @@
         height: 80px;
     }
 
-    .paintings-grid {
+    .paintings-grid-normal {
         grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+    }
+
+    .paintings-grid-large {
+        grid-template-columns: repeat(1, 1fr);
         gap: 0.75rem;
     }
 

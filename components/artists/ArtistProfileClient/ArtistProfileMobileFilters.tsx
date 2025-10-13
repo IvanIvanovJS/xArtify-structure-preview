@@ -2,6 +2,7 @@
 
 
 import UnifiedFilterDrawer from '@/components/ui/UnifiedFilterDrawer';
+import ViewModeControls, { type ViewMode } from '@/components/ui/ViewModeControls';
 import '@/components/ui/styles/unified-filter-drawer.css';
 
 interface FilterOptions {
@@ -29,6 +30,8 @@ interface ArtistProfileMobileFiltersProps {
   maxWidth: number;
   maxHeight: number;
   onClose: () => void;
+  viewMode: ViewMode;
+  onViewModeChange: (viewMode: ViewMode) => void;
 }
 
 export default function ArtistProfileMobileFilters({
@@ -43,7 +46,9 @@ export default function ArtistProfileMobileFilters({
   maxPrice,
   maxWidth,
   maxHeight,
-  onClose
+  onClose,
+  viewMode,
+  onViewModeChange
 }: ArtistProfileMobileFiltersProps) {
   const handleFilterChange = (sectionId: string, value: string | string[] | [number, number]): void => {
     switch (sectionId) {
@@ -304,14 +309,23 @@ export default function ArtistProfileMobileFilters({
   });
 
   return (
-    <UnifiedFilterDrawer
-      isOpen={true}
-      onClose={onClose}
-      sections={filterSections}
-      onFilterChange={handleFilterChange}
-      onClearAll={clearFilters}
-      onApply={handleApply}
-      appliedFilters={getAppliedFilters()}
-    />
+    <div className="artist-mobile-filters-wrapper">
+      <div className="artist-mobile-filters-header">
+        <ViewModeControls
+          currentView={viewMode}
+          onViewChange={onViewModeChange}
+        />
+      </div>
+
+      <UnifiedFilterDrawer
+        isOpen={true}
+        onClose={onClose}
+        sections={filterSections}
+        onFilterChange={handleFilterChange}
+        onClearAll={clearFilters}
+        onApply={handleApply}
+        appliedFilters={getAppliedFilters()}
+      />
+    </div>
   );
 }

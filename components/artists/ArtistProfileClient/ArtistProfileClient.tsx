@@ -5,6 +5,7 @@ import Image from 'next/image';
 import ArtistProfileArtworkCard from './ArtistProfileArtworkCard';
 import ArtistProfileSidebar from './ArtistProfileSidebar';
 import ArtistProfileMobileFilters from './ArtistProfileMobileFilters';
+import { type ViewMode } from '@/components/ui/ViewModeControls';
 import "./styles/artist-profile.css";
 
 interface Artist {
@@ -92,6 +93,7 @@ export default function ArtistProfileClient({ artist }: ArtistProfileClientProps
 
   const [filteredPaintings, setFilteredPaintings] = useState<Painting[]>(artist.paintings);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>('grid');
 
   // Get unique filter options with counts from paintings
   const techniqueCountMap = new Map<string, number>();
@@ -361,6 +363,8 @@ export default function ArtistProfileClient({ artist }: ArtistProfileClientProps
           maxPrice={maxPrice}
           maxWidth={maxWidth}
           maxHeight={maxHeight}
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
         />
 
         {/* Mobile Filters */}
@@ -378,6 +382,8 @@ export default function ArtistProfileClient({ artist }: ArtistProfileClientProps
             maxWidth={maxWidth}
             maxHeight={maxHeight}
             onClose={() => setShowMobileFilters(false)}
+            viewMode={viewMode}
+            onViewModeChange={setViewMode}
           />
         )}
 
@@ -391,7 +397,7 @@ export default function ArtistProfileClient({ artist }: ArtistProfileClientProps
           </div>
 
           {filteredPaintings.length > 0 ? (
-            <div className="paintings-grid">
+            <div className={`paintings-grid ${viewMode === 'large' ? 'paintings-grid-large' : 'paintings-grid-normal'}`}>
               {filteredPaintings.map((painting) => (
                 <ArtistProfileArtworkCard
                   key={painting.id}

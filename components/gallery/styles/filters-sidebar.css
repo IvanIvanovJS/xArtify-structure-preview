@@ -6,6 +6,8 @@
     height: -moz-fit-content;
     height: fit-content;
     border: 1px solid var(--color-primary-20);
+    border-top: 2px solid var(--color-primary-20);
+    border-bottom: 2px solid var(--color-primary-20);
     position: sticky;
     top: 2rem;
     width: 100%;

@@ -1,3 +1,11 @@
+/* Mobile Filters Container */
+.mobile-filters-container {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
 /* Mobile Filter Button */
 .mobile-filters-btn {
     display: flex;
@@ -5,14 +13,15 @@
     gap: 0.5rem;
     background: transparent;
     border: 1px solid var(--color-primary-60);
-    color: var(--color-primary);
+    color: var(--color-white-8);
     padding: 0.75rem 1rem;
     border-radius: 0.5rem;
     font-size: 0.875rem;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.3s ease;
-    margin-bottom: 1rem;
+    max-width: 10rem;
+    flex: 1;
 }
 
 .mobile-filters-btn:hover {
@@ -21,7 +30,7 @@
 }
 
 .filter-count-badge {
-    background: var(--color-primary);
+    background: var(--color-primary-80);
     color: var(--color-background);
     border-radius: 50%;
     width: 20px;
@@ -36,7 +45,7 @@
 
 /* Hide on desktop */
 @media (min-width: 769px) {
-    .mobile-filters-btn {
+    .mobile-filters-container {
         display: none;
     }
 }

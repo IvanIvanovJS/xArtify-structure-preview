@@ -4,6 +4,7 @@
 import { useState } from 'react';
 import { SlidersHorizontalIcon } from 'lucide-react';
 import UnifiedFilterDrawer from '@/components/ui/UnifiedFilterDrawer';
+import ViewModeControls, { type ViewMode } from '@/components/ui/ViewModeControls';
 import '@/components/ui/styles/unified-filter-drawer.css';
 import '@/components/ui/styles/applied-filters-section.css';
 import './styles/filters-mobile-sheet.css';
@@ -46,6 +47,8 @@ interface FiltersMobileSheetProps {
     filters: Filters;
     onFilterChange: (key: keyof Filters, value: string | string[] | [number, number]) => void;
     clearFilters: () => void;
+    viewMode: ViewMode;
+    onViewModeChange: (viewMode: ViewMode) => void;
 }
 
 // Main Filters Mobile Sheet Component
@@ -53,7 +56,9 @@ export default function FiltersMobileSheet({
     filterOptions,
     filters,
     onFilterChange,
-    clearFilters
+    clearFilters,
+    viewMode,
+    onViewModeChange
 }: FiltersMobileSheetProps): React.JSX.Element {
     const [isOpen, setIsOpen] = useState(false);
 
@@ -330,19 +335,26 @@ export default function FiltersMobileSheet({
     return (
         <>
             {/* Mobile Filter Button */}
-            <button
-                onClick={() => setIsOpen(true)}
-                className="mobile-filters-btn"
-                aria-label="Отвори филтри"
-            >
-                <SlidersHorizontalIcon size={20} />
-                <span>Филтри</span>
-                {activeFiltersCount > 0 && (
-                    <span className="filter-count-badge">
-                        {activeFiltersCount}
-                    </span>
-                )}
-            </button>
+            <div className="mobile-filters-container">
+                <button
+                    onClick={() => setIsOpen(true)}
+                    className="mobile-filters-btn"
+                    aria-label="Отвори филтри"
+                >
+                    <SlidersHorizontalIcon size={20} />
+                    <span>Филтри</span>
+                    {activeFiltersCount > 0 && (
+                        <span className="filter-count-badge">
+                            {activeFiltersCount}
+                        </span>
+                    )}
+                </button>
+
+                <ViewModeControls
+                    currentView={viewMode}
+                    onViewChange={onViewModeChange}
+                />
+            </div>
 
             {/* Unified Filter Drawer */}
             <UnifiedFilterDrawer

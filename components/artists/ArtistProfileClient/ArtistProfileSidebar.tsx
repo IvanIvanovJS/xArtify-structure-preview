@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import CustomDropdown from '@/components/ui/CustomDropdown';
 import AppliedFiltersSection from '@/components/ui/AppliedFiltersSection';
+import ViewModeControls, { type ViewMode } from '@/components/ui/ViewModeControls';
 import "@/components/ui/styles/global-checkbox.css";
 import "@/components/ui/styles/applied-filters-section.css";
 import "./styles/artist-profile.css";
@@ -162,6 +163,8 @@ interface ArtistProfileSidebarProps {
   maxPrice: number;
   maxWidth: number;
   maxHeight: number;
+  viewMode: ViewMode;
+  onViewModeChange: (viewMode: ViewMode) => void;
 }
 
 export default function ArtistProfileSidebar({
@@ -175,7 +178,9 @@ export default function ArtistProfileSidebar({
   sortOptions,
   maxPrice,
   maxWidth,
-  maxHeight
+  maxHeight,
+  viewMode,
+  onViewModeChange
 }: ArtistProfileSidebarProps) {
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     technique: true,
@@ -361,6 +366,10 @@ export default function ArtistProfileSidebar({
     <aside className="artist-sidebar">
       <div className="sidebar-header">
         <h3>Филтри</h3>
+        <ViewModeControls
+          currentView={viewMode}
+          onViewChange={onViewModeChange}
+        />
       </div>
 
       {/* Applied Filters Section */}

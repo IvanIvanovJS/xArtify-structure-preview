@@ -3,27 +3,50 @@
 /* Responsive Grid */
 .gallery-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
     gap: 1.5rem;
     margin-bottom: 2rem;
 }
 
+/* Normal Grid View (4 columns) */
+.gallery-grid-normal {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+/* Large Grid View (2 columns) */
+.gallery-grid-large {
+    grid-template-columns: repeat(2, 1fr);
+}
+
 @media (max-width: 1200px) {
-    .gallery-grid {
+    .gallery-grid-normal {
         grid-template-columns: repeat(3, 1fr);
+    }
+
+    .gallery-grid-large {
+        grid-template-columns: repeat(2, 1fr);
     }
 }
 
 @media (max-width: 768px) {
-    .gallery-grid {
+    .gallery-grid-normal {
         grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+
+    .gallery-grid-large {
+        grid-template-columns: repeat(1, 1fr);
         gap: 1rem;
     }
 }
 
 @media (max-width: 480px) {
-    .gallery-grid {
+    .gallery-grid-normal {
         grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+    }
+
+    .gallery-grid-large {
+        grid-template-columns: repeat(1, 1fr);
         gap: 0.75rem;
     }
 }

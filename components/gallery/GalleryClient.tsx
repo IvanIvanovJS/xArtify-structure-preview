@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import GalleryGrid from './GalleryGrid';
 import FiltersSidebar from './FiltersSidebar';
 import FiltersMobileSheet from './FiltersMobileSheet';
+import { type ViewMode } from '@/components/ui/ViewModeControls';
 import './styles/gallery-page.css';
 
 interface PaintingWithArtist {
@@ -80,6 +81,7 @@ interface GalleryClientProps {
 export default function GalleryClient({ initialPaintings, filterOptions }: GalleryClientProps) {
     const [paintings, setPaintings] = useState<PaintingWithArtist[]>(initialPaintings);
     const [filteredPaintings, setFilteredPaintings] = useState<PaintingWithArtist[]>(initialPaintings);
+    const [viewMode, setViewMode] = useState<ViewMode>('grid');
 
     // Calculate max values from actual paintings
     const maxPrice = Math.max(...initialPaintings.map(p => p.isOnSale && p.finalPrice ? p.finalPrice : p.price));
@@ -264,6 +266,8 @@ export default function GalleryClient({ initialPaintings, filterOptions }: Galle
                     filters={filters}
                     onFilterChange={handleFilterChange}
                     clearFilters={clearFilters}
+                    viewMode={viewMode}
+                    onViewModeChange={setViewMode}
                 />
 
                 {/* Mobile Filters */}
@@ -273,6 +277,8 @@ export default function GalleryClient({ initialPaintings, filterOptions }: Galle
                         filters={filters}
                         onFilterChange={handleFilterChange}
                         clearFilters={clearFilters}
+                        viewMode={viewMode}
+                        onViewModeChange={setViewMode}
                     />
                 </div>
 
@@ -284,6 +290,7 @@ export default function GalleryClient({ initialPaintings, filterOptions }: Galle
                         currentPage={1}
                         totalPages={1}
                         showSold={filters.availability === 'sold'}
+                        viewMode={viewMode}
                     />
                 </div>
             </div>

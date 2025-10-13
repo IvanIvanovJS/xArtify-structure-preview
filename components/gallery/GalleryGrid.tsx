@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import ArtworkCard from '@/components/artworkCard/ArtworkCard';
 import SkeletonLoader from '@/components/ui/SkeletonLoader';
+import { type ViewMode } from '@/components/ui/ViewModeControls';
 
 // Import the type from uploadArtwork types
 import { PaintingWithArtist } from '@/components/uploadArtwork/types';
@@ -16,6 +17,7 @@ interface GalleryGridProps {
     currentPage: number;
     totalPages: number;
     showSold?: boolean;
+    viewMode: ViewMode;
 }
 
 // Enhanced Painting Card for Gallery using new ArtworkCard
@@ -65,7 +67,8 @@ export default function GalleryGrid({
     hasNext,
     currentPage,
     totalPages,
-    showSold = false
+    showSold = false,
+    viewMode
 }: GalleryGridProps): React.JSX.Element {
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -114,7 +117,7 @@ export default function GalleryGrid({
     return (
         <>
             {/* Paintings Grid */}
-            <div className="gallery-grid">
+            <div className={`gallery-grid ${viewMode === 'large' ? 'gallery-grid-large' : 'gallery-grid-normal'}`}>
                 <AnimatePresence mode="popLayout">
                     {paintings.map((painting) => (
                         <GalleryPaintingCard

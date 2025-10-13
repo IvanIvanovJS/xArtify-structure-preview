@@ -4,6 +4,7 @@
 import { useState } from 'react';
 import CustomDropdown from '@/components/ui/CustomDropdown';
 import AppliedFiltersSection from '@/components/ui/AppliedFiltersSection';
+import ViewModeControls, { type ViewMode } from '@/components/ui/ViewModeControls';
 import "@/components/ui/styles/global-checkbox.css";
 import "@/components/ui/styles/applied-filters-section.css";
 import "./styles/filters-sidebar.css";
@@ -178,13 +179,17 @@ interface FiltersSidebarProps {
     filters: Filters;
     onFilterChange: (key: keyof Filters, value: string | string[] | [number, number]) => void;
     clearFilters: () => void;
+    viewMode: ViewMode;
+    onViewModeChange: (viewMode: ViewMode) => void;
 }
 
 export default function FiltersSidebar({
     filterOptions,
     filters,
     onFilterChange,
-    clearFilters
+    clearFilters,
+    viewMode,
+    onViewModeChange
 }: FiltersSidebarProps) {
     const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
         search: true,
@@ -367,6 +372,10 @@ export default function FiltersSidebar({
         <aside className="filters-sidebar">
             <div className="sidebar-header">
                 <h3>Филтри</h3>
+                <ViewModeControls
+                    currentView={viewMode}
+                    onViewChange={onViewModeChange}
+                />
             </div>
 
             {/* Applied Filters Section */}
