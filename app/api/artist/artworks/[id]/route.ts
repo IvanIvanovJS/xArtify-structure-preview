@@ -7,11 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { limiter10perMin, rateKey } from "@/lib/rateLimit";
 import { UpdateArtworkSchema } from "@/lib/validators/artist";
 
-interface RouteParams {
-    params: { id: string };
-}
-
-export async function PUT(req: NextRequest, { params }: RouteParams): Promise<NextResponse> {
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
     try {
         // Rate limiting
         const session = await getServerSession(authOptions);
@@ -36,17 +32,20 @@ export async function PUT(req: NextRequest, { params }: RouteParams): Promise<Ne
             return NextResponse.json({ message: "Не сте артист." }, { status: 403 });
         }
 
+        // Get params
+        const { id } = await params;
+
         // Parse and validate request body
         const body = await req.json();
         const validatedData = UpdateArtworkSchema.parse({
             ...body,
-            id: params.id
+            id
         });
 
         // Check if artwork exists and belongs to artist
         const existingArtwork = await prisma.painting.findFirst({
             where: {
-                id: params.id,
+                id,
                 artistId: artistProfile.id
             }
         });
@@ -72,7 +71,7 @@ export async function PUT(req: NextRequest, { params }: RouteParams): Promise<Ne
             while (await prisma.painting.findUnique({
                 where: {
                     urlTitle: finalUrlTitle,
-                    NOT: { id: params.id }
+                    NOT: { id }
                 }
             })) {
                 finalUrlTitle = `${urlTitle}-${counter}`;
@@ -83,7 +82,7 @@ export async function PUT(req: NextRequest, { params }: RouteParams): Promise<Ne
 
         // Update artwork
         const updatedArtwork = await prisma.painting.update({
-            where: { id: params.id },
+            where: { id },
             data: {
                 ...validatedData,
                 urlTitle: urlTitle || existingArtwork.urlTitle,
@@ -104,7 +103,7 @@ export async function PUT(req: NextRequest, { params }: RouteParams): Promise<Ne
     }
 }
 
-export async function DELETE(req: NextRequest, { params }: RouteParams): Promise<NextResponse> {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
     try {
         // Rate limiting
         const session = await getServerSession(authOptions);
@@ -129,10 +128,13 @@ export async function DELETE(req: NextRequest, { params }: RouteParams): Promise
             return NextResponse.json({ message: "Не сте артист." }, { status: 403 });
         }
 
+        // Get params
+        const { id } = await params;
+
         // Check if artwork exists and belongs to artist
         const existingArtwork = await prisma.painting.findFirst({
             where: {
-                id: params.id,
+                id,
                 artistId: artistProfile.id
             }
         });
@@ -144,7 +146,7 @@ export async function DELETE(req: NextRequest, { params }: RouteParams): Promise
         // Check if artwork has any sales
         const salesCount = await prisma.sale.count({
             where: {
-                paintingId: params.id,
+                paintingId: id,
                 status: 'completed'
             }
         });
@@ -157,7 +159,7 @@ export async function DELETE(req: NextRequest, { params }: RouteParams): Promise
 
         // Delete artwork
         await prisma.painting.delete({
-            where: { id: params.id }
+            where: { id }
         });
 
         return NextResponse.json({ message: "Картината е изтрита." });
