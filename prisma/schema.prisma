@@ -55,6 +55,8 @@ model User {
   subscriptions Subscription[]
   enrollments   Enrollment[]
   favorites     Favorite[]
+  purchases     Sale[]
+  conversations Conversation[]
 }
 model PasswordResetToken {
   id        String   @id @default(cuid())
@@ -100,6 +102,11 @@ model Painting {
   finalPrice   Float?    // Final price after sale calculation (price user wants to receive)
   originalPrice Float?   // Original price before discount (calculated from final price and percentage)
   
+  // New fields
+  status       String    @default("published") // draft|published
+  views        PaintingView[]
+  sales        Sale[]
+  
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
   
@@ -116,6 +123,7 @@ model Painting {
   @@index([finalPrice])
   @@index([originalPrice])
   @@index([urlTitle])
+  @@index([status])
 }
 
 model ArtistProfile {
@@ -134,19 +142,32 @@ model ArtistProfile {
   tags         Tag[]     // Релация към таговете на автора
   faqs         ArtistFAQ[] // Често задавани въпроси
   subscription ArtistSubscription?
+  courses      Course[]
+  profileViews ProfileView[]
+  sales        Sale[]
+  conversations Conversation[]
+  emailNotifications    Boolean @default(true)
+  messageNotifications  Boolean @default(true)
+  salesNotifications    Boolean @default(true)
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 }
 
 // Модел за курсове
 model Course {
-  id            String    @id @default(cuid())
-  title         String
-  description   String?
-  price         Float
-  videoUrls     String[]   // Масив от URL-и към видеоклиповете
-  materials     Material[]
-  enrollments   Enrollment[]
+  id          String    @id @default(cuid())
+  title       String
+  description String?
+  price       Float
+  videoUrls   String[]
+  artistId    String
+  artist      ArtistProfile @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  materials   Material[]
+  enrollments Enrollment[]
+  thumbnailUrl String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  @@index([artistId])
 }
 
 // Модел за материали (продукти в нишовия магазин)
@@ -299,6 +320,88 @@ model Favorite {
   @@index([userId])
   @@index([paintingId])
   @@map("favorites")
+}
+
+// Analytics models
+model PaintingView {
+  id         String   @id @default(cuid())
+  paintingId String
+  painting   Painting @relation(fields: [paintingId], references: [id], onDelete: Cascade)
+  userId     String?
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+  @@index([paintingId])
+  @@index([createdAt])
+  @@map("painting_views")
+}
+
+model ProfileView {
+  id        String   @id @default(cuid())
+  artistId  String
+  artist    ArtistProfile @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  userId    String?
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  @@index([artistId])
+  @@index([createdAt])
+  @@map("profile_views")
+}
+
+model Sale {
+  id               String   @id @default(cuid())
+  paintingId       String
+  painting         Painting @relation(fields: [paintingId], references: [id])
+  artistId         String
+  artist           ArtistProfile @relation(fields: [artistId], references: [id])
+  buyerId          String
+  buyer            User @relation(fields: [buyerId], references: [id])
+  salePrice        Float
+  commissionRate   Float
+  commissionAmount Float
+  stripePaymentId  String?
+  status           String   // pending|completed|refunded
+  createdAt        DateTime @default(now())
+  completedAt      DateTime?
+  @@index([artistId])
+  @@index([paintingId])
+  @@index([createdAt])
+  @@map("sales")
+}
+
+// Messaging models
+model Conversation {
+  id               String   @id @default(cuid())
+  userId           String
+  artistId         String
+  user             User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  artist           ArtistProfile @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  lastMessageAt    DateTime @default(now())
+  userUnreadCount  Int @default(0)
+  artistUnreadCount Int @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  messages         Message[]
+  @@unique([userId, artistId])
+  @@index([userId])
+  @@index([artistId])
+  @@index([lastMessageAt])
+  @@map("conversations")
+}
+
+model Message {
+  id             String   @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderId       String
+  senderType     String   // USER|ARTIST
+  content        String   @db.Text
+  isRead         Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  @@index([conversationId])
+  @@index([createdAt])
+  @@map("messages")
 }
 
 // Добавяме enum за ролите на потребителите
