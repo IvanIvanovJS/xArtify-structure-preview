@@ -197,34 +197,45 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
             return acc;
         }, {} as Record<string, number>);
 
+        // Generate time series data for charts
+        const timeSeries = [];
+        const currentDate = new Date(startDate);
+        while (currentDate <= endDate) {
+            const dateStr = currentDate.toISOString().split('T')[0];
+            timeSeries.push({
+                date: dateStr,
+                views: viewsByDate[dateStr] || 0,
+                sales: salesByDate[dateStr]?.sales || 0,
+                revenue: salesByDate[dateStr]?.revenue || 0
+            });
+            currentDate.setDate(currentDate.getDate() + 1);
+        }
+
         const analyticsData = {
-            summary: {
-                totalRevenue,
-                totalCommission,
-                totalSales,
-                totalPaintingViews,
-                totalProfileViews,
-                averageSaleValue: totalSales > 0 ? totalRevenue / totalSales : 0
+            overview: {
+                totalViews: totalPaintingViews + totalProfileViews,
+                profileViews: totalProfileViews,
+                paintingViews: totalPaintingViews,
+                totalSales: totalSales,
+                totalRevenue: totalRevenue,
+                totalCommission: totalCommission,
+                averageSalePrice: totalSales > 0 ? totalRevenue / totalSales : 0,
+                conversionRate: totalPaintingViews > 0 ? (totalSales / totalPaintingViews) * 100 : 0
             },
-            sales: salesData,
-            topPaintings: topPaintingsWithStats,
-            chartData: {
-                sales: Object.entries(salesByDate).map(([date, data]) => ({
-                    date,
-                    sales: data.sales,
-                    revenue: data.revenue,
-                    commission: data.commission
-                })),
-                views: Object.entries(viewsByDate).map(([date, count]) => ({
-                    date,
-                    views: count
-                }))
-            },
-            period: {
-                startDate: startDate.toISOString(),
-                endDate: endDate.toISOString(),
-                type: validatedQuery.period
-            }
+            timeSeries: timeSeries,
+            topPaintings: topPaintingsWithStats.map(p => ({
+                id: p.id,
+                title: p.title,
+                views: p.viewCount,
+                sales: p.saleCount,
+                revenue: p.revenue,
+                images: p.images
+            })),
+            salesByMonth: [], // TODO: Implement if needed
+            viewsBySource: [], // TODO: Implement if needed
+            period: validatedQuery.period,
+            startDate: startDate.toISOString(),
+            endDate: endDate.toISOString()
         };
 
         return NextResponse.json(analyticsData);

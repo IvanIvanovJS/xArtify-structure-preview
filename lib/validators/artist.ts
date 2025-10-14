@@ -78,9 +78,11 @@ export const CourseFiltersSchema = z.object({
 // ---------- Artist Analytics ----------
 
 export const AnalyticsRangeSchema = z.object({
-    startDate: z.string().datetime("Невалидна начална дата.").optional(),
-    endDate: z.string().datetime("Невалидна крайна дата.").optional(),
+    startDate: z.string().optional(),
+    endDate: z.string().optional(),
     period: z.enum(['7d', '30d', '90d', '1y', 'custom']).default('30d'),
+    sortBy: z.enum(["views", "sales", "revenue", "title"]).optional(),
+    sortOrder: z.enum(["asc", "desc"]).optional(),
 }).strict();
 
 export const TrackViewSchema = z.object({

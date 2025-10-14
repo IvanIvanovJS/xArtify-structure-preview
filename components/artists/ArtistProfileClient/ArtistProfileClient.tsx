@@ -79,6 +79,26 @@ export default function ArtistProfileClient({ artist }: ArtistProfileClientProps
   const maxWidth = Math.max(...artist.paintings.map(p => p.widthCm || 0));
   const maxHeight = Math.max(...artist.paintings.map(p => p.heightCm || 0));
 
+  // Track profile view
+  useEffect(() => {
+    const trackProfileView = async () => {
+      try {
+        await fetch('/api/analytics/track-view', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'profile',
+            id: artist.id
+          })
+        });
+      } catch (error) {
+        console.error('Failed to track profile view:', error);
+      }
+    };
+
+    trackProfileView();
+  }, [artist.id]);
+
   const [filters, setFilters] = useState<FilterOptions>({
     technique: [],
     subject: [],

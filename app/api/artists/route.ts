@@ -5,8 +5,8 @@ import { z } from "zod";
 const GetArtistsSchema = z.object({
   search: z.string().optional(),
   sortBy: z.enum(['name', 'newest', 'oldest', 'paintings-count']).optional(),
-  page: z.coerce.number().min(1).optional(),
-  limit: z.coerce.number().min(1).max(50).optional(),
+  page: z.coerce.number().min(1).default(1),
+  limit: z.coerce.number().min(1).max(50).default(20),
 });
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
@@ -14,10 +14,10 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const { searchParams } = new URL(request.url);
 
     const queryParams = {
-      search: searchParams.get('search'),
-      sortBy: searchParams.get('sortBy'),
-      page: searchParams.get('page'),
-      limit: searchParams.get('limit'),
+      search: searchParams.get('search') || undefined,
+      sortBy: searchParams.get('sortBy') || undefined,
+      page: searchParams.get('page') || '1',
+      limit: searchParams.get('limit') || '20',
     };
 
     const validatedQuery = GetArtistsSchema.parse(queryParams);
@@ -79,6 +79,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           user: {
             select: {
               name: true,
+              email: true,
               image: true,
             },
           },
