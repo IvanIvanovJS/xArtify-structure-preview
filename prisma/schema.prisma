@@ -138,6 +138,20 @@ model ArtistProfile {
   city         String?
   isTwoFactorEnabled Boolean @default(false)
   twoFactorSecret String?
+  
+  // Social media and contact info
+  website      String?
+  instagram    String?
+  facebook     String?
+  twitter      String?
+  location     String?
+  
+  // Professional info
+  specialties  String[]  @default([])
+  experience   String?   @db.Text
+  education    String?   @db.Text
+  awards       String?   @db.Text
+  
   paintings    Painting[]
   tags         Tag[]     // Релация към таговете на автора
   faqs         ArtistFAQ[] // Често задавани въпроси

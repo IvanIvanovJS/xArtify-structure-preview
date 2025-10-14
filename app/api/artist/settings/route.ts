@@ -27,6 +27,13 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
         const artistProfile = await prisma.artistProfile.findUnique({
             where: { userId: session.user.id },
             include: {
+                user: {
+                    select: {
+                        name: true,
+                        email: true,
+                        image: true
+                    }
+                },
                 faqs: {
                     orderBy: { createdAt: 'desc' }
                 },
@@ -43,7 +50,32 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
             return NextResponse.json({ message: "Не сте артист." }, { status: 403 });
         }
 
-        return NextResponse.json(artistProfile);
+        // Notifications are already included in artistProfile
+
+        const settingsData = {
+            profile: {
+                id: artistProfile.id,
+                bio: artistProfile.bio,
+                website: artistProfile.website,
+                instagram: artistProfile.instagram,
+                facebook: artistProfile.facebook,
+                twitter: artistProfile.twitter,
+                location: artistProfile.location,
+                specialties: artistProfile.specialties || [],
+                experience: artistProfile.experience,
+                education: artistProfile.education,
+                awards: artistProfile.awards,
+                user: artistProfile.user
+            },
+            notifications: {
+                emailNotifications: artistProfile.emailNotifications || false,
+                saleNotifications: artistProfile.salesNotifications || false,
+                messageNotifications: artistProfile.messageNotifications || false,
+                marketingEmails: false // Not implemented yet
+            }
+        };
+
+        return NextResponse.json(settingsData);
 
     } catch (error) {
         console.error('Settings GET API Error:', error);
