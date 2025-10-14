@@ -43,12 +43,14 @@ export const ReorderArtworksSchema = z.object({
 }).strict();
 
 export const ArtworkFiltersSchema = z.object({
-    status: z.enum(['all', 'draft', 'published']).default('all'),
+    search: z.string().optional(),
+    status: z.enum(["", "draft", "published", "sold", "archived"]).optional(),
     technique: z.string().optional(),
     subject: z.string().optional(),
     style: z.string().optional(),
-    isOnSale: z.boolean().optional(),
-    search: z.string().trim().max(100, "Търсенето е твърде дълго.").optional(),
+    isOnSale: z.enum(["", "true", "false"]).optional(),
+    sortBy: z.enum(["createdAt", "updatedAt", "title", "price"]).optional(),
+    sortOrder: z.enum(["asc", "desc"]).optional(),
     page: z.number().int().min(1, "Страницата трябва да е положителна.").default(1),
     limit: z.number().int().min(1).max(50, "Лимитът е твърде голям.").default(20),
 }).strict();

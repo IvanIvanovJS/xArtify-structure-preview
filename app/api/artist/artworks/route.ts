@@ -45,6 +45,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
             subject?: string;
             style?: string;
             isOnSale?: boolean;
+            isSold?: boolean;
             OR?: Array<{
                 title?: { contains: string; mode: 'insensitive' };
                 description?: { contains: string; mode: 'insensitive' };
@@ -54,8 +55,15 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
             artistId: artistProfile.id
         };
 
-        if (validatedQuery.status !== 'all') {
-            where.status = validatedQuery.status;
+        if (validatedQuery.status) {
+            if (validatedQuery.status === 'sold') {
+                where.isSold = true;
+            } else if (validatedQuery.status === 'archived') {
+                where.status = 'archived';
+            } else {
+                where.status = validatedQuery.status;
+                where.isSold = false; // Ensure we don't get sold items when filtering by draft/published
+            }
         }
 
         if (validatedQuery.technique) {
@@ -70,8 +78,8 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
             where.style = validatedQuery.style;
         }
 
-        if (validatedQuery.isOnSale !== undefined) {
-            where.isOnSale = validatedQuery.isOnSale;
+        if (validatedQuery.isOnSale) {
+            where.isOnSale = validatedQuery.isOnSale === "true";
         }
 
         if (validatedQuery.search) {
@@ -96,7 +104,9 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
                         select: { id: true }
                     }
                 },
-                orderBy: { createdAt: 'desc' },
+                orderBy: validatedQuery.sortBy && validatedQuery.sortOrder
+                    ? { [validatedQuery.sortBy]: validatedQuery.sortOrder }
+                    : { createdAt: 'desc' },
                 skip: (validatedQuery.page - 1) * validatedQuery.limit,
                 take: validatedQuery.limit
             }),
@@ -104,11 +114,12 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
             prisma.painting.count({ where })
         ]);
 
-        // Transform artworks to include view and sale counts
+        // Transform artworks to include view and sale counts and correct status
         const artworksWithStats = artworks.map(artwork => ({
             ...artwork,
             viewCount: artwork.views.length,
-            saleCount: artwork.sales.length
+            saleCount: artwork.sales.length,
+            status: artwork.isSold ? 'sold' : artwork.status
         }));
 
         const response = {
