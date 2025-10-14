@@ -7,11 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { limiter10perMin, rateKey } from "@/lib/rateLimit";
 import { MessageFiltersSchema, MarkMessagesReadSchema } from "@/lib/validators/artist";
 
-interface RouteParams {
-    params: { conversationId: string };
-}
-
-export async function GET(req: NextRequest, { params }: RouteParams): Promise<NextResponse> {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ conversationId: string }> }): Promise<NextResponse> {
     try {
         // Rate limiting
         const session = await getServerSession(authOptions);
@@ -41,10 +37,13 @@ export async function GET(req: NextRequest, { params }: RouteParams): Promise<Ne
         const query = Object.fromEntries(searchParams.entries());
         const validatedQuery = MessageFiltersSchema.parse(query);
 
+        // Get params
+        const { conversationId } = await params;
+
         // Verify conversation belongs to artist
         const conversation = await prisma.conversation.findFirst({
             where: {
-                id: params.conversationId,
+                id: conversationId,
                 artistId: artistProfile.id
             },
             include: {
@@ -61,14 +60,14 @@ export async function GET(req: NextRequest, { params }: RouteParams): Promise<Ne
         // Get messages for the conversation
         const [messages, totalCount] = await Promise.all([
             prisma.message.findMany({
-                where: { conversationId: params.conversationId },
+                where: { conversationId },
                 orderBy: { createdAt: 'desc' },
                 skip: (validatedQuery.page - 1) * validatedQuery.limit,
                 take: validatedQuery.limit
             }),
 
             prisma.message.count({
-                where: { conversationId: params.conversationId }
+                where: { conversationId }
             })
         ]);
 
@@ -103,7 +102,7 @@ export async function GET(req: NextRequest, { params }: RouteParams): Promise<Ne
     }
 }
 
-export async function PATCH(req: NextRequest, { params }: RouteParams): Promise<NextResponse> {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ conversationId: string }> }): Promise<NextResponse> {
     try {
         // Rate limiting
         const session = await getServerSession(authOptions);
@@ -128,17 +127,20 @@ export async function PATCH(req: NextRequest, { params }: RouteParams): Promise<
             return NextResponse.json({ message: "Не сте артист." }, { status: 403 });
         }
 
+        // Get params
+        const { conversationId } = await params;
+
         // Parse and validate request body
         const body = await req.json();
         const validatedData = MarkMessagesReadSchema.parse({
             ...body,
-            conversationId: params.conversationId
+            conversationId
         });
 
         // Verify conversation belongs to artist
         const conversation = await prisma.conversation.findFirst({
             where: {
-                id: params.conversationId,
+                id: conversationId,
                 artistId: artistProfile.id
             }
         });
@@ -150,7 +152,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams): Promise<
         // Mark messages as read
         await prisma.message.updateMany({
             where: {
-                conversationId: params.conversationId,
+                conversationId,
                 senderType: 'USER',
                 isRead: false
             },
@@ -159,7 +161,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams): Promise<
 
         // Reset artist unread count
         await prisma.conversation.update({
-            where: { id: params.conversationId },
+            where: { id: conversationId },
             data: { artistUnreadCount: 0 }
         });
 

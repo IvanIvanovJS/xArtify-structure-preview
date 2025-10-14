@@ -7,11 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { limiter10perMin, rateKey } from "@/lib/rateLimit";
 import { UpdateCourseSchema } from "@/lib/validators/artist";
 
-interface RouteParams {
-    params: { id: string };
-}
-
-export async function PUT(req: NextRequest, { params }: RouteParams): Promise<NextResponse> {
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
     try {
         // Rate limiting
         const session = await getServerSession(authOptions);
@@ -36,17 +32,20 @@ export async function PUT(req: NextRequest, { params }: RouteParams): Promise<Ne
             return NextResponse.json({ message: "Не сте артист." }, { status: 403 });
         }
 
+        // Get params
+        const { id } = await params;
+
         // Parse and validate request body
         const body = await req.json();
         const validatedData = UpdateCourseSchema.parse({
             ...body,
-            id: params.id
+            id
         });
 
         // Check if course exists and belongs to artist
         const existingCourse = await prisma.course.findFirst({
             where: {
-                id: params.id,
+                id,
                 artistId: artistProfile.id
             }
         });
@@ -57,7 +56,7 @@ export async function PUT(req: NextRequest, { params }: RouteParams): Promise<Ne
 
         // Update course
         const updatedCourse = await prisma.course.update({
-            where: { id: params.id },
+            where: { id },
             data: validatedData
         });
 
@@ -74,7 +73,7 @@ export async function PUT(req: NextRequest, { params }: RouteParams): Promise<Ne
     }
 }
 
-export async function DELETE(req: NextRequest, { params }: RouteParams): Promise<NextResponse> {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
     try {
         // Rate limiting
         const session = await getServerSession(authOptions);
@@ -99,10 +98,13 @@ export async function DELETE(req: NextRequest, { params }: RouteParams): Promise
             return NextResponse.json({ message: "Не сте артист." }, { status: 403 });
         }
 
+        // Get params
+        const { id } = await params;
+
         // Check if course exists and belongs to artist
         const existingCourse = await prisma.course.findFirst({
             where: {
-                id: params.id,
+                id,
                 artistId: artistProfile.id
             }
         });
@@ -114,7 +116,7 @@ export async function DELETE(req: NextRequest, { params }: RouteParams): Promise
         // Check if course has any enrollments
         const enrollmentCount = await prisma.enrollment.count({
             where: {
-                courseId: params.id
+                courseId: id
             }
         });
 
@@ -126,7 +128,7 @@ export async function DELETE(req: NextRequest, { params }: RouteParams): Promise
 
         // Delete course
         await prisma.course.delete({
-            where: { id: params.id }
+            where: { id }
         });
 
         return NextResponse.json({ message: "Курсът е изтрит." });
