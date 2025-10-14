@@ -36,6 +36,7 @@ export async function POST(req: Request) {
                 description,
                 price,
                 videoUrls,
+                artistId: session.user.id, // Add required artistId
                 materials: {
                     connect: materials.map((id: string) => ({ id })) // Пример за свързване на съществуващи материали
                 }
