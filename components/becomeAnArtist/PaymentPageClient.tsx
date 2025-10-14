@@ -350,32 +350,34 @@ export default function PaymentPageClient({ plan, userId }: PaymentPageClientPro
                     </div>
                 </div>
 
-                <div className="billing-selection">
-                    <h3 className="billing-title">Изберете биллинг цикъл</h3>
-                    <div className="billing-toggle">
+                <div className="payment-right-column">
+                    <div className="billing-selection">
+                        <h3 className="billing-title">Изберете биллинг цикъл</h3>
+                        <div className="billing-toggle">
+                            <button
+                                onClick={() => setBillingCycle('monthly')}
+                                className={`billing-option ${billingCycle === 'monthly' ? 'active' : ''}`}
+                            >
+                                Месечно
+                            </button>
+                            <button
+                                onClick={() => setBillingCycle('yearly')}
+                                className={`billing-option ${billingCycle === 'yearly' ? 'active' : ''}`}
+                            >
+                                Годишно (-20%)
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="payment-actions">
                         <button
-                            onClick={() => setBillingCycle('monthly')}
-                            className={`billing-option ${billingCycle === 'monthly' ? 'active' : ''}`}
+                            onClick={handleStartPayment}
+                            disabled={isLoading}
+                            className="payment-button"
                         >
-                            Месечно
-                        </button>
-                        <button
-                            onClick={() => setBillingCycle('yearly')}
-                            className={`billing-option ${billingCycle === 'yearly' ? 'active' : ''}`}
-                        >
-                            Годишно (-20%)
+                            {isLoading ? "Изчакване..." : "Продължи към плащане"}
                         </button>
                     </div>
-                </div>
-
-                <div className="payment-actions">
-                    <button
-                        onClick={handleStartPayment}
-                        disabled={isLoading}
-                        className="payment-button"
-                    >
-                        {isLoading ? "Изчакване..." : "Продължи към плащане"}
-                    </button>
                 </div>
             </div>
         </div>

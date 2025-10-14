@@ -36,7 +36,25 @@ export default function PaintingDetailPage({
 
     useEffect(() => {
         setMounted(true);
-    }, []);
+
+        // Track painting view
+        const trackPaintingView = async () => {
+            try {
+                await fetch('/api/analytics/track-view', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        type: 'painting',
+                        id: painting.id
+                    })
+                });
+            } catch (error) {
+                console.error('Failed to track painting view:', error);
+            }
+        };
+
+        trackPaintingView();
+    }, [painting.id]);
 
     if (!mounted) {
         return (

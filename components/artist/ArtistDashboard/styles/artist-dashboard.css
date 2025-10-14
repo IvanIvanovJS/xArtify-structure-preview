@@ -1,0 +1,387 @@
+/* components/artist/ArtistDashboard/styles/artist-dashboard.css */
+
+.artist-dashboard {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0;
+}
+
+.artist-dashboard-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.artist-dashboard-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--color-foreground);
+    margin: 0;
+}
+
+.artist-dashboard-period-selector {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.artist-period-select {
+    background: var(--color-muted);
+    border: 1px solid var(--color-primary-20);
+    color: var(--color-foreground);
+    padding: 0.75rem 1rem;
+    border-radius: 0.75rem;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.artist-period-select:hover {
+    border-color: var(--color-primary-40);
+}
+
+.artist-period-select:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--color-primary-20);
+}
+
+/* Loading State */
+.artist-dashboard-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+    gap: 1rem;
+}
+
+.artist-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid var(--color-primary-20);
+    border-left: 4px solid var(--color-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.artist-dashboard-loading p {
+    color: var(--color-muted-foreground);
+    font-size: 1rem;
+}
+
+/* Error State */
+.artist-dashboard-error {
+    text-align: center;
+    padding: 4rem 2rem;
+}
+
+.artist-dashboard-error h2 {
+    color: var(--color-danger);
+    margin-bottom: 1rem;
+}
+
+.artist-dashboard-error p {
+    color: var(--color-muted-foreground);
+}
+
+/* Dashboard Cards */
+.artist-dashboard-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.artist-dashboard-card {
+    background: var(--color-muted);
+    border: 1px solid var(--color-primary-20);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: all 0.2s ease;
+}
+
+.artist-dashboard-card:hover {
+    border-color: var(--color-primary-40);
+    transform: translateY(-2px);
+}
+
+.artist-card-icon {
+    font-size: 2rem;
+    width: 60px;
+    height: 60px;
+    background: var(--color-primary-20);
+    border-radius: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.artist-card-content {
+    flex: 1;
+}
+
+.artist-card-content h3 {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-muted-foreground);
+    margin: 0 0 0.5rem 0;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.artist-card-number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--color-foreground);
+    margin: 0 0 0.5rem 0;
+    line-height: 1;
+}
+
+.artist-card-subtitle {
+    font-size: 0.875rem;
+    color: var(--color-muted-foreground);
+    margin: 0;
+}
+
+.artist-card-breakdown {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.artist-card-published,
+.artist-card-draft {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.375rem;
+    font-weight: 500;
+}
+
+.artist-card-published {
+    background: var(--color-primary-20);
+    color: var(--color-primary);
+}
+
+.artist-card-draft {
+    background: var(--color-muted-foreground);
+    color: var(--color-background);
+}
+
+/* Subscription Card */
+.artist-subscription-card {
+    background: var(--color-muted);
+    border: 1px solid var(--color-primary-20);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.artist-subscription-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.artist-subscription-header h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--color-foreground);
+    margin: 0;
+}
+
+.artist-plan-badge {
+    background: var(--color-primary-20);
+    color: var(--color-primary);
+    padding: 0.5rem 1rem;
+    border-radius: 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.artist-subscription-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.artist-subscription-details p {
+    margin: 0;
+    color: var(--color-muted-foreground);
+}
+
+.artist-status-active {
+    color: var(--color-primary);
+    font-weight: 600;
+}
+
+/* Recent Sales */
+.artist-recent-sales {
+    background: var(--color-muted);
+    border: 1px solid var(--color-primary-20);
+    border-radius: 1rem;
+    padding: 1.5rem;
+}
+
+.artist-recent-sales h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--color-foreground);
+    margin: 0 0 1.5rem 0;
+}
+
+.artist-sales-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.artist-sale-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem;
+    background: var(--color-background);
+    border: 1px solid var(--color-primary-20);
+    border-radius: 0.75rem;
+    transition: all 0.2s ease;
+}
+
+.artist-sale-item:hover {
+    border-color: var(--color-primary-40);
+}
+
+.artist-sale-painting {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex: 1;
+}
+
+.artist-sale-image {
+    width: 48px;
+    height: 48px;
+    object-fit: cover;
+    border-radius: 0.5rem;
+    border: 1px solid var(--color-primary-20);
+}
+
+.artist-sale-details h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-foreground);
+    margin: 0 0 0.25rem 0;
+}
+
+.artist-sale-details p {
+    font-size: 0.875rem;
+    color: var(--color-muted-foreground);
+    margin: 0;
+}
+
+.artist-sale-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.25rem;
+}
+
+.artist-sale-price {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-primary);
+    margin: 0;
+}
+
+.artist-sale-date {
+    font-size: 0.75rem;
+    color: var(--color-muted-foreground);
+    margin: 0;
+}
+
+.artist-no-sales {
+    text-align: center;
+    color: var(--color-muted-foreground);
+    font-style: italic;
+    padding: 2rem;
+    margin: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .artist-dashboard-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .artist-dashboard-title {
+        font-size: 1.75rem;
+    }
+
+    .artist-dashboard-cards {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .artist-dashboard-card {
+        padding: 1rem;
+    }
+
+    .artist-card-icon {
+        width: 48px;
+        height: 48px;
+        font-size: 1.5rem;
+    }
+
+    .artist-card-number {
+        font-size: 1.5rem;
+    }
+
+    .artist-sale-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .artist-sale-info {
+        align-items: flex-start;
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .artist-dashboard {
+        padding: 0;
+    }
+
+    .artist-dashboard-cards {
+        gap: 0.75rem;
+    }
+
+    .artist-dashboard-card {
+        padding: 0.75rem;
+    }
+
+    .artist-subscription-card,
+    .artist-recent-sales {
+        padding: 1rem;
+    }
+}

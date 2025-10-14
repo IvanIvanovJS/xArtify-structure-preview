@@ -32,6 +32,9 @@ const formSchema = z
 export default function RegisterForm() {
     const router = useRouter();
     const [error, setError] = useState<string | null>(null);
+    const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+    const [isFacebookLoading, setIsFacebookLoading] = useState(false);
+    const [isFormLoading, setIsFormLoading] = useState(false);
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -52,6 +55,7 @@ export default function RegisterForm() {
 
     const onSubmit = async (data: z.infer<typeof formSchema>) => {
         setError(null);
+        setIsFormLoading(true);
         try {
             const res = await fetch("/api/register", {
                 method: "POST",
@@ -74,14 +78,14 @@ export default function RegisterForm() {
                 setError(errorData?.message || "Грешка при регистрацията.");
             }
 
-
         } catch (error) {
             if (error instanceof Error) {
                 setError(error.message)
             } else {
                 setError("Възникна грешка при регистрацията.");
             }
-
+        } finally {
+            setIsFormLoading(false);
         }
     };
 
@@ -107,34 +111,34 @@ export default function RegisterForm() {
             {/* Бутони за социална регистрация */}
             <div className="register-social-container">
                 <div
-                    onClick={() => signIn("google", { callbackUrl: "/" })}
-                    className="register-social-btn"
+                    onClick={() => !isGoogleLoading && !isFacebookLoading && !isFormLoading && signIn("google", { callbackUrl: "/" })}
+                    className={`register-social-btn ${isGoogleLoading ? 'register-social-btn--disabled' : ''}`}
                     role="button"
                     tabIndex={0}
                     onKeyDown={(e) => {
                         if (e.key === 'Enter' || e.key === ' ') {
                             e.preventDefault();
-                            signIn("google", { callbackUrl: "/" });
+                            if (!isGoogleLoading && !isFacebookLoading && !isFormLoading) signIn("google", { callbackUrl: "/" });
                         }
                     }}
                 >
                     <Image src="/google-icon.svg" width={8} height={8} alt="Google" className="register-social-icon" />
-                    Регистрация с Google
+                    {isGoogleLoading ? "Зареждане..." : "Регистрация с Google"}
                 </div>
                 <div
-                    onClick={() => signIn("facebook", { callbackUrl: "/" })}
-                    className="register-social-btn"
+                    onClick={() => !isGoogleLoading && !isFacebookLoading && !isFormLoading && signIn("facebook", { callbackUrl: "/" })}
+                    className={`register-social-btn ${isFacebookLoading ? 'register-social-btn--disabled' : ''}`}
                     role="button"
                     tabIndex={0}
                     onKeyDown={(e) => {
                         if (e.key === 'Enter' || e.key === ' ') {
                             e.preventDefault();
-                            signIn("facebook", { callbackUrl: "/" });
+                            if (!isGoogleLoading && !isFacebookLoading && !isFormLoading) signIn("facebook", { callbackUrl: "/" });
                         }
                     }}
                 >
                     <Image src="/facebook-icon.svg" width={8} height={8} alt="Facebook" className="register-social-icon" />
-                    Регистрация с Facebook
+                    {isFacebookLoading ? "Зареждане..." : "Регистрация с Facebook"}
                 </div>
             </div>
 
@@ -312,9 +316,9 @@ export default function RegisterForm() {
 
                 <input
                     type="submit"
-                    value="Регистрация"
+                    value={isFormLoading ? "Регистриране..." : "Регистрация"}
                     className="register-submit-btn"
-                    disabled={form.formState.isSubmitting}
+                    disabled={isFormLoading || isGoogleLoading || isFacebookLoading || form.formState.isSubmitting}
                 />
             </form>
 

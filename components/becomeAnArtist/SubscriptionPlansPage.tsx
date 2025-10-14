@@ -20,13 +20,13 @@ export default function SubscriptionPlansPage({ plans, userId }: SubscriptionPla
 
 
     const formatPrice = (plan: SubscriptionPlan, cycle: 'monthly' | 'yearly') => {
-        if (plan.name === 'Free') return '0';
+        if (plan.name === 'Hobby') return '0';
         const price = cycle === 'yearly' ? plan.yearlyPrice : plan.monthlyPrice;
         return price.toFixed(0);
     };
 
     const getDiscountText = (plan: SubscriptionPlan) => {
-        if (plan.name === 'Free' || billingCycle === 'monthly') return null;
+        if (plan.name === 'Hobby' || billingCycle === 'monthly') return null;
         const savings = (plan.monthlyPrice * 12) - plan.yearlyPrice;
         return `Спестете ${savings.toFixed(0)}€ годишно`;
     };
@@ -156,7 +156,7 @@ export default function SubscriptionPlansPage({ plans, userId }: SubscriptionPla
             {/* Pricing Cards */}
             <div className="pricing-cards">
                 {plans.map((plan, index) => {
-                    const isPopular = plan.name === 'Medium';
+                    const isPopular = plan.name === 'Pro';
                     const discountText = getDiscountText(plan);
                     const features = getPlanFeatures(plan);
 
@@ -207,7 +207,7 @@ export default function SubscriptionPlansPage({ plans, userId }: SubscriptionPla
                                 onClick={() => handleSelectPlan(plan.id)}
                                 className={`plan-button ${isPopular ? 'primary' : 'secondary'}`}
                             >
-                                {plan.name === 'Free' ? 'Започнете безплатно' : 'Изберете план'}
+                                {plan.name === 'Hobby' ? 'Започнете безплатно' : 'Изберете план'}
                             </button>
                         </div>
                     );

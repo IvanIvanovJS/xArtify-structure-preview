@@ -44,21 +44,39 @@ export async function POST(req: NextRequest) {
 
         // Update subscription with transaction
         const result = await prisma.$transaction(async (tx) => {
-            // Update the subscription
-            const updatedSubscription = await tx.artistSubscription.update({
-                where: { id: artistProfile.subscription!.id },
-                data: {
-                    planId: newPlan.id,
-                    billingCycle: billingCycle,
-                    status: 'active',
-                    updatedAt: new Date()
-                },
-                include: {
-                    plan: true
-                }
-            });
+            if (isDowngrade) {
+                // For downgrades, schedule the change for end of current period
+                const updatedSubscription = await tx.artistSubscription.update({
+                    where: { id: artistProfile.subscription!.id },
+                    data: {
+                        planId: newPlan.id,
+                        billingCycle: billingCycle,
+                        cancelAtPeriodEnd: false, // Reset this flag
+                        updatedAt: new Date()
+                    },
+                    include: {
+                        plan: true
+                    }
+                });
 
-            return updatedSubscription;
+                return updatedSubscription;
+            } else {
+                // For upgrades, change immediately
+                const updatedSubscription = await tx.artistSubscription.update({
+                    where: { id: artistProfile.subscription!.id },
+                    data: {
+                        planId: newPlan.id,
+                        billingCycle: billingCycle,
+                        status: 'active',
+                        updatedAt: new Date()
+                    },
+                    include: {
+                        plan: true
+                    }
+                });
+
+                return updatedSubscription;
+            }
         });
 
         return NextResponse.json({

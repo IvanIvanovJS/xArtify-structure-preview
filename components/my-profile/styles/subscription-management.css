@@ -44,6 +44,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 1rem;
 }
 
 .current-plan-info {
@@ -402,6 +403,10 @@
         padding: 0.75rem 1rem;
         font-size: 0.875rem;
     }
+
+    .current-plan-price {
+        justify-self: center;
+    }
 }
 
 @media (max-width: 480px) {
@@ -424,5 +429,9 @@
     .billing-option {
         padding: 0.5rem 0.75rem;
         font-size: 0.8rem;
+    }
+
+    .current-plan-price {
+        justify-self: center;
     }
 }

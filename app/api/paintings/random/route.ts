@@ -26,6 +26,7 @@ interface PaintingWithArtist {
     salePercentage: number | null;
     finalPrice: number | null;
     originalPrice: number | null;
+    status: string;
     createdAt: Date;
     updatedAt: Date;
     artist: {

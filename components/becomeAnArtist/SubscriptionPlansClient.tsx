@@ -172,7 +172,7 @@ export default function SubscriptionPlansClient({ plans, userId }: SubscriptionP
         if (!plan) return;
 
         // If it's the free plan, redirect directly to form
-        if (plan.name === 'Free') {
+        if (plan.name === 'Hobby') {
             window.location.href = `/become-an-artist/form?planId=${planId}`;
             return;
         }
@@ -202,14 +202,14 @@ export default function SubscriptionPlansClient({ plans, userId }: SubscriptionP
     };
 
     const formatPrice = (plan: SubscriptionPlan, cycle: 'monthly' | 'yearly') => {
-        if (plan.name === 'Free') return '0';
+        if (plan.name === 'Hobby') return '0';
 
         const price = cycle === 'yearly' ? plan.yearlyPrice : plan.monthlyPrice;
         return price.toFixed(0);
     };
 
     const getDiscountText = (plan: SubscriptionPlan) => {
-        if (plan.name === 'Free') return null;
+        if (plan.name === 'Hobby') return null;
         const savings = (plan.monthlyPrice * 12) - plan.yearlyPrice;
         return `Спестете ${savings.toFixed(0)}€ годишно`;
     };
@@ -265,7 +265,7 @@ export default function SubscriptionPlansClient({ plans, userId }: SubscriptionP
             {/* Pricing Cards */}
             <div className="grid md:grid-cols-3 gap-8 mb-16">
                 {plans.map((plan, index) => {
-                    const isPopular = plan.name === 'Medium';
+                    const isPopular = plan.name === 'Pro';
                     const discountText = getDiscountText(plan);
 
                     return (
@@ -318,7 +318,7 @@ export default function SubscriptionPlansClient({ plans, userId }: SubscriptionP
                                     : 'bg-white/20 hover:bg-white/30 text-white border border-white/30'
                                     } disabled:opacity-50 disabled:cursor-not-allowed`}
                             >
-                                {isLoading ? "Изчакване..." : plan.name === 'Free' ? "Започнете безплатно" : "Изберете план"}
+                                {isLoading ? "Изчакване..." : plan.name === 'Hobby' ? "Започнете безплатно" : "Изберете план"}
                             </button>
                         </div>
                     );

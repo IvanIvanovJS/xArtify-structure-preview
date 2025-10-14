@@ -26,6 +26,9 @@ export default function LoginForm() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const [error, setError] = useState<string | null>(null);
+    const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+    const [isFacebookLoading, setIsFacebookLoading] = useState(false);
+    const [isCredentialsLoading, setIsCredentialsLoading] = useState(false);
 
     const [rememberMe, setRememberMe] = useState(true);
 
@@ -39,6 +42,11 @@ export default function LoginForm() {
 
     const handleOAuthSignIn = async (provider: "google" | "facebook"): Promise<void> => {
         setError(null);
+        if (provider === "google") {
+            setIsGoogleLoading(true);
+        } else {
+            setIsFacebookLoading(true);
+        }
         const callbackUrl = searchParams.get("callbackUrl") || "/";
 
         try {
@@ -56,33 +64,46 @@ export default function LoginForm() {
         } catch (error) {
             console.error("OAuth sign-in error:", error);
             setError("Възникна грешка при вход с " + (provider === "google" ? "Google" : "Facebook") + ". Моля, опитайте отново.");
+        } finally {
+            if (provider === "google") {
+                setIsGoogleLoading(false);
+            } else {
+                setIsFacebookLoading(false);
+            }
         }
     };
 
     const onSubmit = async (data: z.infer<typeof formSchema>) => {
         setError(null);
+        setIsCredentialsLoading(true);
         const callbackUrl = searchParams.get("callbackUrl") || "/";
 
-        // Предаваме състоянието на отметката на функцията signIn
-        const res = await signIn("credentials", {
-            // За да обработим ние сами пренасочването
-            email: data.email,
-            password: data.password,
-            callbackUrl,
-            remember_me: rememberMe, // Добавено!
-            redirect: false
-        });
-
-        if (res?.error) {
-            form.setError("password", {
-                type: "manual",
-                message: "Невалиден имейл или парола."
+        try {
+            // Предаваме състоянието на отметката на функцията signIn
+            const res = await signIn("credentials", {
+                // За да обработим ние сами пренасочването
+                email: data.email,
+                password: data.password,
+                callbackUrl,
+                remember_me: rememberMe, // Добавено!
+                redirect: false
             });
-        } else if (res?.ok) {
-            router.push(callbackUrl);
-            router.refresh();
-        }
 
+            if (res?.error) {
+                form.setError("password", {
+                    type: "manual",
+                    message: "Невалиден имейл или парола."
+                });
+            } else if (res?.ok) {
+                router.push(callbackUrl);
+                router.refresh();
+            }
+        } catch (error) {
+            console.error("Login error:", error);
+            setError("Възникна грешка при влизане. Моля, опитайте отново.");
+        } finally {
+            setIsCredentialsLoading(false);
+        }
     };
 
     const [showPassword, setShowPassword] = useState(false);
@@ -116,34 +137,34 @@ export default function LoginForm() {
             {/* Бутони за социален вход */}
             <div className="login-social-container">
                 <div
-                    onClick={() => handleOAuthSignIn("google")}
-                    className="login-social-btn"
+                    onClick={() => !isGoogleLoading && !isFacebookLoading && !isCredentialsLoading && handleOAuthSignIn("google")}
+                    className={`login-social-btn ${isGoogleLoading ? 'login-social-btn--disabled' : ''}`}
                     role="button"
                     tabIndex={0}
                     onKeyDown={(e) => {
                         if (e.key === 'Enter' || e.key === ' ') {
                             e.preventDefault();
-                            handleOAuthSignIn("google");
+                            if (!isGoogleLoading && !isFacebookLoading && !isCredentialsLoading) handleOAuthSignIn("google");
                         }
                     }}
                 >
                     <Image src="/google-icon.svg" width={8} height={8} alt="Google" className="login-social-icon" />
-                    Вход с Google
+                    {isGoogleLoading ? "Зареждане..." : "Вход с Google"}
                 </div>
                 <div
-                    onClick={() => handleOAuthSignIn("facebook")}
-                    className="login-social-btn"
+                    onClick={() => !isGoogleLoading && !isFacebookLoading && !isCredentialsLoading && handleOAuthSignIn("facebook")}
+                    className={`login-social-btn ${isFacebookLoading ? 'login-social-btn--disabled' : ''}`}
                     role="button"
                     tabIndex={0}
                     onKeyDown={(e) => {
                         if (e.key === 'Enter' || e.key === ' ') {
                             e.preventDefault();
-                            handleOAuthSignIn("facebook");
+                            if (!isGoogleLoading && !isFacebookLoading && !isCredentialsLoading) handleOAuthSignIn("facebook");
                         }
                     }}
                 >
                     <Image src="/facebook-icon.svg" width={8} height={8} alt="Facebook" className="login-social-icon" />
-                    Вход с Facebook
+                    {isFacebookLoading ? "Зареждане..." : "Вход с Facebook"}
                 </div>
             </div>
 
@@ -281,9 +302,9 @@ export default function LoginForm() {
 
                 <input
                     type="submit"
-                    value="Вход"
+                    value={isCredentialsLoading ? "Влизане..." : "Вход"}
                     className="login-submit-btn"
-                    disabled={form.formState.isSubmitting}
+                    disabled={isCredentialsLoading || isGoogleLoading || isFacebookLoading || form.formState.isSubmitting}
                 />
             </form>
 

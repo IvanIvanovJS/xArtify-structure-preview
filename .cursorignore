@@ -146,7 +146,8 @@ pnpm-lock.yaml
 
 # Documentation that's not needed for AI context
 docs/
-*.md
+
+
 !README.md
 
 # Configuration files that don't need AI context

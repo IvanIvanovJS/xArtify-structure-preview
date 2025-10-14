@@ -1,0 +1,583 @@
+/* components/artist/ArtworkManagement/styles/artwork-management.css */
+
+.artwork-management {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0;
+}
+
+.artwork-management-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.artwork-management-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--color-foreground);
+    margin: 0;
+}
+
+.artwork-management-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+.artwork-add-button {
+    background: var(--color-primary);
+    color: var(--color-background);
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.875rem;
+}
+
+.artwork-add-button:hover {
+    background: var(--color-primary-80);
+    transform: translateY(-1px);
+}
+
+/* Filters */
+.artwork-filters {
+    background: var(--color-muted);
+    border: 1px solid var(--color-primary-20);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.artwork-filters-row {
+    display: grid;
+    grid-template-columns: 2fr repeat(5, 1fr);
+    gap: 1rem;
+    align-items: end;
+}
+
+.artwork-filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.artwork-search-input {
+    background: var(--color-background);
+    border: 1px solid var(--color-primary-20);
+    color: var(--color-foreground);
+    padding: 0.75rem 1rem;
+    border-radius: 0.75rem;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+}
+
+.artwork-search-input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--color-primary-20);
+}
+
+.artwork-search-input::placeholder {
+    color: var(--color-muted-foreground);
+}
+
+/* Toolbar */
+.artwork-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--color-primary-20);
+}
+
+.artwork-toolbar-left {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+}
+
+.artwork-view-controls {
+    display: flex;
+    background: var(--color-muted);
+    border: 1px solid var(--color-primary-20);
+    border-radius: 0.75rem;
+    padding: 0.25rem;
+}
+
+.view-button {
+    background: transparent;
+    border: none;
+    color: var(--color-muted-foreground);
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 1rem;
+    min-width: 40px;
+}
+
+.view-button:hover {
+    color: var(--color-foreground);
+}
+
+.view-button.active {
+    background: var(--color-primary-20);
+    color: var(--color-primary);
+}
+
+.artwork-selection {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.artwork-select-all {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--color-foreground);
+    cursor: pointer;
+}
+
+.artwork-select-all input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--color-primary);
+}
+
+.artwork-selected-count {
+    font-size: 0.875rem;
+    color: var(--color-primary);
+    font-weight: 500;
+}
+
+.artwork-toolbar-right {
+    display: flex;
+    align-items: center;
+}
+
+.artwork-count {
+    font-size: 0.875rem;
+    color: var(--color-muted-foreground);
+    margin: 0;
+}
+
+/* Loading State */
+.artwork-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+    gap: 1rem;
+}
+
+.artwork-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid var(--color-primary-20);
+    border-left: 4px solid var(--color-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.artwork-loading p {
+    color: var(--color-muted-foreground);
+    font-size: 1rem;
+}
+
+/* Error State */
+.artwork-management-error {
+    text-align: center;
+    padding: 4rem 2rem;
+}
+
+.artwork-management-error h2 {
+    color: var(--color-danger);
+    margin-bottom: 1rem;
+}
+
+.artwork-management-error p {
+    color: var(--color-muted-foreground);
+}
+
+/* Artworks List */
+.artwork-list {
+    display: grid;
+    gap: 1.5rem;
+}
+
+.artwork-list.grid {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+}
+
+.artwork-list.list {
+    grid-template-columns: 1fr;
+}
+
+.artwork-item {
+    background: var(--color-muted);
+    border: 1px solid var(--color-primary-20);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.artwork-item:hover {
+    border-color: var(--color-primary-40);
+    transform: translateY(-2px);
+}
+
+.artwork-item-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.artwork-checkbox {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.artwork-checkbox input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--color-primary);
+}
+
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.status-draft {
+    background: var(--color-muted-foreground);
+    color: var(--color-background);
+}
+
+.status-published {
+    background: var(--color-primary-20);
+    color: var(--color-primary);
+}
+
+.status-sold {
+    background: var(--color-primary-20);
+    color: var(--color-primary);
+}
+
+.status-archived {
+    background: var(--color-muted-foreground);
+    color: var(--color-background);
+}
+
+.artwork-image-container {
+    position: relative;
+    margin-bottom: 1rem;
+    border-radius: 0.75rem;
+    overflow: hidden;
+    aspect-ratio: 3/2;
+}
+
+.artwork-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border: 1px solid var(--color-primary-20);
+}
+
+.artwork-sale-badge {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    background: var(--color-danger);
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.375rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.artwork-details {
+    margin-bottom: 1.5rem;
+}
+
+.artwork-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--color-foreground);
+    margin: 0 0 0.5rem 0;
+    line-height: 1.3;
+}
+
+.artwork-price {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.125rem;
+    font-weight: 600;
+}
+
+.artwork-final-price {
+    color: var(--color-primary);
+}
+
+.artwork-original-price {
+    color: var(--color-muted-foreground);
+    text-decoration: line-through;
+    margin-left: 0.5rem;
+    font-size: 0.875rem;
+}
+
+.artwork-date {
+    font-size: 0.875rem;
+    color: var(--color-muted-foreground);
+    margin: 0 0 1rem 0;
+}
+
+.artwork-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.artwork-tag {
+    background: var(--color-primary-20);
+    color: var(--color-primary);
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.375rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.artwork-tag-more {
+    background: var(--color-muted-foreground);
+    color: var(--color-background);
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.375rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.artwork-actions {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.artwork-action-button {
+    flex: 1;
+    background: transparent;
+    border: 1px solid var(--color-primary-20);
+    color: var(--color-foreground);
+    padding: 0.75rem 1rem;
+    border-radius: 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.artwork-action-button:hover {
+    border-color: var(--color-primary-40);
+    background: var(--color-primary-10);
+}
+
+.artwork-action-button.danger {
+    border-color: var(--color-danger-20);
+    color: var(--color-danger);
+}
+
+.artwork-action-button.danger:hover {
+    border-color: var(--color-danger);
+    background: var(--color-danger-10);
+}
+
+/* Empty State */
+.artwork-empty {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: var(--color-muted);
+    border: 1px solid var(--color-primary-20);
+    border-radius: 1rem;
+}
+
+.artwork-empty h3 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--color-foreground);
+    margin: 0 0 1rem 0;
+}
+
+.artwork-empty p {
+    color: var(--color-muted-foreground);
+    margin: 0 0 2rem 0;
+}
+
+/* Delete Modal */
+.artwork-delete-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 1rem;
+}
+
+.artwork-delete-modal {
+    background: var(--color-muted);
+    border: 1px solid var(--color-primary-20);
+    border-radius: 1rem;
+    padding: 2rem;
+    max-width: 400px;
+    width: 100%;
+}
+
+.artwork-delete-modal h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--color-foreground);
+    margin: 0 0 1rem 0;
+}
+
+.artwork-delete-modal p {
+    color: var(--color-muted-foreground);
+    margin: 0 0 2rem 0;
+    line-height: 1.5;
+}
+
+.artwork-delete-modal-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+}
+
+.artwork-delete-cancel,
+.artwork-delete-confirm {
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    font-size: 0.875rem;
+}
+
+.artwork-delete-cancel {
+    background: transparent;
+    color: var(--color-foreground);
+    border: 1px solid var(--color-primary-20);
+}
+
+.artwork-delete-cancel:hover {
+    border-color: var(--color-primary-40);
+    background: var(--color-primary-10);
+}
+
+.artwork-delete-confirm {
+    background: var(--color-danger);
+    color: white;
+}
+
+.artwork-delete-confirm:hover {
+    background: var(--color-danger-80);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .artwork-filters-row {
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+
+    .artwork-list.grid {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .artwork-management-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .artwork-management-title {
+        font-size: 1.75rem;
+    }
+
+    .artwork-filters-row {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .artwork-toolbar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .artwork-toolbar-left {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .artwork-list.grid {
+        grid-template-columns: 1fr;
+    }
+
+    .artwork-item {
+        padding: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .artwork-management {
+        padding: 0;
+    }
+
+    .artwork-filters {
+        padding: 1rem;
+    }
+
+    .artwork-item {
+        padding: 0.75rem;
+    }
+
+    .artwork-actions {
+        flex-direction: column;
+    }
+
+    .artwork-delete-modal {
+        padding: 1.5rem;
+    }
+
+    .artwork-delete-modal-actions {
+        flex-direction: column;
+    }
+}

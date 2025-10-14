@@ -10,6 +10,7 @@ interface SubscriptionPaymentPageProps {
     searchParams: Promise<{
         planId?: string;
         paymentIntentId?: string;
+        isDowngrade?: string;
     }>;
 }
 
@@ -21,9 +22,14 @@ export default async function SubscriptionPaymentPage({ searchParams }: Subscrip
     }
 
     const resolvedSearchParams = await searchParams;
-    const { planId, paymentIntentId } = resolvedSearchParams;
+    const { planId, paymentIntentId, isDowngrade } = resolvedSearchParams;
 
-    if (!planId || !paymentIntentId) {
+    if (!planId) {
+        redirect('/my-profile/subscription');
+    }
+
+    // For downgrades, paymentIntentId is not required
+    if (!isDowngrade && !paymentIntentId) {
         redirect('/my-profile/subscription');
     }
 
@@ -53,15 +59,14 @@ export default async function SubscriptionPaymentPage({ searchParams }: Subscrip
     }
 
     return (
-
         <div className="container mx-auto px-4 py-8">
             <SubscriptionPaymentClient
                 plan={plan}
                 currentSubscription={artistProfile.subscription}
-                paymentIntentId={paymentIntentId}
+                paymentIntentId={paymentIntentId || ''}
                 userId={session.user.id}
+                isDowngrade={isDowngrade === 'true'}
             />
         </div>
-
     );
 }

@@ -21,9 +21,9 @@ export async function POST() {
         const plans = await prisma.$transaction(async (tx) => {
             const freePlan = await tx.subscriptionPlan.create({
                 data: {
-                    name: 'Free',
-                    displayName: 'Безплатен',
-                    description: 'Всички основни функции, от които се нуждаете, за да започнете.',
+                    name: 'Hobby',
+                    displayName: 'Хоби',
+                    description: 'Идеален за начинаещи художници, които искат да споделят своето творчество и да изградят първоначална аудитория.',
                     monthlyPrice: 0,
                     yearlyPrice: 0,
                     yearlyDiscount: 0,
@@ -40,9 +40,9 @@ export async function POST() {
 
             const mediumPlan = await tx.subscriptionPlan.create({
                 data: {
-                    name: 'Medium',
-                    displayName: 'Среден',
-                    description: 'Повече пространство и гъвкавост за мащабиране на сътрудничеството.',
+                    name: 'Pro',
+                    displayName: 'Професионален',
+                    description: 'За професионални художници, които искат да разширят своето присъствие и да увеличат продажбите на своите произведения.',
                     monthlyPrice: 20,
                     yearlyPrice: 192, // 20 * 12 * 0.8 (20% discount)
                     yearlyDiscount: 0.2,
@@ -59,9 +59,9 @@ export async function POST() {
 
             const highPlan = await tx.subscriptionPlan.create({
                 data: {
-                    name: 'High',
-                    displayName: 'Висок',
-                    description: 'Инструменти за контрол, сигурност и поддръжка в мащаб.',
+                    name: 'Business',
+                    displayName: 'Бизнес',
+                    description: 'За галерии, арт агенции и големи художници, които управляват мащабни арт проекти и искат максимална видимост.',
                     monthlyPrice: 200,
                     yearlyPrice: 1920, // 200 * 12 * 0.8 (20% discount)
                     yearlyDiscount: 0.2,

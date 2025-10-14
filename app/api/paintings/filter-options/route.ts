@@ -4,11 +4,11 @@ import { prisma } from '@/lib/prisma';
 export const runtime = 'nodejs';
 
 interface FilterOptions {
-    techniques: string[];
-    subjects: string[];
-    styles: string[];
-    tags: string[];
-    authors: Array<{ id: string; name: string }>;
+    techniques: Array<{ name: string; count: number }>;
+    subjects: Array<{ name: string; count: number }>;
+    styles: Array<{ name: string; count: number }>;
+    tags: Array<{ name: string; count: number }>;
+    authors: Array<{ id: string; name: string; count: number }>;
     priceRange: {
         min: number;
         max: number;
@@ -51,35 +51,39 @@ export async function GET(): Promise<NextResponse> {
             'Свобода', 'Любов', 'Мечти', 'Реалност', 'Фантазия', 'Емоции'
         ];
 
-        // Get unique values from existing paintings
-        const [techniques, subjects, styles, dbTags, authors, priceRange, sizeRange] = await Promise.all([
-            prisma.painting.findMany({
-                select: { technique: true },
+        // Get counts for each filter option
+        const [techniqueCounts, subjectCounts, styleCounts, tagCounts, authorCounts, priceRange, sizeRange] = await Promise.all([
+            // Get technique counts
+            prisma.painting.groupBy({
+                by: ['technique'],
+                _count: { technique: true },
                 where: {
                     technique: { not: null },
                     // Exclude temporary tag paintings
                     title: { not: { startsWith: 'TEMP_TAG_' } }
                 },
-                distinct: ['technique'],
             }),
-            prisma.painting.findMany({
-                select: { subject: true },
+            // Get subject counts
+            prisma.painting.groupBy({
+                by: ['subject'],
+                _count: { subject: true },
                 where: {
                     subject: { not: null },
                     // Exclude temporary tag paintings
                     title: { not: { startsWith: 'TEMP_TAG_' } }
                 },
-                distinct: ['subject'],
             }),
-            prisma.painting.findMany({
-                select: { style: true },
+            // Get style counts
+            prisma.painting.groupBy({
+                by: ['style'],
+                _count: { style: true },
                 where: {
                     style: { not: null },
                     // Exclude temporary tag paintings
                     title: { not: { startsWith: 'TEMP_TAG_' } }
                 },
-                distinct: ['style'],
             }),
+            // Get all paintings with tags for counting
             prisma.painting.findMany({
                 select: { tags: true },
                 where: {
@@ -90,13 +94,20 @@ export async function GET(): Promise<NextResponse> {
                     title: { not: { startsWith: 'TEMP_TAG_' } }
                 },
             }),
-            // Get all unique authors
+            // Get author counts
             prisma.artistProfile.findMany({
                 select: {
                     id: true,
                     user: {
                         select: {
                             name: true
+                        }
+                    },
+                    paintings: {
+                        select: { id: true },
+                        where: {
+                            // Exclude temporary tag paintings
+                            title: { not: { startsWith: 'TEMP_TAG_' } }
                         }
                     }
                 },
@@ -127,44 +138,76 @@ export async function GET(): Promise<NextResponse> {
             }),
         ]);
 
-        // Extract unique tags from all paintings
-        const uniqueTags = Array.from(
-            new Set(
-                dbTags
-                    .flatMap(painting => painting.tags)
-                    .filter(tag => tag && tag.trim().length > 0)
-            )
-        ).sort();
+        // Count tags from all paintings
+        const tagCountMap = new Map<string, number>();
+        tagCounts.forEach(painting => {
+            painting.tags.forEach(tag => {
+                if (tag && tag.trim().length > 0) {
+                    tagCountMap.set(tag, (tagCountMap.get(tag) || 0) + 1);
+                }
+            });
+        });
 
-        // Process authors
-        const allAuthors = authors
+        // Process authors with counts
+        const allAuthors = authorCounts
             .filter(author => author.user.name)
             .map(author => ({
                 id: author.id,
-                name: author.user.name!
+                name: author.user.name!,
+                count: author.paintings.length
             }))
             .sort((a, b) => a.name.localeCompare(b.name));
 
-        // Combine default options with database options, removing duplicates
-        const allTechniques = Array.from(new Set([
-            ...defaultTechniques,
-            ...techniques.map(t => t.technique).filter((technique): technique is string => technique !== null)
-        ]));
-        const allSubjects = Array.from(new Set([
-            ...defaultSubjects,
-            ...subjects.map(s => s.subject).filter((subject): subject is string => subject !== null)
-        ]));
-        const allStyles = Array.from(new Set([
-            ...defaultStyles,
-            ...styles.map(s => s.style).filter((style): style is string => style !== null)
-        ]));
-        const allTagsCombined = Array.from(new Set([...defaultTags, ...uniqueTags]));
+        // Create technique options with counts
+        const techniqueCountMap = new Map<string, number>();
+        techniqueCounts.forEach(item => {
+            if (item.technique) {
+                techniqueCountMap.set(item.technique, item._count.technique);
+            }
+        });
+
+        const allTechniques = defaultTechniques.map(technique => ({
+            name: technique,
+            count: techniqueCountMap.get(technique) || 0
+        })).sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+
+        // Create subject options with counts
+        const subjectCountMap = new Map<string, number>();
+        subjectCounts.forEach(item => {
+            if (item.subject) {
+                subjectCountMap.set(item.subject, item._count.subject);
+            }
+        });
+
+        const allSubjects = defaultSubjects.map(subject => ({
+            name: subject,
+            count: subjectCountMap.get(subject) || 0
+        })).sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+
+        // Create style options with counts
+        const styleCountMap = new Map<string, number>();
+        styleCounts.forEach(item => {
+            if (item.style) {
+                styleCountMap.set(item.style, item._count.style);
+            }
+        });
+
+        const allStyles = defaultStyles.map(style => ({
+            name: style,
+            count: styleCountMap.get(style) || 0
+        })).sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+
+        // Create tag options with counts
+        const allTagsCombined = defaultTags.map(tag => ({
+            name: tag,
+            count: tagCountMap.get(tag) || 0
+        })).sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
 
         const filterOptions: FilterOptions = {
-            techniques: allTechniques.sort(),
-            subjects: allSubjects.sort(),
-            styles: allStyles.sort(),
-            tags: allTagsCombined.sort(),
+            techniques: allTechniques,
+            subjects: allSubjects,
+            styles: allStyles,
+            tags: allTagsCombined,
             authors: allAuthors,
             priceRange: {
                 min: priceRange._min.price || 0,
@@ -189,25 +232,25 @@ export async function GET(): Promise<NextResponse> {
                 'Маслени бои', 'Акрилни бои', 'Акварел', 'Темпера', 'Гуаш', 'Пастел',
                 'Молив', 'Въглен', 'Туш', 'Смесена техника', 'Цифрово изкуство', 'Колаж',
                 'Скулптура', 'Графика', 'Монопринт', 'Линогравюра', 'Друго'
-            ],
+            ].map(name => ({ name, count: 0 })),
             subjects: [
                 'Пейзаж', 'Портрет', 'Натюрморт', 'Абстракция', 'Фигура', 'Градски пейзаж',
                 'Морски пейзаж', 'Планински пейзаж', 'Животни', 'Цветя', 'Архитектура',
                 'Исторически', 'Религиозен', 'Митичен', 'Фантастичен', 'Еротичен', 'Социален', 'Друго'
-            ],
+            ].map(name => ({ name, count: 0 })),
             styles: [
                 'Реализъм', 'Импресионизъм', 'Експресионизъм', 'Абстракционизъм', 'Сюрреализъм',
                 'Кубизъм', 'Поп арт', 'Минимализъм', 'Концептуализъм', 'Барок', 'Ренесанс',
                 'Романтизъм', 'Класицизъм', 'Модернизъм', 'Постмодернизъм', 'Контемпорарен',
                 'Наивно изкуство', 'Друго'
-            ],
+            ].map(name => ({ name, count: 0 })),
             tags: [
                 'Цвете', 'Природа', 'Портрет', 'Абстракция', 'Модерно', 'Класическо',
                 'Ярко', 'Тъмно', 'Голям размер', 'Малък размер', 'Експресивно', 'Спокойно',
                 'Град', 'Море', 'Планини', 'Животни', 'Цветя', 'Архитектура', 'История',
                 'Романтично', 'Драматично', 'Елегантно', 'Смело', 'Нежно', 'Сила',
                 'Свобода', 'Любов', 'Мечти', 'Реалност', 'Фантазия', 'Емоции'
-            ],
+            ].map(name => ({ name, count: 0 })),
             authors: [],
             priceRange: {
                 min: 0,

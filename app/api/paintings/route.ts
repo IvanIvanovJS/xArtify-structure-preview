@@ -42,6 +42,7 @@ interface PaintingWithArtist {
     salePercentage: number | null;
     finalPrice: number | null;
     originalPrice: number | null;
+    status: string;
     createdAt: Date;
     updatedAt: Date;
     artist: {
@@ -231,7 +232,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
                             bio: true,
                             user: {
                                 select: {
-                                    name: true
+                                    name: true,
+                                    email: true
                                 }
                             }
                         }

@@ -1,43 +1,21 @@
 // app/gallery/_components/FiltersMobileSheet.tsx
 'use client';
 
-import { useRouter } from 'next/navigation';
-import { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { createPortal } from 'react-dom';
-import CustomDropdown from '@/components/ui/CustomDropdown';
-import {
-    SlidersHorizontalIcon,
-    XIcon,
-    ChevronDownIcon,
-    ChevronUpIcon,
-    SearchIcon
-} from 'lucide-react';
-
-// Custom hook for debouncing
-function useDebounce<T>(value: T, delay: number): T {
-    const [debouncedValue, setDebouncedValue] = useState<T>(value);
-
-    useEffect(() => {
-        const handler = setTimeout(() => {
-            setDebouncedValue(value);
-        }, delay);
-
-        return () => {
-            clearTimeout(handler);
-        };
-    }, [value, delay]);
-
-    return debouncedValue;
-}
+import { useState } from 'react';
+import { SlidersHorizontalIcon } from 'lucide-react';
+import UnifiedFilterDrawer from '@/components/ui/UnifiedFilterDrawer';
+import ViewModeControls, { type ViewMode } from '@/components/ui/ViewModeControls';
+import '@/components/ui/styles/unified-filter-drawer.css';
+import '@/components/ui/styles/applied-filters-section.css';
+import './styles/filters-mobile-sheet.css';
 
 // Types
 interface FilterOptions {
-    techniques: string[];
-    subjects: string[];
-    styles: string[];
-    authors: Array<{ id: string; name: string }>;
-    tags: string[];
+    techniques: Array<{ name: string; count: number }>;
+    subjects: Array<{ name: string; count: number }>;
+    styles: Array<{ name: string; count: number }>;
+    authors: Array<{ id: string; name: string; count: number }>;
+    tags: Array<{ name: string; count: number }>;
     priceRange: {
         min: number;
         max: number;
@@ -50,820 +28,391 @@ interface FilterOptions {
     };
 }
 
+interface Filters {
+    search: string;
+    author: string;
+    technique: string[];
+    subject: string[];
+    style: string[];
+    priceRange: [number, number];
+    widthRange: [number, number];
+    heightRange: [number, number];
+    tags: string[];
+    sortBy: string;
+    availability: string;
+}
+
 interface FiltersMobileSheetProps {
     filterOptions: FilterOptions;
-    searchParams: { [key: string]: string | string[] | undefined };
-}
-
-// Individual filter section component for mobile
-function MobileFilterSection({
-    title,
-    isExpanded,
-    onToggle,
-    children
-}: {
-    title: string;
-    isExpanded: boolean;
-    onToggle: () => void;
-    children: React.ReactNode;
-}): React.JSX.Element {
-    const sectionRef = useRef<HTMLDivElement>(null);
-
-    const handleToggle = (): void => {
-        onToggle();
-
-        // If expanding, scroll to center the section after animation
-        if (!isExpanded) {
-            setTimeout(() => {
-                if (sectionRef.current) {
-                    const container = sectionRef.current.closest('.mobile-filters-sheet-content') as HTMLElement;
-                    if (container) {
-                        const sectionRect = sectionRef.current.getBoundingClientRect();
-                        const containerRect = container.getBoundingClientRect();
-                        const containerCenter = containerRect.height / 2;
-                        const sectionCenter = sectionRect.top - containerRect.top + (sectionRect.height / 2);
-                        const scrollOffset = sectionCenter - containerCenter;
-
-                        container.scrollBy({
-                            top: scrollOffset,
-                            behavior: 'smooth'
-                        });
-                    }
-                }
-            }, 100); // Small delay to allow animation to start
-        }
-    };
-
-    return (
-        <div ref={sectionRef} className="mobile-filter-section">
-            <button
-                onClick={handleToggle}
-                className="mobile-filter-section-header"
-                type="button"
-                aria-expanded={isExpanded}
-            >
-                <span className="mobile-filter-section-title">{title}</span>
-                {isExpanded ? (
-                    <ChevronUpIcon size={16} />
-                ) : (
-                    <ChevronDownIcon size={16} />
-                )}
-            </button>
-            <AnimatePresence>
-                {isExpanded && (
-                    <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="mobile-filter-section-content"
-                    >
-                        {children}
-                    </motion.div>
-                )}
-            </AnimatePresence>
-        </div>
-    );
-}
-
-// Search input component
-function MobileSearchFilter({
-    value,
-    onChange
-}: {
-    value: string;
-    onChange: (value: string) => void;
-}): React.JSX.Element {
-    const [localValue, setLocalValue] = useState(value);
-    const debouncedValue = useDebounce(localValue, 300);
-
-    useEffect(() => {
-        setLocalValue(value);
-    }, [value]);
-
-    useEffect(() => {
-        if (debouncedValue !== value) {
-            onChange(debouncedValue);
-        }
-    }, [debouncedValue, value, onChange]);
-
-    return (
-        <div className="mobile-search-filter">
-            <div className="mobile-search-input-container">
-                <SearchIcon size={16} className="mobile-search-icon" />
-                <input
-                    type="text"
-                    placeholder="Търси картини..."
-                    value={localValue}
-                    onChange={(e) => setLocalValue(e.target.value)}
-                    className="mobile-search-input"
-                />
-            </div>
-        </div>
-    );
-}
-
-// Select filter component for mobile
-function MobileSelectFilter({
-    options,
-    value,
-    onChange,
-    placeholder = "Избери..."
-}: {
-    options: string[];
-    value: string;
-    onChange: (value: string) => void;
-    placeholder?: string;
-}): React.JSX.Element {
-    const dropdownOptions = [
-        { value: "", label: placeholder },
-        ...options.map(option => ({ value: option, label: option }))
-    ];
-
-    return (
-        <div className="mobile-select-filter">
-            <CustomDropdown
-                value={value}
-                onChange={onChange}
-                options={dropdownOptions}
-                className="mobile-filter-dropdown"
-            />
-        </div>
-    );
-}
-
-// Author select filter for mobile
-function MobileAuthorFilter({
-    authors,
-    value,
-    onChange
-}: {
-    authors: Array<{ id: string; name: string }>;
-    value: string;
-    onChange: (value: string) => void;
-}): React.JSX.Element {
-    const dropdownOptions = [
-        { value: "", label: "Всички художници" },
-        ...(authors || []).filter(author => author && author.name).map(author => ({
-            value: author.name,
-            label: author.name
-        }))
-    ];
-
-    return (
-        <div className="mobile-select-filter">
-            <CustomDropdown
-                value={value}
-                onChange={onChange}
-                options={dropdownOptions}
-                className="mobile-filter-dropdown"
-            />
-        </div>
-    );
-}
-
-// Price range filter for mobile
-function MobilePriceFilter({
-    priceRange,
-    minValue,
-    maxValue,
-    onMinChange,
-    onMaxChange
-}: {
-    priceRange: { min: number; max: number };
-    minValue: number;
-    maxValue: number;
-    onMinChange: (value: number) => void;
-    onMaxChange: (value: number) => void;
-}): React.JSX.Element {
-    const minPrice = priceRange?.min || 0;
-    const maxPrice = priceRange?.max || 10000;
-
-    const [sliderMin, setSliderMin] = useState(minValue || minPrice);
-    const [sliderMax, setSliderMax] = useState(maxValue || maxPrice);
-
-    // Debounce the slider values to prevent excessive API calls
-    const debouncedMin = useDebounce(sliderMin, 500);
-    const debouncedMax = useDebounce(sliderMax, 500);
-
-    useEffect(() => {
-        setSliderMin(minValue || minPrice);
-        setSliderMax(maxValue || maxPrice);
-    }, [minValue, maxValue, minPrice, maxPrice]);
-
-    // Update parent component only when debounced values change
-    useEffect(() => {
-        if (debouncedMin !== minValue && debouncedMin !== minPrice) {
-            onMinChange(debouncedMin);
-        }
-    }, [debouncedMin, minValue, onMinChange, minPrice]);
-
-    useEffect(() => {
-        if (debouncedMax !== maxValue && debouncedMax !== maxPrice) {
-            onMaxChange(debouncedMax);
-        }
-    }, [debouncedMax, maxValue, onMaxChange, maxPrice]);
-
-    const handleSliderChange = (type: 'min' | 'max', value: number): void => {
-        if (type === 'min') {
-            // Ensure min doesn't exceed max
-            const newMin = Math.min(value, sliderMax);
-            setSliderMin(newMin);
-        } else {
-            // Ensure max doesn't go below min
-            const newMax = Math.max(value, sliderMin);
-            setSliderMax(newMax);
-        }
-    };
-
-    // Update the filled range between sliders
-    useEffect(() => {
-        const minPercent = Math.max(0, Math.min(100, ((sliderMin - minPrice) / (maxPrice - minPrice)) * 100));
-        const maxPercent = Math.max(0, Math.min(100, ((sliderMax - minPrice) / (maxPrice - minPrice)) * 100));
-
-        const sliderContainer = document.querySelector('.mobile-dual-range-slider') as HTMLElement;
-        if (sliderContainer) {
-            sliderContainer.style.setProperty('--min-percent', `${minPercent}%`);
-            sliderContainer.style.setProperty('--max-percent', `${maxPercent}%`);
-        }
-    }, [sliderMin, sliderMax, minPrice, maxPrice]);
-
-    return (
-        <div className="mobile-price-filter">
-            <label className="mobile-filter-label">Ценови диапазон</label>
-
-            {/* Dual Range Slider */}
-            <div className="mobile-dual-range-slider-container">
-                <div className="mobile-dual-range-slider">
-                    <input
-                        type="range"
-                        min={minPrice}
-                        max={maxPrice}
-                        value={sliderMin}
-                        onChange={(e) => handleSliderChange('min', parseInt(e.target.value))}
-                        className="mobile-range-slider mobile-range-slider-min"
-                    />
-                    <input
-                        type="range"
-                        min={minPrice}
-                        max={maxPrice}
-                        value={sliderMax}
-                        onChange={(e) => handleSliderChange('max', parseInt(e.target.value))}
-                        className="mobile-range-slider mobile-range-slider-max"
-                    />
-                </div>
-            </div>
-
-            {/* Value Display */}
-            <div className="mobile-price-range-display">
-                <span className="mobile-price-range-value">
-                    {sliderMin.toFixed(0)} - {sliderMax.toFixed(0)} лв.
-                </span>
-            </div>
-
-            {/* Manual Inputs */}
-            <div className="mobile-price-inputs">
-                <div className="mobile-price-input-group">
-                    <label className="mobile-price-input-label">От</label>
-                    <input
-                        type="number"
-                        min={priceRange?.min || 0}
-                        max={priceRange?.max || 10000}
-                        value={sliderMin}
-                        onChange={(e) => handleSliderChange('min', parseInt(e.target.value) || 0)}
-                        className="mobile-price-input"
-                    />
-                </div>
-                <div className="mobile-price-input-group">
-                    <label className="mobile-price-input-label">До</label>
-                    <input
-                        type="number"
-                        min={priceRange?.min || 0}
-                        max={priceRange?.max || 10000}
-                        value={sliderMax}
-                        onChange={(e) => handleSliderChange('max', parseInt(e.target.value) || 0)}
-                        className="mobile-price-input"
-                    />
-                </div>
-            </div>
-        </div>
-    );
-}
-
-// Size filter component for mobile
-function MobileSizeFilter({
-    sizeRange,
-    widthMin,
-    widthMax,
-    heightMin,
-    heightMax,
-    onWidthMinChange,
-    onWidthMaxChange,
-    onHeightMinChange,
-    onHeightMaxChange
-}: {
-    sizeRange: { widthMin: number; widthMax: number; heightMin: number; heightMax: number };
-    widthMin: number;
-    widthMax: number;
-    heightMin: number;
-    heightMax: number;
-    onWidthMinChange: (value: number) => void;
-    onWidthMaxChange: (value: number) => void;
-    onHeightMinChange: (value: number) => void;
-    onHeightMaxChange: (value: number) => void;
-}): React.JSX.Element {
-    const [localWidthMin, setLocalWidthMin] = useState(widthMin);
-    const [localWidthMax, setLocalWidthMax] = useState(widthMax);
-    const [localHeightMin, setLocalHeightMin] = useState(heightMin);
-    const [localHeightMax, setLocalHeightMax] = useState(heightMax);
-
-    // Debounce all size values
-    const debouncedWidthMin = useDebounce(localWidthMin, 500);
-    const debouncedWidthMax = useDebounce(localWidthMax, 500);
-    const debouncedHeightMin = useDebounce(localHeightMin, 500);
-    const debouncedHeightMax = useDebounce(localHeightMax, 500);
-
-    useEffect(() => {
-        setLocalWidthMin(widthMin);
-        setLocalWidthMax(widthMax);
-        setLocalHeightMin(heightMin);
-        setLocalHeightMax(heightMax);
-    }, [widthMin, widthMax, heightMin, heightMax]);
-
-    // Update parent component only when debounced values change
-    useEffect(() => {
-        if (debouncedWidthMin !== widthMin) {
-            onWidthMinChange(debouncedWidthMin);
-        }
-    }, [debouncedWidthMin, widthMin, onWidthMinChange]);
-
-    useEffect(() => {
-        if (debouncedWidthMax !== widthMax) {
-            onWidthMaxChange(debouncedWidthMax);
-        }
-    }, [debouncedWidthMax, widthMax, onWidthMaxChange]);
-
-    useEffect(() => {
-        if (debouncedHeightMin !== heightMin) {
-            onHeightMinChange(debouncedHeightMin);
-        }
-    }, [debouncedHeightMin, heightMin, onHeightMinChange]);
-
-    useEffect(() => {
-        if (debouncedHeightMax !== heightMax) {
-            onHeightMaxChange(debouncedHeightMax);
-        }
-    }, [debouncedHeightMax, heightMax, onHeightMaxChange]);
-    return (
-        <div className="mobile-size-filter">
-            <label className="mobile-filter-label">Размер (в см)</label>
-
-            {/* Width */}
-            <div className="mobile-size-input-group">
-                <label className="mobile-size-input-label">Ширина</label>
-                <div className="mobile-size-inputs">
-                    <input
-                        type="number"
-                        placeholder="От"
-                        min={sizeRange?.widthMin || 0}
-                        max={sizeRange?.widthMax || 1000}
-                        value={localWidthMin || ''}
-                        onChange={(e) => setLocalWidthMin(parseInt(e.target.value) || 0)}
-                        className="mobile-size-input"
-                    />
-                    <span className="mobile-size-input-separator">-</span>
-                    <input
-                        type="number"
-                        placeholder="До"
-                        min={sizeRange?.widthMin || 0}
-                        max={sizeRange?.widthMax || 1000}
-                        value={localWidthMax || ''}
-                        onChange={(e) => setLocalWidthMax(parseInt(e.target.value) || 0)}
-                        className="mobile-size-input"
-                    />
-                </div>
-            </div>
-
-            {/* Height */}
-            <div className="mobile-size-input-group">
-                <label className="mobile-size-input-label">Височина</label>
-                <div className="mobile-size-inputs">
-                    <input
-                        type="number"
-                        placeholder="От"
-                        min={sizeRange?.heightMin || 0}
-                        max={sizeRange?.heightMax || 1000}
-                        value={localHeightMin || ''}
-                        onChange={(e) => setLocalHeightMin(parseInt(e.target.value) || 0)}
-                        className="mobile-size-input"
-                    />
-                    <span className="mobile-size-input-separator">-</span>
-                    <input
-                        type="number"
-                        placeholder="До"
-                        min={sizeRange?.heightMin || 0}
-                        max={sizeRange?.heightMax || 1000}
-                        value={localHeightMax || ''}
-                        onChange={(e) => setLocalHeightMax(parseInt(e.target.value) || 0)}
-                        className="mobile-size-input"
-                    />
-                </div>
-            </div>
-        </div>
-    );
-}
-
-// Tags filter component for mobile
-function MobileTagsFilter({
-    tags,
-    selectedTags,
-    onTagsChange
-}: {
-    tags: string[];
-    selectedTags: string[];
-    onTagsChange: (tags: string[]) => void;
-}): React.JSX.Element {
-    const toggleTag = (tag: string): void => {
-        if (selectedTags.includes(tag)) {
-            onTagsChange(selectedTags.filter(t => t !== tag));
-        } else {
-            onTagsChange([...selectedTags, tag]);
-        }
-    };
-
-    return (
-        <div className="mobile-tags-filter">
-            <label className="mobile-filter-label">Тагове</label>
-            <div className="mobile-tags-container">
-                {tags.map((tag) => (
-                    <button
-                        key={tag}
-                        onClick={() => toggleTag(tag)}
-                        className={`mobile-tag-button ${selectedTags.includes(tag) ? 'mobile-tag-selected' : ''}`}
-                        type="button"
-                    >
-                        {tag}
-                    </button>
-                ))}
-            </div>
-        </div>
-    );
-}
-
-// Sort filter component for mobile
-function MobileSortFilter({
-    value,
-    onChange
-}: {
-    value: string;
-    onChange: (value: string) => void;
-}): React.JSX.Element {
-    const dropdownOptions = [
-        { value: 'newest', label: 'Най-нови' },
-        { value: 'price_asc', label: 'Цена: ниска към висока' },
-        { value: 'price_desc', label: 'Цена: висока към ниска' },
-        { value: 'title_asc', label: 'Заглавие: А-Я' },
-        { value: 'title_desc', label: 'Заглавие: Я-А' },
-    ];
-
-    return (
-        <div className="mobile-sort-filter">
-            <CustomDropdown
-                value={value}
-                onChange={onChange}
-                options={dropdownOptions}
-                className="mobile-filter-dropdown"
-            />
-        </div>
-    );
-}
-
-// Availability filter component for mobile
-function MobileAvailabilityFilter({
-    value,
-    onChange
-}: {
-    value: string;
-    onChange: (value: string) => void;
-}): React.JSX.Element {
-    const dropdownOptions = [
-        { value: '', label: 'Всички картини' },
-        { value: 'new', label: 'Нови (последните 14 дни)' },
-        { value: 'promotion', label: 'На промоция' },
-        { value: 'sold', label: 'Продадени' },
-    ];
-
-    return (
-        <div className="mobile-availability-filter">
-            <CustomDropdown
-                value={value}
-                onChange={onChange}
-                options={dropdownOptions}
-                className="mobile-filter-dropdown"
-            />
-        </div>
-    );
+    filters: Filters;
+    onFilterChange: (key: keyof Filters, value: string | string[] | [number, number]) => void;
+    clearFilters: () => void;
+    viewMode: ViewMode;
+    onViewModeChange: (viewMode: ViewMode) => void;
 }
 
 // Main Filters Mobile Sheet Component
 export default function FiltersMobileSheet({
     filterOptions,
-    searchParams
+    filters,
+    onFilterChange,
+    clearFilters,
+    viewMode,
+    onViewModeChange
 }: FiltersMobileSheetProps): React.JSX.Element {
-    const router = useRouter();
-    // const currentSearchParams = useSearchParams(); // Not used yet
     const [isOpen, setIsOpen] = useState(false);
-    const [mounted, setMounted] = useState(false);
 
-    useEffect(() => {
-        setMounted(true);
-    }, []);
+    // Count active filters
+    const activeFiltersCount = Object.entries(filters).reduce((count, [key, value]) => {
+        if (Array.isArray(value)) {
+            if (typeof value[0] === 'number') {
+                // For range arrays, check if they're not at default values
+                const maxPrice = filterOptions.priceRange.max;
+                const maxWidth = filterOptions.sizeRange.widthMax;
+                const maxHeight = filterOptions.sizeRange.heightMax;
 
-    // State for expanded sections - all closed by default
-    const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
-        author: false,
-        technique: false,
-        subject: false,
-        style: false,
-        price: false,
-        size: false,
-        tags: false,
-        sort: false,
-        availability: false,
-    });
+                if (key === 'priceRange') {
+                    if (value[0] > 0 || value[1] < maxPrice) {
+                        return count + 1;
+                    }
+                } else if (key === 'widthRange') {
+                    if (value[0] > 0 || value[1] < maxWidth) {
+                        return count + 1;
+                    }
+                } else if (key === 'heightRange') {
+                    if (value[0] > 0 || value[1] < maxHeight) {
+                        return count + 1;
+                    }
+                }
+            } else {
+                return count + (value.length > 0 ? 1 : 0);
+            }
+        } else {
+            return count + (value !== '' && value !== 'newest' ? 1 : 0);
+        }
+        return count;
+    }, 0);
 
-    // State for filter values
-    const [filters, setFilters] = useState({
-        q: (searchParams.q as string) || '',
-        author: (searchParams.author as string) || '',
-        technique: (searchParams.technique as string) || '',
-        subject: (searchParams.subject as string) || '',
-        style: (searchParams.style as string) || '',
-        priceMin: searchParams.priceMin ? parseInt(searchParams.priceMin as string) || 0 : 0,
-        priceMax: searchParams.priceMax ? parseInt(searchParams.priceMax as string) || 0 : 0,
-        widthMin: parseInt((searchParams.widthMin as string) || '0') || 0,
-        widthMax: parseInt((searchParams.widthMax as string) || '0') || 0,
-        heightMin: parseInt((searchParams.heightMin as string) || '0') || 0,
-        heightMax: parseInt((searchParams.heightMax as string) || '0') || 0,
-        tags: Array.isArray(searchParams.tags) ? searchParams.tags :
-            (searchParams.tags as string)?.split(',') || [],
-        sort: (searchParams.sort as string) || 'newest',
-        availability: (searchParams.availability as string) || '',
-    });
-
-    const toggleSection = (section: string): void => {
-        setExpandedSections(prev => ({
-            ...prev,
-            [section]: !prev[section]
-        }));
+    const handleApplyFilters = () => {
+        setIsOpen(false);
     };
 
-    const updateFilters = (newFilters: Partial<typeof filters>): void => {
-        const updatedFilters = { ...filters, ...newFilters };
-        setFilters(updatedFilters);
+    const handleClearFilters = () => {
+        clearFilters();
+        setIsOpen(false);
+    };
 
-        // Build new search params
-        const newSearchParams = new URLSearchParams();
+    // Generate applied filters for display
+    const getAppliedFilters = () => {
+        const applied: Array<{ key: string; label: string; value: string; onRemove: () => void }> = [];
 
-        Object.entries(updatedFilters).forEach(([key, value]) => {
-            if (key === 'tags' && Array.isArray(value) && value.length > 0) {
-                newSearchParams.set(key, value.join(','));
-            } else if (key === 'priceMin' && value && value !== 0) {
-                newSearchParams.set(key, value.toString());
-            } else if (key === 'priceMax' && value && value !== (filterOptions.priceRange?.max || 10000)) {
-                newSearchParams.set(key, value.toString());
-            } else if (value && value !== '' && value !== 0) {
-                newSearchParams.set(key, value.toString());
-            }
+        // Search filter
+        if (filters.search) {
+            applied.push({
+                key: 'search',
+                label: `Търсене: "${filters.search}"`,
+                value: filters.search,
+                onRemove: () => onFilterChange('search', '')
+            });
+        }
+
+        // Author filter
+        if (filters.author) {
+            applied.push({
+                key: 'author',
+                label: `Художник: ${filters.author}`,
+                value: filters.author,
+                onRemove: () => onFilterChange('author', '')
+            });
+        }
+
+        // Sort filter (only if not default)
+        if (filters.sortBy && filters.sortBy !== 'newest') {
+            const sortLabels: Record<string, string> = {
+                'oldest': 'Най-стари',
+                'price-low': 'Цена: ниска → висока',
+                'price-high': 'Цена: висока → ниска',
+                'title': 'Заглавие A-Z'
+            };
+            applied.push({
+                key: 'sortBy',
+                label: `Сортиране: ${sortLabels[filters.sortBy] || filters.sortBy}`,
+                value: filters.sortBy,
+                onRemove: () => onFilterChange('sortBy', 'newest')
+            });
+        }
+
+        // Technique filters
+        filters.technique.forEach(technique => {
+            applied.push({
+                key: `technique-${technique}`,
+                label: `Техника: ${technique}`,
+                value: technique,
+                onRemove: () => {
+                    const newTechniques = filters.technique.filter(t => t !== technique);
+                    onFilterChange('technique', newTechniques);
+                }
+            });
         });
 
-        // Reset to page 1 when filters change
-        newSearchParams.set('page', '1');
+        // Subject filters
+        filters.subject.forEach(subject => {
+            applied.push({
+                key: `subject-${subject}`,
+                label: `Тема: ${subject}`,
+                value: subject,
+                onRemove: () => {
+                    const newSubjects = filters.subject.filter(s => s !== subject);
+                    onFilterChange('subject', newSubjects);
+                }
+            });
+        });
 
-        // Navigate to new URL
-        router.push(`/gallery?${newSearchParams.toString()}`);
+        // Style filters
+        filters.style.forEach(style => {
+            applied.push({
+                key: `style-${style}`,
+                label: `Стил: ${style}`,
+                value: style,
+                onRemove: () => {
+                    const newStyles = filters.style.filter(s => s !== style);
+                    onFilterChange('style', newStyles);
+                }
+            });
+        });
+
+        // Price range filter - only show if different from default [0, maxPrice]
+        const maxPrice = filterOptions.priceRange.max;
+        if (filters.priceRange[0] > 0 || filters.priceRange[1] < maxPrice) {
+            applied.push({
+                key: 'priceRange',
+                label: `Цена: ${filters.priceRange[0]} - ${filters.priceRange[1]} лв.`,
+                value: `${filters.priceRange[0]}-${filters.priceRange[1]}`,
+                onRemove: () => onFilterChange('priceRange', [0, maxPrice])
+            });
+        }
+
+        // Width range filter - only show if different from default [0, maxWidth]
+        const maxWidth = filterOptions.sizeRange.widthMax;
+        if (filters.widthRange[0] > 0 || filters.widthRange[1] < maxWidth) {
+            applied.push({
+                key: 'widthRange',
+                label: `Ширина: ${filters.widthRange[0]} - ${filters.widthRange[1]} см`,
+                value: `${filters.widthRange[0]}-${filters.widthRange[1]}`,
+                onRemove: () => onFilterChange('widthRange', [0, maxWidth])
+            });
+        }
+
+        // Height range filter - only show if different from default [0, maxHeight]
+        const maxHeight = filterOptions.sizeRange.heightMax;
+        if (filters.heightRange[0] > 0 || filters.heightRange[1] < maxHeight) {
+            applied.push({
+                key: 'heightRange',
+                label: `Височина: ${filters.heightRange[0]} - ${filters.heightRange[1]} см`,
+                value: `${filters.heightRange[0]}-${filters.heightRange[1]}`,
+                onRemove: () => onFilterChange('heightRange', [0, maxHeight])
+            });
+        }
+
+        // Tags filters
+        filters.tags.forEach(tag => {
+            applied.push({
+                key: `tag-${tag}`,
+                label: `Таг: ${tag}`,
+                value: tag,
+                onRemove: () => {
+                    const newTags = filters.tags.filter(t => t !== tag);
+                    onFilterChange('tags', newTags);
+                }
+            });
+        });
+
+        // Availability filter
+        if (filters.availability) {
+            const availabilityLabels: Record<string, string> = {
+                'new': 'Нови (последните 14 дни)',
+                'promotion': 'На промоция',
+                'sold': 'Продадени'
+            };
+            applied.push({
+                key: 'availability',
+                label: `Наличност: ${availabilityLabels[filters.availability] || filters.availability}`,
+                value: filters.availability,
+                onRemove: () => onFilterChange('availability', '')
+            });
+        }
+
+        return applied;
     };
 
-    const clearAllFilters = (): void => {
-        router.push('/gallery');
-        setIsOpen(false);
-    };
-
-    const closeSheet = (): void => {
-        setIsOpen(false);
-    };
-
-    const sheetContent = (
-        <AnimatePresence>
-            {isOpen && (
-                <>
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="mobile-filters-overlay"
-                        onClick={closeSheet}
-
-                    />
-
-                    <motion.div
-                        initial={{ x: '100%' }}
-                        animate={{ x: 0 }}
-                        exit={{ x: '100%' }}
-                        transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-                        className="mobile-filters-sheet"
-
-                    >
-                        {/* Sheet Header */}
-                        <div className="mobile-filters-sheet-header">
-                            <h2 className="mobile-filters-sheet-title">Филтри</h2>
-                            <button
-                                onClick={closeSheet}
-                                className="mobile-filters-close-button"
-                                type="button"
-                                aria-label="Затвори филтри"
-                            >
-                                <XIcon size={20} />
-                            </button>
-                        </div>
-
-                        {/* Sheet Content */}
-                        <div className="mobile-filters-sheet-content">
-                            {/* Search Bar */}
-                            <div className="mobile-search-bar">
-                                <MobileSearchFilter
-                                    value={filters.q}
-                                    onChange={(value) => updateFilters({ q: value })}
-                                />
-                            </div>
-
-                            {/* Sort */}
-                            <MobileFilterSection
-                                title="Сортиране"
-                                isExpanded={expandedSections.sort}
-                                onToggle={() => toggleSection('sort')}
-                            >
-                                <MobileSortFilter
-                                    value={filters.sort}
-                                    onChange={(value) => updateFilters({ sort: value })}
-                                />
-                            </MobileFilterSection>
-
-                            {/* Availability */}
-                            <MobileFilterSection
-                                title="Наличност"
-                                isExpanded={expandedSections.availability}
-                                onToggle={() => toggleSection('availability')}
-                            >
-                                <MobileAvailabilityFilter
-                                    value={filters.availability}
-                                    onChange={(value) => updateFilters({ availability: value })}
-                                />
-                            </MobileFilterSection>
-
-                            {/* Author */}
-                            <MobileFilterSection
-                                title="Художник"
-                                isExpanded={expandedSections.author}
-                                onToggle={() => toggleSection('author')}
-                            >
-                                <MobileAuthorFilter
-                                    authors={filterOptions.authors}
-                                    value={filters.author}
-                                    onChange={(value) => updateFilters({ author: value })}
-                                />
-                            </MobileFilterSection>
-
-                            {/* Technique */}
-                            <MobileFilterSection
-                                title="Техника"
-                                isExpanded={expandedSections.technique}
-                                onToggle={() => toggleSection('technique')}
-                            >
-                                <MobileSelectFilter
-                                    options={filterOptions.techniques}
-                                    value={filters.technique}
-                                    onChange={(value) => updateFilters({ technique: value })}
-                                    placeholder="Всички техники"
-                                />
-                            </MobileFilterSection>
-
-                            {/* Subject */}
-                            <MobileFilterSection
-                                title="Тема"
-                                isExpanded={expandedSections.subject}
-                                onToggle={() => toggleSection('subject')}
-                            >
-                                <MobileSelectFilter
-                                    options={filterOptions.subjects}
-                                    value={filters.subject}
-                                    onChange={(value) => updateFilters({ subject: value })}
-                                    placeholder="Всички теми"
-                                />
-                            </MobileFilterSection>
-
-                            {/* Style */}
-                            <MobileFilterSection
-                                title="Стил"
-                                isExpanded={expandedSections.style}
-                                onToggle={() => toggleSection('style')}
-                            >
-                                <MobileSelectFilter
-                                    options={filterOptions.styles}
-                                    value={filters.style}
-                                    onChange={(value) => updateFilters({ style: value })}
-                                    placeholder="Всички стилове"
-                                />
-                            </MobileFilterSection>
-
-                            {/* Price */}
-                            <MobileFilterSection
-                                title="Цена"
-                                isExpanded={expandedSections.price}
-                                onToggle={() => toggleSection('price')}
-                            >
-                                <MobilePriceFilter
-                                    priceRange={filterOptions.priceRange}
-                                    minValue={filters.priceMin}
-                                    maxValue={filters.priceMax}
-                                    onMinChange={(value) => updateFilters({ priceMin: value })}
-                                    onMaxChange={(value) => updateFilters({ priceMax: value })}
-                                />
-                            </MobileFilterSection>
-
-                            {/* Size */}
-                            <MobileFilterSection
-                                title="Размер"
-                                isExpanded={expandedSections.size}
-                                onToggle={() => toggleSection('size')}
-                            >
-                                <MobileSizeFilter
-                                    sizeRange={filterOptions.sizeRange}
-                                    widthMin={filters.widthMin}
-                                    widthMax={filters.widthMax}
-                                    heightMin={filters.heightMin}
-                                    heightMax={filters.heightMax}
-                                    onWidthMinChange={(value) => updateFilters({ widthMin: value })}
-                                    onWidthMaxChange={(value) => updateFilters({ widthMax: value })}
-                                    onHeightMinChange={(value) => updateFilters({ heightMin: value })}
-                                    onHeightMaxChange={(value) => updateFilters({ heightMax: value })}
-                                />
-                            </MobileFilterSection>
-
-                            {/* Tags */}
-                            <MobileFilterSection
-                                title="Тагове"
-                                isExpanded={expandedSections.tags}
-                                onToggle={() => toggleSection('tags')}
-                            >
-                                <MobileTagsFilter
-                                    tags={filterOptions.tags}
-                                    selectedTags={filters.tags}
-                                    onTagsChange={(tags) => updateFilters({ tags })}
-                                />
-                            </MobileFilterSection>
-
-
-                        </div>
-
-                        {/* Sheet Footer */}
-                        <div className="mobile-filters-sheet-footer">
-                            <button
-                                onClick={clearAllFilters}
-                                className="mobile-filters-clear-button"
-                                type="button"
-                            >
-                                Изчисти всички
-                            </button>
-                            <button
-                                onClick={closeSheet}
-                                className="mobile-filters-apply-button"
-                                type="button"
-                            >
-                                Приложи филтри
-                            </button>
-                        </div>
-                    </motion.div>
-                </>
-            )}
-        </AnimatePresence>
-    );
+    // Map filters to UnifiedFilterDrawer sections
+    const sections = [
+        {
+            id: 'author',
+            title: 'Художник',
+            type: 'dropdown' as const,
+            value: filters.author,
+            dropdownOptions: [
+                { value: '', label: 'Всички художници' },
+                ...filterOptions.authors.map(author => ({
+                    value: author.name,
+                    label: `${author.name} (${author.count})`
+                }))
+            ]
+        },
+        {
+            id: 'sort',
+            title: 'Сортиране',
+            type: 'dropdown' as const,
+            value: filters.sortBy,
+            dropdownOptions: [
+                { value: 'newest', label: 'Най-нови' },
+                { value: 'oldest', label: 'Най-стари' },
+                { value: 'price-low', label: 'Цена: ниска → висока' },
+                { value: 'price-high', label: 'Цена: висока → ниска' },
+                { value: 'title', label: 'Заглавие A-Z' }
+            ]
+        },
+        {
+            id: 'availability',
+            title: 'Наличност',
+            type: 'dropdown' as const,
+            value: filters.availability,
+            dropdownOptions: [
+                { value: '', label: 'Всички картини' },
+                { value: 'new', label: 'Нови (последните 14 дни)' },
+                { value: 'promotion', label: 'На промоция' },
+                { value: 'sold', label: 'Продадени' }
+            ]
+        },
+        {
+            id: 'price',
+            title: 'Ценови диапазон',
+            type: 'range' as const,
+            value: filters.priceRange
+        },
+        {
+            id: 'size',
+            title: 'Размер (в см)',
+            type: 'size' as const,
+            widthValue: filters.widthRange,
+            heightValue: filters.heightRange,
+            widthMax: 1000,
+            heightMax: 1000
+        },
+        {
+            id: 'technique',
+            title: 'Техника',
+            type: 'checkbox' as const,
+            value: filters.technique,
+            options: filterOptions.techniques.filter(t => t.count > 0).map(technique => ({
+                id: technique.name,
+                name: technique.name,
+                count: technique.count
+            }))
+        },
+        {
+            id: 'subject',
+            title: 'Тема',
+            type: 'checkbox' as const,
+            value: filters.subject,
+            options: filterOptions.subjects.filter(s => s.count > 0).map(subject => ({
+                id: subject.name,
+                name: subject.name,
+                count: subject.count
+            }))
+        },
+        {
+            id: 'style',
+            title: 'Стил',
+            type: 'checkbox' as const,
+            value: filters.style,
+            options: filterOptions.styles.filter(s => s.count > 0).map(style => ({
+                id: style.name,
+                name: style.name,
+                count: style.count
+            }))
+        },
+        {
+            id: 'tags',
+            title: 'Тагове',
+            type: 'checkbox' as const,
+            value: filters.tags,
+            options: filterOptions.tags.filter(t => t.count > 0).map(tag => ({
+                id: tag.name,
+                name: tag.name,
+                count: tag.count
+            }))
+        }
+    ];
 
     return (
         <>
-            {/* Trigger Button */}
-            <button
-                onClick={() => setIsOpen(true)}
-                className="mobile-filters-button"
-                type="button"
-                aria-label="Отвори филтри"
-            >
-                <SlidersHorizontalIcon size={20} />
-                <span className="mobile-filters-button-text">Филтри</span>
-            </button>
+            {/* Mobile Filter Button */}
+            <div className="mobile-filters-container">
+                <button
+                    onClick={() => setIsOpen(true)}
+                    className={`mobile-filters-btn ${activeFiltersCount > 0 ? 'has-active-filters' : ''}`}
+                    aria-label="Отвори филтри"
+                >
+                    <SlidersHorizontalIcon size={20} />
+                    <span>Филтри</span>
+                    {activeFiltersCount > 0 && (
+                        <span className="filter-count-badge">
+                            {activeFiltersCount}
+                        </span>
+                    )}
+                </button>
 
-            {/* Portal for Sheet - renders outside the button container */}
-            {mounted && createPortal(sheetContent, document.body)}
+                <ViewModeControls
+                    currentView={viewMode}
+                    onViewChange={onViewModeChange}
+                />
+            </div>
+
+            {/* Unified Filter Drawer */}
+            <UnifiedFilterDrawer
+                isOpen={isOpen}
+                onClose={() => setIsOpen(false)}
+                sections={sections}
+                onFilterChange={(sectionId, value) => {
+                    switch (sectionId) {
+                        case 'author':
+                            onFilterChange('author', value as string);
+                            break;
+                        case 'sort':
+                            onFilterChange('sortBy', value as string);
+                            break;
+                        case 'technique':
+                            onFilterChange('technique', value as string[]);
+                            break;
+                        case 'subject':
+                            onFilterChange('subject', value as string[]);
+                            break;
+                        case 'style':
+                            onFilterChange('style', value as string[]);
+                            break;
+                        case 'price':
+                            onFilterChange('priceRange', value as [number, number]);
+                            break;
+                        case 'size':
+                            onFilterChange('widthRange', value as [number, number]);
+                            break;
+                        case 'height':
+                            onFilterChange('heightRange', value as [number, number]);
+                            break;
+                        case 'tags':
+                            onFilterChange('tags', value as string[]);
+                            break;
+                        case 'availability':
+                            onFilterChange('availability', value as string);
+                            break;
+                    }
+                }}
+                onClearAll={handleClearFilters}
+                onApply={handleApplyFilters}
+                appliedFilters={getAppliedFilters()}
+            />
         </>
     );
 }

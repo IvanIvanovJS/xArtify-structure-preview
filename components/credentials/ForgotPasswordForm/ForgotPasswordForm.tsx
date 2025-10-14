@@ -15,6 +15,7 @@ const formSchema = z.object({
 export default function ForgotPasswordForm() {
     const [message, setMessage] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [isFormLoading, setIsFormLoading] = useState(false);
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -26,6 +27,7 @@ export default function ForgotPasswordForm() {
     const onSubmit = async (data: z.infer<typeof formSchema>) => {
         setMessage(null);
         setError(null);
+        setIsFormLoading(true);
 
         try {
             const res = await fetch('/api/forgot-password', {
@@ -52,6 +54,8 @@ export default function ForgotPasswordForm() {
             } else {
                 setError("Възникна грешка. Моля, опитайте отново.");
             }
+        } finally {
+            setIsFormLoading(false);
         }
     };
 
@@ -109,14 +113,18 @@ export default function ForgotPasswordForm() {
                 <div className="forgot-password-buttons">
                     <input
                         type="submit"
-                        value="Изпрати линк"
+                        value={isFormLoading ? "Изпращане..." : "Изпрати линк"}
                         className="forgot-password-submit-btn"
-                        disabled={form.formState.isSubmitting}
+                        disabled={isFormLoading || form.formState.isSubmitting}
                     />
-                    <Link href="/login" className="forgot-password-back-btn">
+                    <button
+                        type="button"
+                        onClick={() => window.history.back()}
+                        className="forgot-password-back-btn"
+                        disabled={isFormLoading}
+                    >
                         Назад
-                    </Link>
-
+                    </button>
                 </div>
             </form>
 

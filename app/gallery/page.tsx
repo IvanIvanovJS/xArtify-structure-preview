@@ -2,23 +2,10 @@
 import { Suspense } from 'react';
 import { Metadata } from 'next';
 import { getBaseUrl } from '@/lib/url';
-import GalleryGrid from '../../components/gallery/GalleryGrid';
-import FiltersSidebar from '../../components/gallery/FiltersSidebar';
-import FiltersMobileSheet from '../../components/gallery/FiltersMobileSheet';
-import ActiveChips from '../../components/gallery/ActiveChips';
+import GalleryClient from '../../components/gallery/GalleryClient';
 
 
 // Types
-
-interface PagedResult<T> {
-    items: T[];
-    total: number;
-    page: number;
-    pageSize: number;
-    totalPages: number;
-    hasNext: boolean;
-    hasPrev: boolean;
-}
 
 interface PaintingWithArtist {
     id: string;
@@ -55,11 +42,11 @@ interface PaintingWithArtist {
 }
 
 interface FilterOptions {
-    techniques: string[];
-    subjects: string[];
-    styles: string[];
-    authors: Array<{ id: string; name: string }>;
-    tags: string[];
+    techniques: Array<{ name: string; count: number }>;
+    subjects: Array<{ name: string; count: number }>;
+    styles: Array<{ name: string; count: number }>;
+    authors: Array<{ id: string; name: string; count: number }>;
+    tags: Array<{ name: string; count: number }>;
     priceRange: {
         min: number;
         max: number;
@@ -84,26 +71,11 @@ export const metadata: Metadata = {
     },
 };
 
-// Fetch paintings with filters
-async function getPaintings(searchParams: { [key: string]: string | string[] | undefined }): Promise<PagedResult<PaintingWithArtist>> {
+// Fetch all paintings for client-side filtering
+async function getAllPaintings(): Promise<PaintingWithArtist[]> {
     const base = await getBaseUrl();
 
-    // Build query parameters
-    const queryParams = new URLSearchParams();
-
-    Object.entries(searchParams).forEach(([key, value]) => {
-        if (value !== undefined && value !== '') {
-            if (Array.isArray(value)) {
-                queryParams.set(key, value.join(','));
-            } else {
-                queryParams.set(key, value.toString());
-            }
-        }
-    });
-
-    const url = `${base}/api/paintings?${queryParams.toString()}`;
-
-    const res = await fetch(url, {
+    const res = await fetch(`${base}/api/paintings`, {
         // Use cache for better performance, but revalidate every 60 seconds
         next: { revalidate: 60 },
     });
@@ -112,7 +84,8 @@ async function getPaintings(searchParams: { [key: string]: string | string[] | u
         throw new Error("Failed to fetch paintings");
     }
 
-    return res.json();
+    const data = await res.json();
+    return data.items || [];
 }
 
 // Fetch filter options
@@ -132,68 +105,19 @@ async function getFilterOptions(): Promise<FilterOptions> {
 }
 
 // Main Gallery Page Component
-interface GalleryPageProps {
-    searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
-}
 
-export default async function GalleryPage({ searchParams }: GalleryPageProps): Promise<React.JSX.Element> {
-    const resolvedSearchParams = await searchParams;
-    const [paintingsData, filterOptions] = await Promise.all([
-        getPaintings(resolvedSearchParams),
+export default async function GalleryPage(): Promise<React.JSX.Element> {
+    const [paintings, filterOptions] = await Promise.all([
+        getAllPaintings(),
         getFilterOptions()
     ]);
 
     return (
-        <div className="gallery-page">
-            <div className="gallery-container">
-                {/* Header */}
-                <div className="gallery-header">
-                    <h1 className="gallery-title">Галерия</h1>
-                    <p className="gallery-subtitle">
-                        Разгледайте {paintingsData.total} картини от талантливи български художници
-                    </p>
-                </div>
-
-                {/* Mobile Filters Button - Fixed Position */}
-                <div className="mobile-filters-trigger">
-                    <Suspense fallback={<div className="loading-skeleton" />}>
-                        <FiltersMobileSheet filterOptions={filterOptions} searchParams={resolvedSearchParams} />
-                    </Suspense>
-                </div>
-
-                {/* Desktop Layout */}
-                <div className="gallery-layout">
-                    {/* Desktop Sidebar */}
-                    <aside className="desktop-sidebar">
-                        <Suspense fallback={<div className="loading-skeleton" />}>
-                            <FiltersSidebar filterOptions={filterOptions} searchParams={resolvedSearchParams} />
-                        </Suspense>
-                    </aside>
-
-                    {/* Main Content */}
-                    <main className="gallery-main">
-                        {/* Active Filters */}
-                        <div className="active-filters-section">
-                            <Suspense fallback={<div className="loading-skeleton" />}>
-                                <ActiveChips searchParams={resolvedSearchParams} />
-                            </Suspense>
-                        </div>
-
-                        {/* Gallery Grid */}
-                        <div className="gallery-grid-section">
-                            <Suspense fallback={<div className="loading-skeleton" />}>
-                                <GalleryGrid
-                                    paintings={paintingsData.items}
-                                    hasNext={paintingsData.hasNext}
-                                    currentPage={paintingsData.page}
-                                    totalPages={paintingsData.totalPages}
-                                    showSold={resolvedSearchParams.availability === 'sold'}
-                                />
-                            </Suspense>
-                        </div>
-                    </main>
-                </div>
-            </div>
-        </div>
+        <Suspense fallback={<div>Loading gallery...</div>}>
+            <GalleryClient
+                initialPaintings={paintings}
+                filterOptions={filterOptions}
+            />
+        </Suspense>
     );
 }

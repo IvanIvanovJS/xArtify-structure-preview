@@ -89,12 +89,19 @@
 
 .form-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 1.5rem;
+    width: 100%;
+    min-width: 0;
+    /* Prevent overflow */
 }
 
 .form-field {
     margin-bottom: 1.5rem;
+    width: 100%;
+    min-width: 0;
+    /* Prevent overflow */
+    box-sizing: border-box;
 }
 
 .form-label {
@@ -114,6 +121,9 @@
     color: var(--color-white-8);
     font-size: 1rem;
     transition: all 0.3s ease;
+    box-sizing: border-box;
+    min-width: 0;
+    /* Allow shrinking */
 }
 
 .form-input:focus {
@@ -540,6 +550,9 @@
     border-radius: 0.5rem;
     background: transparent;
     transition: all 0.3s ease;
+    box-sizing: border-box;
+    min-width: 0;
+    /* Prevent overflow */
 }
 
 /* Override react-phone-number-input default styles */
@@ -736,6 +749,9 @@
     font-size: 1rem;
     outline: none;
     min-width: 0;
+    max-width: 100%;
+    /* Prevent overflow */
+    box-sizing: border-box;
 }
 
 .phone-input .PhoneInputCountrySelect+.PhoneInputInput {
@@ -840,6 +856,19 @@
     .form-grid {
         grid-template-columns: 1fr;
         gap: 1rem;
+        min-width: 0;
+        /* Prevent overflow */
+    }
+
+    .form-field {
+        margin-bottom: 1rem;
+    }
+
+    .form-input {
+        padding: 0.625rem 0.875rem;
+        /* Smaller padding on mobile */
+        font-size: 0.9rem;
+        /* Slightly smaller font */
     }
 
     .plan-display-content {
@@ -871,10 +900,15 @@
     }
 
     .phone-input .PhoneInputCountrySelect {
-        min-width: 45px !important;
-        max-width: 65px !important;
-        padding: 0.75rem 0.125rem 0.75rem 0.25rem !important;
+        min-width: 40px !important;
+        max-width: 60px !important;
+        padding: 0.625rem 0.125rem 0.625rem 0.25rem !important;
         justify-content: flex-start !important;
+    }
+
+    .phone-input .PhoneInputInput {
+        padding: 0.625rem 0.75rem !important;
+        font-size: 0.9rem !important;
     }
 
     .phone-input .PhoneInputCountryIcon {
@@ -912,10 +946,22 @@
     }
 
     .phone-input .PhoneInputCountrySelect {
-        min-width: 40px !important;
-        max-width: 55px !important;
-        padding: 0.625rem 0.125rem 0.625rem 0.25rem !important;
+        min-width: 35px !important;
+        max-width: 50px !important;
+        padding: 0.5rem 0.125rem 0.5rem 0.25rem !important;
         justify-content: flex-start !important;
+    }
+
+    .phone-input .PhoneInputInput {
+        padding: 0.5rem 0.625rem !important;
+        font-size: 0.85rem !important;
+    }
+
+    .form-input {
+        padding: 0.5rem 0.75rem;
+        /* Even smaller padding on very small screens */
+        font-size: 0.85rem;
+        /* Even smaller font */
     }
 
     .phone-input .PhoneInputCountryIcon {

@@ -62,7 +62,7 @@
 
 /* Sidebar */
 .profile-dashboard__sidebar {
-    width: 280px;
+    width: auto;
     background: var(--color-muted);
     border-right: 1px solid var(--color-primary-10);
     display: flex;
@@ -71,24 +71,7 @@
     top: 0;
     height: 100vh;
     overflow-y: auto;
-}
-
-/* Custom scrollbar for sidebar */
-.profile-dashboard__sidebar::-webkit-scrollbar {
-    width: 6px;
-}
-
-.profile-dashboard__sidebar::-webkit-scrollbar-track {
-    background: var(--color-muted);
-}
-
-.profile-dashboard__sidebar::-webkit-scrollbar-thumb {
-    background: var(--color-primary-30);
-    border-radius: 3px;
-}
-
-.profile-dashboard__sidebar::-webkit-scrollbar-thumb:hover {
-    background: var(--color-primary-50);
+    overflow-x: hidden;
 }
 
 .profile-dashboard__nav {
@@ -104,6 +87,7 @@
 
 .profile-dashboard__nav-item {
     margin-bottom: 0.25rem;
+    margin-right: 0.1rem;
 }
 
 .profile-dashboard__nav-link {
@@ -116,6 +100,8 @@
     transition: all 0.3s ease;
     border-left: 3px solid transparent;
     position: relative;
+    min-width: 0;
+    overflow: hidden;
 }
 
 .profile-dashboard__nav-link:hover {
@@ -149,6 +135,10 @@
 .profile-dashboard__nav-label {
     font-weight: 500;
     white-space: nowrap;
+    flex: 1;
+    min-width: 0;
+    font-size: clamp(0.75rem, 2.2vw, 1rem);
+    line-height: 1.2;
 }
 
 /* Close Button for Mobile Sidebar */
@@ -187,10 +177,14 @@
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    font-size: 1.125rem;
+    font-size: clamp(0.875rem, 2.8vw, 1.125rem);
     font-weight: 700;
     color: var(--color-white-8);
     margin: 0;
+    white-space: nowrap;
+    min-width: 0;
+    flex: 1;
+    line-height: 1.2;
 }
 
 .profile-dashboard__sidebar-icon {
@@ -227,6 +221,58 @@
     display: none;
 }
 
+
+/* Desktop responsive adjustments for text visibility */
+@media (max-width: 1200px) and (min-width: 769px) {
+    .profile-dashboard__sidebar {
+        width: auto;
+    }
+
+    .profile-dashboard__nav-label {
+        font-size: clamp(0.7rem, 1.8vw, 0.9rem);
+    }
+
+    .profile-dashboard__sidebar-title {
+        font-size: clamp(0.8rem, 2.2vw, 1rem);
+    }
+}
+
+@media (max-width: 1024px) and (min-width: 769px) {
+    .profile-dashboard__sidebar {
+        width: auto;
+    }
+
+    .profile-dashboard__nav-link {
+        padding: 0.75rem 1.25rem;
+    }
+
+    .profile-dashboard__sidebar-header {
+        padding: 1rem 1.25rem 0.5rem 1.25rem;
+    }
+
+    .profile-dashboard__nav-label {
+        font-size: clamp(0.65rem, 1.6vw, 0.85rem);
+    }
+
+    .profile-dashboard__sidebar-title {
+        font-size: clamp(0.75rem, 2vw, 0.95rem);
+    }
+}
+
+@media (max-width: 900px) and (min-width: 769px) {
+    .profile-dashboard__sidebar {
+        width: auto;
+    }
+
+    .profile-dashboard__nav-label {
+        font-size: clamp(0.6rem, 1.4vw, 0.8rem);
+    }
+
+    .profile-dashboard__sidebar-title {
+        font-size: clamp(0.7rem, 1.8vw, 0.9rem);
+    }
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .profile-dashboard__mobile-header {
@@ -242,7 +288,7 @@
         top: 0;
         left: 0;
         height: 100vh;
-        width: 280px;
+        width: auto;
         transform: translateX(-100%);
         transition: transform 0.3s ease;
         z-index: 200;

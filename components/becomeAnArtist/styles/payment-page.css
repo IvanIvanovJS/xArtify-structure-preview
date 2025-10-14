@@ -46,6 +46,17 @@
     grid-template-columns: 1fr 1fr;
     gap: 3rem;
     align-items: start;
+    min-height: calc(100vh - 200px);
+}
+
+.payment-right-column {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    position: relative;
+    top: 2rem;
+    max-height: calc(100vh - 4rem);
+    overflow-y: auto;
 }
 
 .payment-summary {
@@ -53,8 +64,10 @@
     border: 1px solid var(--color-primary-30);
     border-radius: 1rem;
     padding: 2rem;
-    position: sticky;
+    position: relative;
     top: 2rem;
+    max-height: calc(100vh - 4rem);
+    overflow-y: auto;
 }
 
 .summary-header {
@@ -153,6 +166,8 @@
     border: 1px solid var(--color-primary-30);
     border-radius: 1rem;
     padding: 2rem;
+    position: relative;
+    z-index: 1;
 }
 
 .payment-form {
@@ -177,6 +192,11 @@
 .payment-actions {
     display: flex;
     justify-content: flex-end;
+    position: static;
+    background: transparent;
+    padding: 0;
+    border: none;
+    margin-top: 0;
 }
 
 .payment-button {
@@ -214,12 +234,80 @@
     margin-top: 1rem;
 }
 
+.terms-agreement {
+    margin: 1.5rem 0;
+    padding: 1rem;
+    background: var(--color-white-1);
+    border: 1px solid var(--color-primary-20);
+    border-radius: 0.5rem;
+}
+
+.custom-checkbox-container {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    cursor: pointer;
+}
+
+.custom-checkbox-input {
+    display: none;
+}
+
+.custom-checkbox {
+    width: 1.25rem;
+    height: 1.25rem;
+    border: 2px solid var(--color-primary-30);
+    border-radius: 0.25rem;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+    margin-top: 0.125rem;
+}
+
+.custom-checkbox-input:checked+.custom-checkbox {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+.custom-checkbox-icon {
+    width: 0.75rem;
+    height: 0.75rem;
+    color: var(--color-background);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.custom-checkbox-input:checked+.custom-checkbox .custom-checkbox-icon {
+    opacity: 1;
+}
+
+.form-checkbox-label {
+    color: var(--color-white-7);
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+.terms-link {
+    color: var(--color-primary);
+    text-decoration: underline;
+    transition: color 0.3s ease;
+}
+
+.terms-link:hover {
+    color: var(--color-primary-70);
+}
+
 .billing-selection {
     background: var(--color-white-1);
     border: 1px solid var(--color-primary-30);
     border-radius: 1rem;
     padding: 2rem;
     margin-bottom: 2rem;
+    position: relative;
+    z-index: 1;
 }
 
 .billing-title {
@@ -290,6 +378,18 @@
     border-color: #22c55e;
 }
 
+/* Desktop Layout Fix */
+@media (min-width: 1025px) {
+    .payment-content {
+        align-items: flex-start;
+    }
+
+    .payment-form-container,
+    .billing-selection {
+        margin-bottom: 1rem;
+    }
+}
+
 /* Mobile Responsiveness */
 @media (max-width: 1024px) {
     .payment-content {
@@ -299,6 +399,20 @@
 
     .payment-summary {
         position: static;
+    }
+
+    .payment-right-column {
+        position: static;
+        max-height: none;
+        overflow-y: visible;
+    }
+
+    .payment-actions {
+        position: static;
+        background: transparent;
+        padding: 0;
+        border: none;
+        margin-top: 0;
     }
 }
 
@@ -406,21 +520,25 @@
 }
 
 /* Custom Scrollbar */
-.payment-form-container::-webkit-scrollbar {
+.payment-form-container::-webkit-scrollbar,
+.payment-right-column::-webkit-scrollbar {
     width: 6px;
 }
 
-.payment-form-container::-webkit-scrollbar-track {
+.payment-form-container::-webkit-scrollbar-track,
+.payment-right-column::-webkit-scrollbar-track {
     background: rgba(255, 255, 255, 0.1);
     border-radius: 3px;
 }
 
-.payment-form-container::-webkit-scrollbar-thumb {
+.payment-form-container::-webkit-scrollbar-thumb,
+.payment-right-column::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.3);
     border-radius: 3px;
 }
 
-.payment-form-container::-webkit-scrollbar-thumb:hover {
+.payment-form-container::-webkit-scrollbar-thumb:hover,
+.payment-right-column::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.5);
 }
 
