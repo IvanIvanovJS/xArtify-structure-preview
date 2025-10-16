@@ -100,7 +100,13 @@ export default function MobileDrawer({ isOpen, onClose, onLogout }: MobileDrawer
                 {/* Header */}
                 <div className="mobile-drawer-header">
                     <div className="mobile-drawer-header-content">
-                        <h2 className="mobile-drawer-title">МЕНЮ</h2>
+                        <div className="mobile-drawer-logo-title">
+                            <div
+                                className="mobile-drawer-logo"
+                                aria-label="xArtify Logo"
+                            />
+                            <h2 className="mobile-drawer-title">МЕНЮ</h2>
+                        </div>
                         <button
                             type="button"
                             onClick={onClose}

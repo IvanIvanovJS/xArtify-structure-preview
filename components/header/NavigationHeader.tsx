@@ -299,7 +299,7 @@ export default function NavigationHeader(): JSX.Element {
             >
                 <div className="x-header__bar">
                     {/* ЛЯВО */}
-                    <div className="flex items-center md:gap-2 gap-1">
+                    <div className="x-header__left flex items-center md:gap-2 gap-1">
                         {/* MOBILE: профил/любими/карт вляво + Search иконка на мобилно */}
                         <div className="md:hidden flex items-center gap-1">
                             <button
@@ -350,7 +350,7 @@ export default function NavigationHeader(): JSX.Element {
                             aria-expanded={searchOpen}
                             aria-controls="header-search-desktop"
                             onClick={() => setSearchOpen((s) => !s)}
-                            className="hidden md:inline-flex x-icon-btn gap"
+                            className="hidden md:inline-flex x-icon-btn gap ml-2"
                             onTouchStart={handleTouchStart}
                             onTouchEnd={handleTouchEnd}
                         >
