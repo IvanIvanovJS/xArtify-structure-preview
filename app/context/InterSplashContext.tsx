@@ -26,7 +26,7 @@ export function InterSplashProvider({ children }: { children: ReactNode }): Reac
         timeoutRef.current = setTimeout(() => {
             console.log('InterSplash: Fallback timeout - hiding splash');
             setIsVisible(false);
-        }, 5000); // 5 second maximum
+        }, 3000); // 3 second maximum
     };
 
     const hideInterSplash = (): void => {

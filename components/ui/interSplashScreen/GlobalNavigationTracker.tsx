@@ -34,6 +34,13 @@ export default function GlobalNavigationTracker(): React.JSX.Element {
                     return;
                 }
 
+                // Skip if it's a query parameter change on the same page
+                const currentPath = pathname.split('?')[0];
+                const targetPath = href.split('?')[0];
+                if (currentPath === targetPath) {
+                    return;
+                }
+
                 // Show splash for internal navigation
                 showInterSplash();
             }
@@ -49,7 +56,12 @@ export default function GlobalNavigationTracker(): React.JSX.Element {
                 // Skip interSplash for filter operations (gallery page with or without query parameters)
                 const isFilterOperation = pathname === '/gallery' && (href === '/gallery' || href.startsWith('/gallery?'));
 
-                if (!isFilterOperation) {
+                // Skip if it's just a query parameter change on the same page
+                const currentPath = pathname.split('?')[0];
+                const targetPath = href.split('?')[0];
+                const isQueryChange = currentPath === targetPath;
+
+                if (!isFilterOperation && !isQueryChange) {
                     showInterSplash();
                 }
             }
@@ -62,7 +74,12 @@ export default function GlobalNavigationTracker(): React.JSX.Element {
                 // Skip interSplash for filter operations (gallery page with or without query parameters)
                 const isFilterOperation = pathname === '/gallery' && (href === '/gallery' || href.startsWith('/gallery?'));
 
-                if (!isFilterOperation) {
+                // Skip if it's just a query parameter change on the same page
+                const currentPath = pathname.split('?')[0];
+                const targetPath = href.split('?')[0];
+                const isQueryChange = currentPath === targetPath;
+
+                if (!isFilterOperation && !isQueryChange) {
                     showInterSplash();
                 }
             }

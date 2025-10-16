@@ -59,7 +59,7 @@ export default function LoginForm() {
                 setError("Възникна грешка при вход с " + (provider === "google" ? "Google" : "Facebook") + ". Моля, опитайте отново.");
             } else if (res?.ok) {
                 router.push(callbackUrl);
-                router.refresh();
+                // router.refresh(); // Removed to prevent navigation conflicts
             }
         } catch (error) {
             console.error("OAuth sign-in error:", error);
@@ -95,8 +95,8 @@ export default function LoginForm() {
                     message: "Невалиден имейл или парола."
                 });
             } else if (res?.ok) {
-                router.push(callbackUrl);
-                router.refresh();
+                // Use replace instead of push to avoid back button issues
+                router.replace(callbackUrl);
             }
         } catch (error) {
             console.error("Login error:", error);

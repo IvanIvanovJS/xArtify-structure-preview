@@ -97,7 +97,7 @@ export default function SubscriptionManagementClient({
 
             if (response.ok) {
                 alert("Планът беше успешно променен!");
-                router.refresh();
+                // router.refresh(); // Removed to prevent navigation conflicts
             } else {
                 const errorData = await response.json();
                 alert(`Грешка при промяна на плана: ${errorData.message}`);
@@ -133,7 +133,7 @@ export default function SubscriptionManagementClient({
 
             if (response.ok) {
                 alert("Абонаментът ще бъде спрян в края на текущия период.");
-                router.refresh();
+                // router.refresh(); // Removed to prevent navigation conflicts
             } else {
                 const errorData = await response.json();
                 alert(`Грешка при спиране на абонамента: ${errorData.message}`);
@@ -162,7 +162,7 @@ export default function SubscriptionManagementClient({
 
             if (response.ok) {
                 alert("Абонаментът беше реактивиран успешно!");
-                router.refresh();
+                // router.refresh(); // Removed to prevent navigation conflicts
             } else {
                 const errorData = await response.json();
                 alert(`Грешка при реактивиране на абонамента: ${errorData.message}`);
