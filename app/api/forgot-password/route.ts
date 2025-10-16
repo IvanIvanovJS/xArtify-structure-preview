@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { Resend } from 'resend';
 import { prisma } from "@/lib/prisma";
+import { limiterAuth, rateKey } from "@/lib/rateLimit";
 export const runtime = "nodejs";
 
 
@@ -11,6 +12,13 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(req: Request) {
     try {
+        // Rate limiting
+        const key = rateKey(req);
+        const { success } = await limiterAuth.limit(key);
+        if (!success) {
+            return NextResponse.json({ message: "Твърде много заявки. Моля опитайте отново по-късно." }, { status: 429 });
+        }
+
         const { email } = await req.json();
 
         const user = await prisma.user.findUnique({

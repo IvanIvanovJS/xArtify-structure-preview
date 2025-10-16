@@ -4,7 +4,7 @@ import { getServerSession } from "next-auth";
 
 import { authOptions } from "@/lib/authOptions";
 import { prisma } from "@/lib/prisma";
-import { limiter10perMin, rateKey } from "@/lib/rateLimit";
+import { limiterArtistRead, limiterArtistWrite, rateKey } from "@/lib/rateLimit";
 import { CreateArtworkSchema, ArtworkFiltersSchema, ReorderArtworksSchema } from "@/lib/validators/artist";
 
 export async function GET(req: NextRequest): Promise<NextResponse> {
@@ -12,7 +12,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
         // Rate limiting
         const session = await getServerSession(authOptions);
         const key = rateKey(req, session?.user?.id);
-        const { success } = await limiter10perMin.limit(key);
+        const { success } = await limiterArtistRead.limit(key);
 
         if (!success) {
             return NextResponse.json({ message: "Твърде много заявки." }, { status: 429 });
@@ -150,7 +150,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         // Rate limiting
         const session = await getServerSession(authOptions);
         const key = rateKey(req, session?.user?.id);
-        const { success } = await limiter10perMin.limit(key);
+        const { success } = await limiterArtistWrite.limit(key);
 
         if (!success) {
             return NextResponse.json({ message: "Твърде много заявки." }, { status: 429 });
@@ -220,7 +220,7 @@ export async function PATCH(req: NextRequest): Promise<NextResponse> {
         // Rate limiting
         const session = await getServerSession(authOptions);
         const key = rateKey(req, session?.user?.id);
-        const { success } = await limiter10perMin.limit(key);
+        const { success } = await limiterArtistRead.limit(key);
 
         if (!success) {
             return NextResponse.json({ message: "Твърде много заявки." }, { status: 429 });

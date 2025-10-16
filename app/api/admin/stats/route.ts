@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireAdmin, getClientIP, checkRateLimit } from "@/lib/adminAuth";
+import { requireAdmin } from "@/lib/adminAuth";
 import { prisma } from "@/lib/prisma";
+import { limiterAdmin, rateKey } from "@/lib/rateLimit";
 
 export async function GET(request: NextRequest) {
     try {
@@ -8,8 +9,9 @@ export async function GET(request: NextRequest) {
         await requireAdmin();
 
         // Rate limiting
-        const clientIP = getClientIP(request);
-        if (!checkRateLimit(`admin-stats-${clientIP}`, 30, 60 * 1000)) { // 30 заявки на минута
+        const key = rateKey(request);
+        const { success } = await limiterAdmin.limit(key);
+        if (!success) {
             return NextResponse.json(
                 { error: "Твърде много заявки. Моля, опитайте отново след малко." },
                 { status: 429 }

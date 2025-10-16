@@ -88,33 +88,7 @@ export async function requireAnyRole(roles: ("USER" | "ARTIST" | "ADMIN")[]): Pr
     };
 }
 
-/**
- * Rate limiting за admin операции
- */
-const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
-
-export function checkRateLimit(
-    identifier: string,
-    maxRequests: number = 10,
-    windowMs: number = 60 * 60 * 1000 // 1 час
-): boolean {
-    const now = Date.now();
-    const key = identifier;
-
-    const current = rateLimitMap.get(key);
-
-    if (!current || now > current.resetTime) {
-        rateLimitMap.set(key, { count: 1, resetTime: now + windowMs });
-        return true;
-    }
-
-    if (current.count >= maxRequests) {
-        return false;
-    }
-
-    current.count++;
-    return true;
-}
+// Rate limiting moved to lib/rateLimit.ts - use limiterAdmin instead
 
 /**
  * Извлича IP адрес от заявката

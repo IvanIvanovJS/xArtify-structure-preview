@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from "@/lib/prisma";
 import { Prisma } from '@prisma/client';
+import { limiterPublic, rateKey } from '@/lib/rateLimit';
 
 export const runtime = "nodejs";
 
@@ -42,6 +43,13 @@ interface PaintingWithArtist {
 // GET /api/paintings/random - Get random paintings from other artists
 export async function GET(request: NextRequest): Promise<NextResponse> {
     try {
+        // Rate limiting
+        const key = rateKey(request);
+        const { success } = await limiterPublic.limit(key);
+        if (!success) {
+            return NextResponse.json({ message: "Твърде много заявки." }, { status: 429 });
+        }
+
         const { searchParams } = new URL(request.url);
         const excludeArtistId = searchParams.get('excludeArtistId');
         const excludePaintingId = searchParams.get('excludePaintingId');

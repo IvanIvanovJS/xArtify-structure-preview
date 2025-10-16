@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from "uuid";
 
 import { authOptions } from "@/lib/authOptions";
 import { prisma } from "@/lib/prisma";
-import { limiter10perMin, rateKey } from "@/lib/rateLimit";
+import { limiterHeavy, rateKey } from "@/lib/rateLimit";
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
     try {
@@ -20,7 +20,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         }
 
         // Rate limiting
-        const { success } = await limiter10perMin.limit(rateKey(req, session.user.id));
+        const { success } = await limiterHeavy.limit(rateKey(req, session.user.id));
         if (!success) {
             return NextResponse.json(
                 { message: "Твърде много заявки. Моля опитайте отново по-късно." },

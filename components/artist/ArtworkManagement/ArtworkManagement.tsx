@@ -41,6 +41,15 @@ interface ArtworkFilters {
     sortOrder: string;
 }
 
+interface FilterOptions {
+    techniques: string[];
+    subjects: string[];
+    styles: string[];
+    statuses: string[];
+    hasOnSale: boolean;
+    hasNotOnSale: boolean;
+}
+
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function ArtworkManagement(): JSX.Element {
@@ -67,39 +76,60 @@ export default function ArtworkManagement(): JSX.Element {
         totalPages: number;
     }>(`/api/artist/artworks?${new URLSearchParams(filters as unknown as string)}`, fetcher);
 
+    const { data: filterOptions } = useSWR<FilterOptions>('/api/artist/artworks/filter-options', fetcher);
+
+    // Dynamic filter options based on existing artworks
     const statusOptions = [
         { value: "", label: "Всички статуси" },
-        { value: "draft", label: "Чернови" },
-        { value: "published", label: "Публикувани" },
-        { value: "sold", label: "Продадени" },
-        { value: "archived", label: "Архивирани" },
+        ...(filterOptions?.statuses || []).map(status => ({
+            value: status,
+            label: status === "draft" ? "Чернови" :
+                status === "published" ? "Публикувани" :
+                    status === "sold" ? "Продадени" :
+                        status === "archived" ? "Архивирани" : status
+        }))
     ];
 
     const techniqueOptions = [
         { value: "", label: "Всички техники" },
-        { value: "OIL", label: "Маслени бои" },
-        { value: "ACRYLIC", label: "Акрил" },
-        { value: "WATERCOLOR", label: "Акварел" },
-        { value: "DIGITAL", label: "Дигитално" },
-        { value: "MIXED", label: "Смесена техника" },
+        ...(filterOptions?.techniques || []).map(technique => ({
+            value: technique,
+            label: technique === "OIL" ? "Маслени бои" :
+                technique === "ACRYLIC" ? "Акрил" :
+                    technique === "WATERCOLOR" ? "Акварел" :
+                        technique === "DIGITAL" ? "Дигитално" :
+                            technique === "MIXED" ? "Смесена техника" : technique
+        }))
     ];
 
     const subjectOptions = [
         { value: "", label: "Всички теми" },
-        { value: "PORTRAIT", label: "Портрет" },
-        { value: "LANDSCAPE", label: "Пейзаж" },
-        { value: "ABSTRACT", label: "Абстрактно" },
-        { value: "STILL_LIFE", label: "Натюрморт" },
-        { value: "ANIMAL", label: "Животни" },
+        ...(filterOptions?.subjects || []).map(subject => ({
+            value: subject,
+            label: subject === "PORTRAIT" ? "Портрет" :
+                subject === "LANDSCAPE" ? "Пейзаж" :
+                    subject === "ABSTRACT" ? "Абстрактно" :
+                        subject === "STILL_LIFE" ? "Натюрморт" :
+                            subject === "ANIMAL" ? "Животни" : subject
+        }))
     ];
 
     const styleOptions = [
         { value: "", label: "Всички стилове" },
-        { value: "REALISTIC", label: "Реалистичен" },
-        { value: "IMPRESSIONIST", label: "Импресионистичен" },
-        { value: "EXPRESSIONIST", label: "Експресионистичен" },
-        { value: "MODERN", label: "Модерен" },
-        { value: "CONTEMPORARY", label: "Съвременен" },
+        ...(filterOptions?.styles || []).map(style => ({
+            value: style,
+            label: style === "REALISTIC" ? "Реалистичен" :
+                style === "IMPRESSIONIST" ? "Импресионистичен" :
+                    style === "EXPRESSIONIST" ? "Експресионистичен" :
+                        style === "MODERN" ? "Модерен" :
+                            style === "CONTEMPORARY" ? "Съвременен" : style
+        }))
+    ];
+
+    const saleOptions = [
+        { value: "", label: "Всички картини" },
+        ...(filterOptions?.hasOnSale ? [{ value: "true", label: "На промоция" }] : []),
+        ...(filterOptions?.hasNotOnSale ? [{ value: "false", label: "Обикновени цени" }] : [])
     ];
 
     const sortOptions = [
@@ -248,6 +278,15 @@ export default function ArtworkManagement(): JSX.Element {
                             value={filters.style}
                             onChange={(value) => handleFilterChange("style", value)}
                             aria-label="Филтър по стил"
+                        />
+                    </div>
+
+                    <div className="artwork-filter-group">
+                        <CustomDropdown
+                            options={saleOptions}
+                            value={filters.isOnSale}
+                            onChange={(value) => handleFilterChange("isOnSale", value)}
+                            aria-label="Филтър по промоция"
                         />
                     </div>
 

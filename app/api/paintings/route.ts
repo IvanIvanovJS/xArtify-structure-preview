@@ -5,6 +5,7 @@ import { authOptions } from '@/lib/authOptions';
 import { prisma } from "@/lib/prisma";
 import { z } from 'zod';
 import { generateUrlTitle } from '@/lib/slug';
+import { limiterPublic, rateKey } from '@/lib/rateLimit';
 
 export const runtime = "nodejs";
 
@@ -78,6 +79,13 @@ const PaintingQuerySchema = z.object({
 // GET /api/paintings - Advanced filtering and pagination
 export async function GET(request: NextRequest): Promise<NextResponse> {
     try {
+        // Rate limiting
+        const key = rateKey(request);
+        const { success } = await limiterPublic.limit(key);
+        if (!success) {
+            return NextResponse.json({ message: "Твърде много заявки." }, { status: 429 });
+        }
+
         const { searchParams } = new URL(request.url);
         const queryParams = Object.fromEntries(searchParams.entries());
 

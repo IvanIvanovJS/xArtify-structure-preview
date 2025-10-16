@@ -4,7 +4,7 @@ import { getServerSession } from "next-auth";
 
 import { authOptions } from "@/lib/authOptions";
 import { prisma } from "@/lib/prisma";
-import { limiter10perMin, rateKey } from "@/lib/rateLimit";
+import { limiterArtistWrite, rateKey } from "@/lib/rateLimit";
 import { UpdateArtworkSchema } from "@/lib/validators/artist";
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
@@ -12,7 +12,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         // Rate limiting
         const session = await getServerSession(authOptions);
         const key = rateKey(req, session?.user?.id);
-        const { success } = await limiter10perMin.limit(key);
+        const { success } = await limiterArtistWrite.limit(key);
 
         if (!success) {
             return NextResponse.json({ message: "Твърде много заявки." }, { status: 429 });
@@ -108,7 +108,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
         // Rate limiting
         const session = await getServerSession(authOptions);
         const key = rateKey(req, session?.user?.id);
-        const { success } = await limiter10perMin.limit(key);
+        const { success } = await limiterArtistWrite.limit(key);
 
         if (!success) {
             return NextResponse.json({ message: "Твърде много заявки." }, { status: 429 });

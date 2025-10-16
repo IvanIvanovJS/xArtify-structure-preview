@@ -2,7 +2,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { parseJson, json } from "@/lib/zhttp";
-import { limiter10perMin, rateKey } from "@/lib/rateLimit";
+import { limiterAuth, rateKey } from "@/lib/rateLimit";
 import { prisma } from "@/lib/prisma";
 import { generateToken, storeVerificationToken } from "@/lib/verify";
 import { sendVerificationEmail } from "@/lib/email";
@@ -25,7 +25,7 @@ function genericOk() {
 export async function POST(req: Request) {
     // Rate limit (10/min per IP)
     const key = rateKey(req);
-    const { success, remaining, reset } = await limiter10perMin.limit(`resend:${key}`);
+    const { success, remaining, reset } = await limiterAuth.limit(`resend:${key}`);
     if (!success) {
         return new NextResponse("Too Many Requests", {
             status: 429,

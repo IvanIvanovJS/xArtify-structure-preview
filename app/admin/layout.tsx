@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import Link from "next/link";
-import { getClientIP, checkRateLimit } from "@/lib/adminAuth";
+import { getClientIP } from "@/lib/adminAuth";
 
 export default async function AdminLayout({
     children,

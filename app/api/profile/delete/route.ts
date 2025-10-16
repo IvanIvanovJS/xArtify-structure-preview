@@ -5,7 +5,7 @@ import { z } from "zod";
 
 import { authOptions } from "@/lib/authOptions";
 import { prisma } from "@/lib/prisma";
-import { limiter10perMin, rateKey } from "@/lib/rateLimit";
+import { limiterAuth, rateKey } from "@/lib/rateLimit";
 
 const DeleteAccountSchema = z.object({
     password: z.string().min(1, "Паролата е задължителна за потвърждение")
@@ -23,7 +23,7 @@ export async function DELETE(req: NextRequest): Promise<NextResponse> {
         }
 
         // Rate limiting
-        const { success } = await limiter10perMin.limit(rateKey(req, session.user.id));
+        const { success } = await limiterAuth.limit(rateKey(req, session.user.id));
         if (!success) {
             return NextResponse.json(
                 { message: "Твърде много заявки. Моля опитайте отново по-късно." },
