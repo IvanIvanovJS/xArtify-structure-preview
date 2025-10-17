@@ -9,7 +9,7 @@ export const runtime = "nodejs";
 interface SubscriptionPaymentPageProps {
     searchParams: Promise<{
         planId?: string;
-        paymentIntentId?: string;
+        subscriptionId?: string;
         isDowngrade?: string;
     }>;
 }
@@ -22,14 +22,14 @@ export default async function SubscriptionPaymentPage({ searchParams }: Subscrip
     }
 
     const resolvedSearchParams = await searchParams;
-    const { planId, paymentIntentId, isDowngrade } = resolvedSearchParams;
+    const { planId, subscriptionId, isDowngrade } = resolvedSearchParams;
 
     if (!planId) {
         redirect('/my-profile/subscription');
     }
 
-    // For downgrades, paymentIntentId is not required
-    if (!isDowngrade && !paymentIntentId) {
+    // For downgrades, subscriptionId is not required
+    if (!isDowngrade && !subscriptionId) {
         redirect('/my-profile/subscription');
     }
 
@@ -63,7 +63,7 @@ export default async function SubscriptionPaymentPage({ searchParams }: Subscrip
             <SubscriptionPaymentClient
                 plan={plan}
                 currentSubscription={artistProfile.subscription}
-                paymentIntentId={paymentIntentId || ''}
+                subscriptionId={subscriptionId || ''}
                 userId={session.user.id}
                 isDowngrade={isDowngrade === 'true'}
             />

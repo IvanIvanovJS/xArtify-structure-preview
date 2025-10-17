@@ -1,19 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ArtistSubscription, SubscriptionPlan } from "@prisma/client";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements, PaymentElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import "../becomeAnArtist/styles/payment-page.css";
-import "./styles/confirmation-modal.css";
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY as string);
 
 interface SubscriptionPaymentClientProps {
     plan: SubscriptionPlan;
     currentSubscription: ArtistSubscription & { plan: SubscriptionPlan };
-    paymentIntentId: string;
+    subscriptionId: string;
     userId: string;
     isDowngrade?: boolean;
 }
@@ -21,17 +20,11 @@ interface SubscriptionPaymentClientProps {
 const CheckoutForm = ({
     planId,
     billingCycle,
-    userId,
-    currentSubscriptionId,
-    isFreePlan,
-    setupIntentId
+    subscriptionId
 }: {
     planId: string;
     billingCycle: 'monthly' | 'yearly';
-    userId: string;
-    currentSubscriptionId: string;
-    isFreePlan: boolean;
-    setupIntentId: string;
+    subscriptionId: string;
 }) => {
     const stripe = useStripe();
     const elements = useElements();
@@ -51,7 +44,6 @@ const CheckoutForm = ({
 
         setIsLoading(true);
 
-        // Handle Stripe subscription confirmation
         const { error, paymentIntent } = await stripe.confirmPayment({
             elements,
             redirect: "if_required",
@@ -69,19 +61,19 @@ const CheckoutForm = ({
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
+                        subscriptionId,
                         planId,
                         billingCycle,
-                        paymentIntentId: paymentIntent.id,
-                        currentSubscriptionId
+                        paymentIntentId: paymentIntent.id
                     }),
                 });
 
                 if (response.ok) {
-                    alert("Абонаментът беше създаден успешно! Ще получавате автоматични плащания всеки " + (billingCycle === 'yearly' ? 'година' : 'месец') + ".");
+                    alert("Абонаментът беше създаден успешно!");
                     router.push('/my-profile/subscription');
                 } else {
                     const errorData = await response.json();
-                    setMessage(`Грешка при създаване на абонамента: ${errorData.message}`);
+                    setMessage(`Грешка: ${errorData.message}`);
                 }
             } catch (error) {
                 console.error(error);
@@ -108,31 +100,25 @@ const CheckoutForm = ({
                         onChange={(e) => setAgreeToTerms(e.target.checked)}
                     />
                     <div className="custom-checkbox">
-                        <svg className="custom-checkbox-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <svg className="custom-checkbox-icon" viewBox="0 0 24 24" fill="none">
                             <path d="M7.29417 12.9577L10.5048 16.1681L17.6729 9" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"></path>
                         </svg>
                     </div>
                     <span className="form-checkbox-label">
-                        Съгласявам се с <a href="/terms" target="_blank" className="terms-link">правилата на сайта</a> и <a href="/privacy" target="_blank" className="terms-link">политиката за поверителност</a> за промяна на абонамента
+                        Съгласявам се с <a href="/terms" target="_blank" className="terms-link">правилата на сайта</a> и <a href="/privacy" target="_blank" className="terms-link">политиката за поверителност</a>
                     </span>
                 </label>
             </div>
 
-            <div className="payment-actions">
-                <button
-                    type="submit"
-                    disabled={!stripe || !elements || isLoading || !agreeToTerms}
-                    className="payment-button"
-                >
-                    {isLoading ? "Обработка..." : (isFreePlan ? "Активирай безплатния план" : "Плати и надгради плана")}
-                </button>
-            </div>
+            <button
+                type="submit"
+                disabled={!stripe || !elements || isLoading || !agreeToTerms}
+                className="payment-button"
+            >
+                {isLoading ? "Обработка..." : "Плати и надгради плана"}
+            </button>
 
-            {message && (
-                <div className="payment-error">
-                    {message}
-                </div>
-            )}
+            {message && <div className="payment-error">{message}</div>}
         </form>
     );
 };
@@ -140,17 +126,67 @@ const CheckoutForm = ({
 export default function SubscriptionPaymentClient({
     plan,
     currentSubscription,
-    paymentIntentId,
+    subscriptionId,
     userId,
     isDowngrade = false
 }: SubscriptionPaymentClientProps) {
-    const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
+    const [billingCycle] = useState<'monthly' | 'yearly'>(currentSubscription.billingCycle as 'monthly' | 'yearly');
     const [clientSecret, setClientSecret] = useState("");
-    const [isLoading, setIsLoading] = useState(false);
-    const [isFreePlan, setIsFreePlan] = useState(false);
-    const [setupIntentId, setSetupIntentId] = useState("");
-    const [showConfirmation, setShowConfirmation] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState("");
     const router = useRouter();
+
+    useEffect(() => {
+        const fetchClientSecret = async () => {
+            setIsLoading(true);
+            setError("");
+
+            const storedClientSecret = sessionStorage.getItem('payment_client_secret');
+            const storedSubscriptionId = sessionStorage.getItem('payment_subscription_id');
+
+            console.log('SessionStorage check:', {
+                hasStoredSecret: !!storedClientSecret,
+                storedSubscriptionId,
+                currentSubscriptionId: subscriptionId,
+                match: storedSubscriptionId === subscriptionId
+            });
+
+            if (storedClientSecret && storedSubscriptionId === subscriptionId) {
+                console.log('Using stored client secret');
+                setClientSecret(storedClientSecret);
+                sessionStorage.removeItem('payment_client_secret');
+                sessionStorage.removeItem('payment_subscription_id');
+                setIsLoading(false);
+                return;
+            }
+
+            // If not in sessionStorage, try to get it from the API as fallback
+            console.log('Fetching client secret from API for subscription:', subscriptionId);
+            try {
+                const response = await fetch(`/api/subscription/get-client-secret?subscriptionId=${subscriptionId}`);
+                const data = await response.json();
+
+                console.log('API response:', { ok: response.ok, status: response.status, data });
+
+                if (response.ok && data.clientSecret) {
+                    console.log('Got client secret from API');
+                    setClientSecret(data.clientSecret);
+                } else {
+                    console.error('No client secret from API:', data);
+                    setError('Не е намерен client secret за това плащане');
+                }
+            } catch (err) {
+                console.error('Failed to get client secret:', err);
+                setError('Грешка при зареждане на плащането');
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        if (subscriptionId && !isDowngrade) {
+            fetchClientSecret();
+        }
+    }, [subscriptionId, isDowngrade]);
 
     const formatPrice = (cycle: 'monthly' | 'yearly') => {
         const price = cycle === 'yearly' ? plan.yearlyPrice : plan.monthlyPrice;
@@ -165,179 +201,67 @@ export default function SubscriptionPaymentClient({
         return null;
     };
 
-    const handleStartPayment = async () => {
-        if (isDowngrade) {
-            setShowConfirmation(true);
-            return;
-        }
-
-        setIsLoading(true);
-
-        try {
-            const response = await fetch("/api/create-subscription", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    planId: plan.id,
-                    billingCycle,
-                    isUpgrade: true,
-                    currentSubscriptionId: currentSubscription.id
-                }),
-            });
-
-            const data = await response.json();
-
-            if (data.isFreePlan) {
-                // For free plans, redirect back to subscription page
-                alert("Безплатният план беше активиран успешно!");
-                router.push('/my-profile/subscription');
-                return;
-            }
-
-            setClientSecret(data.clientSecret);
-            setIsFreePlan(false);
-        } catch (error) {
-            console.error(error);
-            alert("Възникна грешка при стартиране на плащането.");
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    const handleConfirmDowngrade = async () => {
-        setIsLoading(true);
-        try {
-            const response = await fetch("/api/subscription/change-plan", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    planId: plan.id,
-                    billingCycle: 'monthly',
-                    isDowngrade: true
-                }),
-            });
-
-            if (response.ok) {
-                alert("Планът беше успешно променен! Текущият план ще остане активен до края на биллинг цикъла, след което ще се активира новият план.");
-                router.push('/my-profile/subscription');
-            } else {
-                const errorData = await response.json();
-                alert(`Грешка при промяна на плана: ${errorData.message}`);
-            }
-        } catch (error) {
-            console.error(error);
-            alert("Възникна грешка при свързване със сървъра.");
-        } finally {
-            setIsLoading(false);
-            setShowConfirmation(false);
-        }
-    };
-
-    if (clientSecret) {
-        const options = {
-            clientSecret,
-            appearance: {
-                theme: "stripe",
-                variables: {
-                    colorPrimary: '#06b6d4',
-                    colorBackground: '#1e293b',
-                    colorText: '#ffffff',
-                    colorDanger: '#ef4444',
-                    fontFamily: 'Inter, system-ui, sans-serif',
-                    spacingUnit: '4px',
-                    borderRadius: '8px',
-                }
-            } as const,
-        };
-
+    if (isLoading) {
         return (
             <div className="payment-container">
-                <div className="payment-header">
-                    <button
-                        onClick={() => router.back()}
-                        className="back-button"
-                    >
-                        ← Назад
-                    </button>
-                    <h1 className="payment-title">{isDowngrade ? 'Понижаване на плана' : 'Надграждане на плана'}</h1>
-                </div>
-
-                <div className="payment-content">
-                    <div className="payment-summary">
-                        <div className="summary-header">
-                            <h2 className="summary-title">{isDowngrade ? 'Понижаване към' : 'Надграждане към'} {plan.displayName}</h2>
-                            <div className="summary-price">
-                                <span className="price-amount">{formatPrice(billingCycle)}€</span>
-                                <span className="price-period">за {billingCycle === 'yearly' ? 'година' : 'месец'}</span>
-                            </div>
-                        </div>
-
-                        <div className="summary-details">
-                            <div className="summary-item">
-                                <span className="summary-label">Текущ план:</span>
-                                <span className="summary-value">{currentSubscription.plan.displayName}</span>
-                            </div>
-                            <div className="summary-item">
-                                <span className="summary-label">Нов план:</span>
-                                <span className="summary-value">{plan.displayName}</span>
-                            </div>
-                            <div className="summary-item">
-                                <span className="summary-label">Биллинг:</span>
-                                <span className="summary-value">
-                                    {billingCycle === 'yearly' ? 'Годишно' : 'Месечно'}
-                                </span>
-                            </div>
-                            <div className="summary-item">
-                                <span className="summary-label">Сума:</span>
-                                <span className="summary-value">{formatPrice(billingCycle)}€</span>
-                            </div>
-                        </div>
-
-                        {getDiscountText() && (
-                            <div className="discount-info">
-                                <span className="discount-text">{getDiscountText()}</span>
-                            </div>
-                        )}
-
-                        <div className="summary-total">
-                            <span className="total-label">Обща дължима сума днес:</span>
-                            <span className="total-amount">{formatPrice(billingCycle)}€</span>
-                        </div>
-                    </div>
-
-                    <div className="payment-form-container">
-                        <Elements stripe={stripePromise} options={options}>
-                            <CheckoutForm
-                                planId={plan.id}
-                                billingCycle={billingCycle}
-                                userId={userId}
-                                currentSubscriptionId={currentSubscription.id}
-                                isFreePlan={isFreePlan}
-                                setupIntentId={setupIntentId}
-                            />
-                        </Elements>
-                    </div>
+                <div className="loading-container">
+                    <div className="loading-spinner"></div>
+                    <p>Зареждане на плащането...</p>
                 </div>
             </div>
         );
     }
 
+    if (error) {
+        return (
+            <div className="payment-container">
+                <div className="error-container">
+                    <p className="error-message">{error}</p>
+                    <button onClick={() => router.back()} className="back-button">
+                        Назад
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    if (!clientSecret) {
+        return (
+            <div className="payment-container">
+                <p>Моля, изчакайте...</p>
+            </div>
+        );
+    }
+
+    const options = {
+        clientSecret,
+        appearance: {
+            theme: "stripe" as const,
+            variables: {
+                colorPrimary: '#06b6d4',
+                colorBackground: '#1e293b',
+                colorText: '#ffffff',
+                colorDanger: '#ef4444',
+                fontFamily: 'Inter, system-ui, sans-serif',
+                spacingUnit: '4px',
+                borderRadius: '8px',
+            }
+        },
+    };
+
     return (
         <div className="payment-container">
             <div className="payment-header">
-                <button
-                    onClick={() => router.back()}
-                    className="back-button"
-                >
+                <button onClick={() => router.back()} className="back-button">
                     ← Назад
                 </button>
-                <h1 className="payment-title">{isDowngrade ? 'Понижаване на плана' : 'Надграждане на плана'}</h1>
+                <h1 className="payment-title">Надграждане на плана</h1>
             </div>
 
             <div className="payment-content">
                 <div className="payment-summary">
                     <div className="summary-header">
-                        <h2 className="summary-title">{isDowngrade ? 'Понижаване към' : 'Надграждане към'} {plan.displayName}</h2>
+                        <h2 className="summary-title">Надграждане към {plan.displayName}</h2>
                         <div className="summary-price">
                             <span className="price-amount">{formatPrice(billingCycle)}€</span>
                             <span className="price-period">за {billingCycle === 'yearly' ? 'година' : 'месец'}</span>
@@ -359,10 +283,6 @@ export default function SubscriptionPaymentClient({
                                 {billingCycle === 'yearly' ? 'Годишно' : 'Месечно'}
                             </span>
                         </div>
-                        <div className="summary-item">
-                            <span className="summary-label">Сума:</span>
-                            <span className="summary-value">{formatPrice(billingCycle)}€</span>
-                        </div>
                     </div>
 
                     {getDiscountText() && (
@@ -377,63 +297,15 @@ export default function SubscriptionPaymentClient({
                     </div>
                 </div>
 
-                <div className="billing-selection">
-                    <h3 className="billing-title">Изберете биллинг цикъл</h3>
-                    <div className="billing-toggle">
-                        <button
-                            onClick={() => setBillingCycle('monthly')}
-                            className={`billing-option ${billingCycle === 'monthly' ? 'active' : ''}`}
-                        >
-                            Месечно
-                        </button>
-                        <button
-                            onClick={() => setBillingCycle('yearly')}
-                            className={`billing-option ${billingCycle === 'yearly' ? 'active' : ''}`}
-                        >
-                            Годишно (-20%)
-                        </button>
-                    </div>
+                <div className="payment-form-container">
+                    <Elements stripe={stripePromise} options={options}>
+                        <CheckoutForm
+                            planId={plan.id}
+                            billingCycle={billingCycle}
+                            subscriptionId={subscriptionId}
+                        />
+                    </Elements>
                 </div>
-
-                <div className="payment-actions">
-                    <button
-                        onClick={handleStartPayment}
-                        disabled={isLoading}
-                        className="payment-button"
-                    >
-                        {isLoading ? "Изчакване..." : (isDowngrade ? "Понижи текущия план" : "Продължи към плащане")}
-                    </button>
-                </div>
-
-                {showConfirmation && (
-                    <div className="confirmation-modal">
-                        <div className="confirmation-content">
-                            <h3>Потвърждение за понижаване</h3>
-                            <p>
-                                Сигурни ли сте, че искате да преминете от <strong>{currentSubscription.plan.displayName}</strong> към <strong>{plan.displayName}</strong>?
-                            </p>
-                            <p>
-                                Текущият план ще остане активен до края на биллинг цикъла, след което ще се активира новият план.
-                            </p>
-                            <div className="confirmation-actions">
-                                <button
-                                    onClick={() => setShowConfirmation(false)}
-                                    className="cancel-button"
-                                    disabled={isLoading}
-                                >
-                                    Отказ
-                                </button>
-                                <button
-                                    onClick={handleConfirmDowngrade}
-                                    className="confirm-button"
-                                    disabled={isLoading}
-                                >
-                                    {isLoading ? "Обработка..." : "Да, понижи плана"}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )}
             </div>
         </div>
     );

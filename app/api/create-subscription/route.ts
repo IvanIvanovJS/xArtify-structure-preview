@@ -94,12 +94,18 @@ export async function POST(req: NextRequest) {
         // Create Stripe price for the plan
         const priceId = await getOrCreateStripePrice(plan, billingCycle);
 
-        // Create Stripe subscription
+        // Calculate amount for manual payment intent if needed
+        const amount = billingCycle === 'yearly' ? plan.yearlyPrice : plan.monthlyPrice;
+
+        // Create Stripe subscription with proper payment setup
         const subscription = await stripe.subscriptions.create({
             customer: customerId,
             items: [{ price: priceId }],
             payment_behavior: 'default_incomplete',
-            payment_settings: { save_default_payment_method: 'on_subscription' },
+            payment_settings: {
+                save_default_payment_method: 'on_subscription',
+                payment_method_types: ['card']
+            },
             expand: ['latest_invoice.payment_intent'],
             metadata: {
                 userId: session.user.id,
@@ -110,37 +116,82 @@ export async function POST(req: NextRequest) {
             }
         });
 
-        // Update database with subscription info
-        const result = await prisma.$transaction(async (tx) => {
-            const updatedSubscription = await tx.artistSubscription.update({
-                where: { id: currentSubscriptionId },
-                data: {
-                    planId: plan.id,
-                    billingCycle: billingCycle,
-                    status: 'pending',
-                    stripeCustomerId: customerId,
-                    stripeSubscriptionId: subscription.id,
-                    currentPeriodStart: new Date(),
-                    currentPeriodEnd: new Date(Date.now() + (billingCycle === 'yearly' ? 365 : 30) * 24 * 60 * 60 * 1000),
-                    cancelAtPeriodEnd: false,
-                    cancelledAt: null,
-                },
-                include: {
-                    plan: true
-                }
-            });
-
-            return updatedSubscription;
+        // Store subscription info temporarily (will be updated after payment)
+        // We only update stripeSubscriptionId and stripeCustomerId for tracking
+        await prisma.artistSubscription.update({
+            where: { id: currentSubscriptionId },
+            data: {
+                stripeCustomerId: customerId,
+                // Store the pending subscription ID but don't change the plan yet
+                stripeSubscriptionId: subscription.id,
+            }
         });
 
-        const invoice = subscription.latest_invoice as Stripe.Invoice;
-        const paymentIntent = (invoice as Stripe.Invoice & { payment_intent: Stripe.PaymentIntent }).payment_intent;
+        // Get the invoice and payment intent
+        let clientSecret: string | null = null;
+
+        if (subscription.latest_invoice) {
+            const invoice = subscription.latest_invoice as Stripe.Invoice & {
+                payment_intent?: Stripe.PaymentIntent | string;
+            };
+
+            // If payment_intent is a string (ID), fetch it
+            if (typeof invoice.payment_intent === 'string') {
+                const paymentIntent = await stripe.paymentIntents.retrieve(invoice.payment_intent);
+                clientSecret = paymentIntent.client_secret;
+            } else if (invoice.payment_intent) {
+                // If it's already expanded
+                clientSecret = invoice.payment_intent.client_secret;
+            }
+        }
+
+        // If still no client secret, create a payment intent manually
+        if (!clientSecret) {
+            console.log("Creating manual payment intent for subscription:", subscription.id);
+            const paymentIntent = await stripe.paymentIntents.create({
+                amount: Math.round(amount * 100), // Convert to cents
+                currency: 'bgn',
+                customer: customerId,
+                setup_future_usage: 'off_session', // For future subscription payments
+                metadata: {
+                    subscriptionId: subscription.id,
+                    userId: session.user.id,
+                    planId: plan.id,
+                    billingCycle: billingCycle,
+                    type: 'subscription_upgrade'
+                },
+                automatic_payment_methods: {
+                    enabled: true,
+                },
+            });
+            clientSecret = paymentIntent.client_secret;
+
+            // Store payment intent ID in database for reference
+            await prisma.artistSubscription.update({
+                where: { id: currentSubscriptionId },
+                data: {
+                    paymentIntentId: paymentIntent.id
+                }
+            });
+        }
+
+        if (!clientSecret) {
+            console.error("Failed to get client secret", {
+                subscriptionId: subscription.id,
+                latestInvoice: subscription.latest_invoice
+            });
+            return NextResponse.json(
+                { message: "Failed to create payment intent" },
+                { status: 500 }
+            );
+        }
 
         return NextResponse.json({
             message: "Subscription created successfully",
-            subscription: result,
-            clientSecret: paymentIntent.client_secret,
+            clientSecret: clientSecret,
             subscriptionId: subscription.id,
+            planId: plan.id,
+            billingCycle: billingCycle,
             isFreePlan: false
         });
 

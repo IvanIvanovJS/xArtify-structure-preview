@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArtistSubscription, SubscriptionPlan } from "@prisma/client";
-import { getSubscriptionStatusMessage, getDaysUntilExpiration } from "@/lib/subscription-utils";
+import { getSubscriptionStatusMessage, isSubscriptionActive, getDaysUntilExpiration } from "@/lib/subscription-utils";
 import "./styles/subscription-management.css";
 import "./styles/subscription-status.css";
 import "./styles/confirmation-modal.css";
@@ -21,6 +21,7 @@ export default function SubscriptionManagementClient({
     const [isLoading, setIsLoading] = useState(false);
     const [selectedPlanForDowngrade, setSelectedPlanForDowngrade] = useState<string | null>(null);
     const [showDowngradeConfirmation, setShowDowngradeConfirmation] = useState(false);
+    const [showCancelConfirmation, setShowCancelConfirmation] = useState(false);
     const router = useRouter();
 
     const formatPrice = (plan: SubscriptionPlan, cycle: 'monthly' | 'yearly') => {
@@ -46,32 +47,53 @@ export default function SubscriptionManagementClient({
 
         const isDowngrade = currentSubscription && plan.monthlyPrice < currentSubscription.plan.monthlyPrice;
 
-        // For downgrades, show confirmation modal
+        // For downgrades, redirect to payment page with downgrade flag
         if (isDowngrade) {
-            setSelectedPlanForDowngrade(planId);
-            setShowDowngradeConfirmation(true);
+            router.push(`/my-profile/subscription/payment?planId=${planId}&isDowngrade=true`);
             return;
         }
 
-        // For upgrades, redirect to payment
+        // For upgrades, create subscription and redirect to payment
         setIsLoading(true);
 
         try {
-            const response = await fetch("/api/create-payment-intent", {
+            const response = await fetch("/api/create-subscription", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     planId,
                     billingCycle,
-                    isArtist: true,
                     isUpgrade: true,
                     currentSubscriptionId: currentSubscription?.id
                 }),
             });
 
             const data = await response.json();
+
+            if (!response.ok) {
+                alert(`Грешка: ${data.message || 'Неуспешно създаване на абонамент'}`);
+                return;
+            }
+
             if (data.clientSecret) {
-                router.push(`/my-profile/subscription/payment?planId=${planId}&paymentIntentId=${data.paymentIntentId}`);
+                // Store client secret in sessionStorage for the payment page
+                console.log('Storing in sessionStorage:', {
+                    hasClientSecret: !!data.clientSecret,
+                    subscriptionId: data.subscriptionId
+                });
+                sessionStorage.setItem('payment_client_secret', data.clientSecret);
+                sessionStorage.setItem('payment_subscription_id', data.subscriptionId);
+
+                // Verify it was stored
+                const stored = sessionStorage.getItem('payment_client_secret');
+                console.log('Verification - stored successfully:', !!stored);
+
+                router.push(`/my-profile/subscription/payment?planId=${planId}&subscriptionId=${data.subscriptionId}`);
+            } else if (data.isFreePlan) {
+                alert("Безплатният план беше активиран успешно!");
+                router.refresh();
+            } else {
+                alert('Грешка: Не е получен client secret');
             }
         } catch (error) {
             console.error(error);
@@ -81,26 +103,22 @@ export default function SubscriptionManagementClient({
         }
     };
 
-    const handleConfirmDowngrade = async () => {
-        if (!selectedPlanForDowngrade) return;
-
+    const handleDowngrade = async (planId: string) => {
         setIsLoading(true);
         try {
             const response = await fetch("/api/subscription/change-plan", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    planId: selectedPlanForDowngrade,
-                    billingCycle, // Use selected billing cycle from UI
+                    planId,
+                    billingCycle: 'monthly',
                     isDowngrade: true
                 }),
             });
 
             if (response.ok) {
-                alert("Планът беше успешно променен! Промените ще влязат в сила в края на текущия период.");
-                router.refresh(); // Restore refresh
-                setShowDowngradeConfirmation(false);
-                setSelectedPlanForDowngrade(null);
+                alert("Планът беше успешно променен!");
+                // router.refresh(); // Removed to prevent navigation conflicts
             } else {
                 const errorData = await response.json();
                 alert(`Грешка при промяна на плана: ${errorData.message}`);
@@ -112,8 +130,6 @@ export default function SubscriptionManagementClient({
             setIsLoading(false);
         }
     };
-
-    const [showCancelConfirmation, setShowCancelConfirmation] = useState(false);
 
     const handleCancelSubscription = async () => {
         if (!currentSubscription) return;
@@ -136,7 +152,7 @@ export default function SubscriptionManagementClient({
 
             if (response.ok) {
                 alert("Абонаментът ще бъде спрян в края на текущия период.");
-                router.refresh();
+                // router.refresh(); // Removed to prevent navigation conflicts
             } else {
                 const errorData = await response.json();
                 alert(`Грешка при спиране на абонамента: ${errorData.message}`);
@@ -165,7 +181,7 @@ export default function SubscriptionManagementClient({
 
             if (response.ok) {
                 alert("Абонаментът беше реактивиран успешно!");
-                router.refresh();
+                // router.refresh(); // Removed to prevent navigation conflicts
             } else {
                 const errorData = await response.json();
                 alert(`Грешка при реактивиране на абонамента: ${errorData.message}`);
@@ -257,28 +273,14 @@ export default function SubscriptionManagementClient({
                             <div className="subscription-status-info">
                                 <p className="status-message">{getSubscriptionStatusMessage(currentSubscription)}</p>
                                 {currentSubscription.currentPeriodEnd && (
-                                    <>
-                                        <p className="period-info">
-                                            {currentSubscription.cancelAtPeriodEnd ? 'Спиране на: ' : 'Следващо плащане: '}
-                                            {new Date(currentSubscription.currentPeriodEnd).toLocaleDateString('bg-BG')}
-                                        </p>
-                                        {getDaysUntilExpiration(currentSubscription) !== null && (
-                                            <p className="expiration-days">
-                                                {getDaysUntilExpiration(currentSubscription)! > 0
-                                                    ? `Остават ${getDaysUntilExpiration(currentSubscription)} дни`
-                                                    : 'Абонаментът е изтекъл'
-                                                }
-                                            </p>
-                                        )}
-                                    </>
+                                    <p className="period-info">
+                                        {currentSubscription.cancelAtPeriodEnd ? 'Спиране на: ' : 'Следващо плащане: '}
+                                        {new Date(currentSubscription.currentPeriodEnd).toLocaleDateString('bg-BG')}
+                                    </p>
                                 )}
                             </div>
                             <div className="subscription-actions">
-                                {currentSubscription.status === 'past_due' ? (
-                                    <button className="update-payment-button">
-                                        Обнови метода за плащане
-                                    </button>
-                                ) : currentSubscription.cancelAtPeriodEnd ? (
+                                {currentSubscription.cancelAtPeriodEnd ? (
                                     <button
                                         onClick={handleReactivateSubscription}
                                         disabled={isLoading}
@@ -414,43 +416,6 @@ export default function SubscriptionManagementClient({
                                 disabled={isLoading}
                             >
                                 {isLoading ? "Обработка..." : "Да, спри абонамента"}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Downgrade Confirmation Modal */}
-            {showDowngradeConfirmation && selectedPlanForDowngrade && (
-                <div className="confirmation-modal">
-                    <div className="confirmation-content">
-                        <h3>Потвърждение за понижаване на план</h3>
-                        <p>
-                            Сигурни ли сте, че искате да понижите плана си към {availablePlans.find(p => p.id === selectedPlanForDowngrade)?.displayName}?
-                        </p>
-                        <p>
-                            Промените ще влязат в сила в края на текущия период ({currentSubscription?.currentPeriodEnd ? new Date(currentSubscription.currentPeriodEnd).toLocaleDateString('bg-BG') : ''}).
-                        </p>
-                        <p>
-                            Избран биллинг цикъл: <strong>{billingCycle === 'yearly' ? 'Годишен' : 'Месечен'}</strong>
-                        </p>
-                        <div className="confirmation-actions">
-                            <button
-                                onClick={() => {
-                                    setShowDowngradeConfirmation(false);
-                                    setSelectedPlanForDowngrade(null);
-                                }}
-                                className="cancel-button"
-                                disabled={isLoading}
-                            >
-                                Отказ
-                            </button>
-                            <button
-                                onClick={handleConfirmDowngrade}
-                                className="subscription-cancel-button"
-                                disabled={isLoading}
-                            >
-                                {isLoading ? "Обработка..." : "Да, понижи плана"}
                             </button>
                         </div>
                     </div>
