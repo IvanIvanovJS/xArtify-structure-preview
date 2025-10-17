@@ -3,7 +3,6 @@
 import { useState, useEffect, JSX } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import useSWR from "swr";
-import Image from "next/image";
 
 import "./styles/artist-settings.css";
 
@@ -57,7 +56,7 @@ interface UpdateNotificationsData {
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function ArtistSettings(): JSX.Element {
-    const [activeTab, setActiveTab] = useState<'profile' | 'notifications' | 'account'>('profile');
+    const [activeTab, setActiveTab] = useState<'profile' | 'notifications'>('profile');
     const [isLoading, setIsLoading] = useState(false);
     const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
@@ -214,12 +213,6 @@ export default function ArtistSettings(): JSX.Element {
                     onClick={() => setActiveTab('notifications')}
                 >
                     Известия
-                </button>
-                <button
-                    className={`settings-tab ${activeTab === 'account' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('account')}
-                >
-                    Акаунт
                 </button>
             </div>
 
@@ -465,67 +458,6 @@ export default function ArtistSettings(): JSX.Element {
                         </motion.div>
                     )}
 
-                    {activeTab === 'account' && (
-                        <motion.div
-                            key="account"
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: -20 }}
-                            className="settings-panel"
-                        >
-                            <h2>Информация за акаунта</h2>
-
-                            <div className="account-info">
-                                <div className="account-avatar">
-                                    {data.profile.user.image ? (
-                                        <Image
-                                            src={data.profile.user.image}
-                                            alt={data.profile.user.name || 'Профил'}
-                                            width={80}
-                                            height={80}
-                                            className="avatar-image"
-                                        />
-                                    ) : (
-                                        <div className="avatar-placeholder">
-                                            {data.profile.user.name?.charAt(0).toUpperCase() || 'A'}
-                                        </div>
-                                    )}
-                                </div>
-
-                                <div className="account-details">
-                                    <h3>{data.profile.user.name}</h3>
-                                    <p>{data.profile.user.email}</p>
-                                    <span className="account-role">Артист</span>
-                                </div>
-                            </div>
-
-                            <div className="account-actions">
-                                <button className="account-btn primary">
-                                    Промени паролата
-                                </button>
-                                <button className="account-btn secondary">
-                                    Промени имейла
-                                </button>
-                                <button className="account-btn danger">
-                                    Изтрий акаунта
-                                </button>
-                            </div>
-
-                            <div className="account-stats">
-                                <h3>Статистики</h3>
-                                <div className="stats-grid">
-                                    <div className="stat-item">
-                                        <span className="stat-label">Регистриран на</span>
-                                        <span className="stat-value">Януари 2024</span>
-                                    </div>
-                                    <div className="stat-item">
-                                        <span className="stat-label">Последна активност</span>
-                                        <span className="stat-value">Днес</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </motion.div>
-                    )}
                 </AnimatePresence>
             </div>
         </div>
