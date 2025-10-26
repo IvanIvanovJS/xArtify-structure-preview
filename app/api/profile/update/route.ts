@@ -5,7 +5,7 @@ import { z } from "zod";
 
 import { authOptions } from "@/lib/authOptions";
 import { prisma } from "@/lib/prisma";
-import { limiter10perMin, rateKey } from "@/lib/rateLimit";
+import { limiterArtistWrite, rateKey } from "@/lib/rateLimit";
 
 const UpdateProfileSchema = z.object({
     name: z.string().min(1, "Името е задължително").max(100, "Името е твърде дълго"),
@@ -35,7 +35,7 @@ export async function PUT(req: NextRequest): Promise<NextResponse> {
         }
 
         // Rate limiting
-        const { success } = await limiter10perMin.limit(rateKey(req, session.user.id));
+        const { success } = await limiterArtistWrite.limit(rateKey(req, session.user.id));
         if (!success) {
             return NextResponse.json(
                 { message: "Твърде много заявки. Моля опитайте отново по-късно." },

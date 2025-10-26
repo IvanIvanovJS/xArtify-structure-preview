@@ -170,6 +170,22 @@ export default function ArtistAnalytics(): JSX.Element {
     const getChartData = () => {
         if (!data || !data.timeSeries) return null;
 
+        // Get CSS variable values
+        const getCSSVariable = (variable: string): string => {
+            if (typeof window !== 'undefined') {
+                return getComputedStyle(document.documentElement).getPropertyValue(variable).trim();
+            }
+            return '';
+        };
+
+        const primaryColor = getCSSVariable('--color-primary') || '#16ffe4';
+        const primaryColor20 = getCSSVariable('--color-primary-20') || 'rgba(22, 255, 228, 0.2)';
+        const promotionColor = getCSSVariable('--color-promotion') || '#ff7016';
+        const promotionColor20 = getCSSVariable('--color-promotion-20') || 'rgba(255, 112, 22, 0.2)';
+        const accentColor = getCSSVariable('--color-accent') || '#ff16e4';
+        const accentColor20 = getCSSVariable('--color-accent-20') || 'rgba(255, 22, 228, 0.2)';
+        const foregroundColor = getCSSVariable('--color-foreground') || '#e5e7eb';
+
         const labels = data.timeSeries.map(item =>
             new Date(item.date).toLocaleDateString("bg-BG", {
                 month: "short",
@@ -183,10 +199,14 @@ export default function ArtistAnalytics(): JSX.Element {
             datasets.push({
                 label: "Прегледи",
                 data: data.timeSeries?.map(item => item.views) || [],
-                borderColor: "var(--color-primary)",
-                backgroundColor: "var(--color-primary-20)",
+                borderColor: primaryColor,
+                backgroundColor: primaryColor20,
                 tension: 0.4,
                 fill: true,
+                pointBackgroundColor: primaryColor,
+                pointBorderColor: foregroundColor,
+                pointBorderWidth: 2,
+                pointRadius: 4,
             });
         }
 
@@ -194,10 +214,14 @@ export default function ArtistAnalytics(): JSX.Element {
             datasets.push({
                 label: "Продажби",
                 data: data.timeSeries?.map(item => item.sales) || [],
-                borderColor: "var(--color-primary-80)",
-                backgroundColor: "var(--color-primary-10)",
+                borderColor: promotionColor,
+                backgroundColor: promotionColor20,
                 tension: 0.4,
                 fill: false,
+                pointBackgroundColor: promotionColor,
+                pointBorderColor: foregroundColor,
+                pointBorderWidth: 2,
+                pointRadius: 4,
             });
         }
 
@@ -205,11 +229,15 @@ export default function ArtistAnalytics(): JSX.Element {
             datasets.push({
                 label: "Приходи (BGN)",
                 data: data.timeSeries?.map(item => item.revenue) || [],
-                borderColor: "var(--color-primary-60)",
-                backgroundColor: "var(--color-primary-10)",
+                borderColor: accentColor,
+                backgroundColor: accentColor20,
                 tension: 0.4,
                 fill: false,
                 yAxisID: "y1",
+                pointBackgroundColor: accentColor,
+                pointBorderColor: foregroundColor,
+                pointBorderWidth: 2,
+                pointRadius: 4,
             });
         }
 
@@ -220,6 +248,20 @@ export default function ArtistAnalytics(): JSX.Element {
     };
 
     const chartData = getChartData();
+
+    // Get CSS variable values for chart options
+    const getCSSVariable = (variable: string): string => {
+        if (typeof window !== 'undefined') {
+            return getComputedStyle(document.documentElement).getPropertyValue(variable).trim();
+        }
+        return '';
+    };
+
+    const foregroundColor = getCSSVariable('--color-foreground') || '#e5e7eb';
+    const backgroundColor = getCSSVariable('--color-background') || '#0b0b0f';
+    const primaryColor = getCSSVariable('--color-primary') || '#16ffe4';
+    const primaryColor10 = getCSSVariable('--color-primary-10') || 'rgba(22, 255, 228, 0.1)';
+    const primaryColor20 = getCSSVariable('--color-primary-20') || 'rgba(22, 255, 228, 0.2)';
 
     if (error) {
         return (
@@ -390,8 +432,24 @@ export default function ArtistAnalytics(): JSX.Element {
                                             legend: {
                                                 position: "top" as const,
                                                 labels: {
-                                                    color: "var(--color-white-8)",
+                                                    color: foregroundColor,
+                                                    font: {
+                                                        size: 14,
+                                                        weight: "normal" as const,
+                                                    },
+                                                    padding: 20,
+                                                    usePointStyle: true,
+                                                    pointStyle: "circle" as const,
                                                 },
+                                            },
+                                            tooltip: {
+                                                backgroundColor: backgroundColor,
+                                                titleColor: foregroundColor,
+                                                bodyColor: foregroundColor,
+                                                borderColor: primaryColor,
+                                                borderWidth: 1,
+                                                cornerRadius: 8,
+                                                displayColors: true,
                                             },
                                         },
                                         scales: {
@@ -400,10 +458,16 @@ export default function ArtistAnalytics(): JSX.Element {
                                                 display: true,
                                                 position: "left" as const,
                                                 ticks: {
-                                                    color: "var(--color-white-8)",
+                                                    color: foregroundColor,
+                                                    font: {
+                                                        size: 12,
+                                                    },
                                                 },
                                                 grid: {
-                                                    color: "var(--color-primary-10)",
+                                                    color: primaryColor10,
+                                                },
+                                                border: {
+                                                    color: primaryColor20,
                                                 },
                                             },
                                             y1: {
@@ -411,18 +475,30 @@ export default function ArtistAnalytics(): JSX.Element {
                                                 display: true,
                                                 position: "right" as const,
                                                 ticks: {
-                                                    color: "var(--color-muted-foreground)",
+                                                    color: foregroundColor,
+                                                    font: {
+                                                        size: 12,
+                                                    },
                                                 },
                                                 grid: {
                                                     drawOnChartArea: false,
                                                 },
+                                                border: {
+                                                    color: primaryColor20,
+                                                },
                                             },
                                             x: {
                                                 ticks: {
-                                                    color: "var(--color-white-8)",
+                                                    color: foregroundColor,
+                                                    font: {
+                                                        size: 12,
+                                                    },
                                                 },
                                                 grid: {
-                                                    color: "var(--color-primary-10)",
+                                                    color: primaryColor10,
+                                                },
+                                                border: {
+                                                    color: primaryColor20,
                                                 },
                                             },
                                         },

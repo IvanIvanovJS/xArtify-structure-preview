@@ -91,7 +91,7 @@
     /* Navigation Styles */
     .faq-navigation {
         margin-bottom: 3rem;
-        overflow-x: auto;
+        overflow: visible;
         scrollbar-width: none;
         -ms-overflow-style: none;
     }

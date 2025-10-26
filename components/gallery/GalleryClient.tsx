@@ -5,6 +5,7 @@ import GalleryGrid from './GalleryGrid';
 import FiltersSidebar from './FiltersSidebar';
 import FiltersMobileSheet from './FiltersMobileSheet';
 import { type ViewMode } from '@/components/ui/ViewModeControls';
+import SkeletonLoader from '@/components/ui/SkeletonLoader';
 import './styles/gallery-page.css';
 
 interface PaintingWithArtist {
@@ -82,6 +83,7 @@ export default function GalleryClient({ initialPaintings, filterOptions }: Galle
     const [paintings, setPaintings] = useState<PaintingWithArtist[]>(initialPaintings);
     const [filteredPaintings, setFilteredPaintings] = useState<PaintingWithArtist[]>(initialPaintings);
     const [viewMode, setViewMode] = useState<ViewMode>('grid');
+    const [isInitialLoading, setIsInitialLoading] = useState(true);
 
     // Calculate max values from actual paintings
     const maxPrice = Math.max(...initialPaintings.map(p => p.isOnSale && p.finalPrice ? p.finalPrice : p.price));
@@ -124,6 +126,14 @@ export default function GalleryClient({ initialPaintings, filterOptions }: Galle
             availability: ''
         });
     };
+
+    // Stop initial loading after component mounts
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setIsInitialLoading(false);
+        }, 100);
+        return () => clearTimeout(timer);
+    }, []);
 
     // Apply filters instantly
     useEffect(() => {
@@ -245,6 +255,46 @@ export default function GalleryClient({ initialPaintings, filterOptions }: Galle
 
         setFilteredPaintings(filtered);
     }, [paintings, filters, maxPrice, maxWidth, maxHeight]);
+
+    // Show loading skeleton while initial data is loading or if splash showed skeleton
+    if (isInitialLoading) {
+        return (
+            <div className="gallery-page">
+                {/* Header Skeleton */}
+                <div className="gallery-header">
+                    <SkeletonLoader className="h-12 w-48 mb-4" />
+                    <SkeletonLoader className="h-6 w-96" />
+                </div>
+
+                {/* Main Content Skeleton */}
+                <div className="gallery-main">
+                    {/* Sidebar Skeleton */}
+                    <div className="gallery-sidebar">
+                        <div className="space-y-6">
+                            <SkeletonLoader className="h-8 w-32" />
+                            <SkeletonLoader className="h-64 w-full" />
+                            <SkeletonLoader className="h-8 w-24" />
+                            <SkeletonLoader className="h-32 w-full" />
+                        </div>
+                    </div>
+
+                    {/* Gallery Grid Skeleton */}
+                    <div className="gallery-content">
+                        <div className="gallery-grid">
+                            {Array.from({ length: 12 }).map((_, index) => (
+                                <div key={index} className="gallery-painting-card">
+                                    <SkeletonLoader className="h-64 w-full rounded-lg mb-4" />
+                                    <SkeletonLoader className="h-6 w-3/4 mb-2" />
+                                    <SkeletonLoader className="h-4 w-1/2 mb-2" />
+                                    <SkeletonLoader className="h-5 w-1/3" />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="gallery-page">

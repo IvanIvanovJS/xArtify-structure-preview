@@ -11,17 +11,17 @@ import "./styles/confirmation-modal.css";
 interface SubscriptionManagementClientProps {
     currentSubscription: (ArtistSubscription & { plan: SubscriptionPlan }) | null;
     availablePlans: SubscriptionPlan[];
-    userId: string;
 }
 
 export default function SubscriptionManagementClient({
     currentSubscription,
-    availablePlans,
-    userId
+    availablePlans
 }: SubscriptionManagementClientProps) {
     const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
     const [isLoading, setIsLoading] = useState(false);
-    const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
+    const [selectedPlanForDowngrade, setSelectedPlanForDowngrade] = useState<string | null>(null);
+    const [showDowngradeConfirmation, setShowDowngradeConfirmation] = useState(false);
+    const [showCancelConfirmation, setShowCancelConfirmation] = useState(false);
     const router = useRouter();
 
     const formatPrice = (plan: SubscriptionPlan, cycle: 'monthly' | 'yearly') => {
@@ -53,26 +53,47 @@ export default function SubscriptionManagementClient({
             return;
         }
 
-        // For upgrades, redirect to payment
-        setSelectedPlan(planId);
+        // For upgrades, create subscription and redirect to payment
         setIsLoading(true);
 
         try {
-            const response = await fetch("/api/create-payment-intent", {
+            const response = await fetch("/api/create-subscription", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     planId,
                     billingCycle,
-                    isArtist: true,
                     isUpgrade: true,
                     currentSubscriptionId: currentSubscription?.id
                 }),
             });
 
             const data = await response.json();
+
+            if (!response.ok) {
+                alert(`Грешка: ${data.message || 'Неуспешно създаване на абонамент'}`);
+                return;
+            }
+
             if (data.clientSecret) {
-                router.push(`/my-profile/subscription/payment?planId=${planId}&paymentIntentId=${data.paymentIntentId}`);
+                // Store client secret in sessionStorage for the payment page
+                console.log('Storing in sessionStorage:', {
+                    hasClientSecret: !!data.clientSecret,
+                    subscriptionId: data.subscriptionId
+                });
+                sessionStorage.setItem('payment_client_secret', data.clientSecret);
+                sessionStorage.setItem('payment_subscription_id', data.subscriptionId);
+
+                // Verify it was stored
+                const stored = sessionStorage.getItem('payment_client_secret');
+                console.log('Verification - stored successfully:', !!stored);
+
+                router.push(`/my-profile/subscription/payment?planId=${planId}&subscriptionId=${data.subscriptionId}`);
+            } else if (data.isFreePlan) {
+                alert("Безплатният план беше активиран успешно!");
+                router.refresh();
+            } else {
+                alert('Грешка: Не е получен client secret');
             }
         } catch (error) {
             console.error(error);
@@ -97,7 +118,7 @@ export default function SubscriptionManagementClient({
 
             if (response.ok) {
                 alert("Планът беше успешно променен!");
-                router.refresh();
+                // router.refresh(); // Removed to prevent navigation conflicts
             } else {
                 const errorData = await response.json();
                 alert(`Грешка при промяна на плана: ${errorData.message}`);
@@ -109,8 +130,6 @@ export default function SubscriptionManagementClient({
             setIsLoading(false);
         }
     };
-
-    const [showCancelConfirmation, setShowCancelConfirmation] = useState(false);
 
     const handleCancelSubscription = async () => {
         if (!currentSubscription) return;
@@ -133,7 +152,7 @@ export default function SubscriptionManagementClient({
 
             if (response.ok) {
                 alert("Абонаментът ще бъде спрян в края на текущия период.");
-                router.refresh();
+                // router.refresh(); // Removed to prevent navigation conflicts
             } else {
                 const errorData = await response.json();
                 alert(`Грешка при спиране на абонамента: ${errorData.message}`);
@@ -162,7 +181,7 @@ export default function SubscriptionManagementClient({
 
             if (response.ok) {
                 alert("Абонаментът беше реактивиран успешно!");
-                router.refresh();
+                // router.refresh(); // Removed to prevent navigation conflicts
             } else {
                 const errorData = await response.json();
                 alert(`Грешка при реактивиране на абонамента: ${errorData.message}`);

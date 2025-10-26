@@ -8,6 +8,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { v2 as cloudinary } from "cloudinary";
 import { generateUrlTitle } from "@/lib/slug";
+import { limiterPublic, rateKey } from '@/lib/rateLimit';
 
 export const runtime = "nodejs"; // Prisma/Cloudinary need Node runtime
 
@@ -33,6 +34,13 @@ export async function PUT(req: NextRequest) {
 
     if (!session?.user?.id) {
         return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+
+    // Rate limiting
+    const key = rateKey(req, session.user.id);
+    const { success } = await limiterPublic.limit(key);
+    if (!success) {
+        return NextResponse.json({ message: "Твърде много заявки." }, { status: 429 });
     }
 
     try {
@@ -137,6 +145,13 @@ export async function DELETE(req: NextRequest) {
 
     if (!session?.user?.id) {
         return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+
+    // Rate limiting
+    const key = rateKey(req, session.user.id);
+    const { success } = await limiterPublic.limit(key);
+    if (!success) {
+        return NextResponse.json({ message: "Твърде много заявки." }, { status: 429 });
     }
 
     try {

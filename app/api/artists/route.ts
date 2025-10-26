@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { limiterPublic, rateKey } from '@/lib/rateLimit';
 import { z } from "zod";
 
 const GetArtistsSchema = z.object({
@@ -11,6 +12,13 @@ const GetArtistsSchema = z.object({
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
+    // Rate limiting
+    const key = rateKey(request);
+    const { success } = await limiterPublic.limit(key);
+    if (!success) {
+      return NextResponse.json({ message: "Твърде много заявки." }, { status: 429 });
+    }
+
     const { searchParams } = new URL(request.url);
 
     const queryParams = {

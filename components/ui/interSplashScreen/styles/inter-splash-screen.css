@@ -56,6 +56,27 @@
     }
 }
 
+/* Skeleton indicator */
+.inter-splash-skeleton-indicator {
+    margin-top: 24px;
+    text-align: center;
+}
+
+.inter-splash-skeleton-text {
+    color: var(--color-white-8);
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    opacity: 0.8;
+}
+
+/* smaller screens */
+@media (max-width: 480px) {
+    .inter-splash-skeleton-text {
+        font-size: 12px;
+    }
+}
+
 /* reduced motion: disable transitions/animations */
 @media (prefers-reduced-motion: reduce) {
     .inter-splash-loading-progress {
@@ -63,5 +84,9 @@
         animation: none !important;
         transform: none !important;
         width: 50% !important;
+    }
+
+    .inter-splash-skeleton-indicator {
+        animation: none !important;
     }
 }

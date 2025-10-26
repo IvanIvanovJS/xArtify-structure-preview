@@ -21,7 +21,7 @@ export default function LogoutConfirmation({ isOpen, onClose }: LogoutConfirmati
             });
             onClose();
             router.push("/");
-            router.refresh();
+            // router.refresh(); // Removed to prevent navigation conflicts
         } catch (error) {
             console.error("Logout error:", error);
             onClose();

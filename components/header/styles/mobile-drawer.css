@@ -41,19 +41,43 @@
     position: relative;
     padding: 1.5rem 1.5rem 1rem;
     border-bottom: 1px solid var(--color-primary-20);
-    background: linear-gradient(135deg, var(--color-background) 0%, var(--color-muted) 100%);
+    background: transparent;
 }
 
 .mobile-drawer-header-content {
     display: flex;
     align-items: center;
     justify-content: space-between;
+
+}
+
+.mobile-drawer-logo-title {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.mobile-drawer-logo {
+    background-color: var(--color-primary-60);
+    -webkit-mask: url('/web-logo.svg') no-repeat center;
+    -webkit-mask-size: contain;
+    mask: url('/web-logo.svg') no-repeat center;
+    mask-size: contain;
+    transition: all 0.3s ease;
+    width: 36px;
+    height: 36px;
+    display: block;
+}
+
+.mobile-drawer-logo:hover {
+    background-color: var(--color-primary-90);
+    transform: scale(1.05);
 }
 
 .mobile-drawer-title {
     font-size: 1.5rem;
     font-weight: 700;
-    color: var(--color-primary);
+    color: var(--color-white-8);
     letter-spacing: 0.1em;
     margin: 0;
 }
@@ -328,6 +352,11 @@
 
     .mobile-drawer-title {
         font-size: 1.25rem;
+    }
+
+    .mobile-drawer-logo {
+        width: 36px;
+        height: 36px;
     }
 
     .mobile-drawer-link,

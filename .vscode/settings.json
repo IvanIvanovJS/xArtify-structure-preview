@@ -3,5 +3,6 @@
         "**/*.code-search": false,
         "**/bower_components": false
     },
-    "liveServer.settings.multiRootWorkspaceName": "art-platform"
+    "liveServer.settings.multiRootWorkspaceName": "art-platform",
+    "kiroAgent.configureMCP": "Disabled"
 }

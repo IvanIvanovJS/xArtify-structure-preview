@@ -16,7 +16,7 @@ import SiteBackground from "@/components/background/SiteBackground";
 import MainWrapper from "@/components/MainWrapper";
 import SplashScreenWrapper from "@/components/ui/SplashScreenWrapper";
 import InterSplashWrapper from "@/components/ui/interSplashScreen/InterSplashWrapper";
-import NavigationManager from "@/components/ui/interSplashScreen/NavigationManager";
+import SmartNavigationManager from "@/components/ui/interSplashScreen/SmartNavigationManager";
 import GlobalNavigationTracker from "@/components/ui/interSplashScreen/GlobalNavigationTracker";
 import ConditionalFooter from "@/components/footer/ConditionalFooter";
 const inter = Inter({ subsets: ["latin"] });
@@ -68,8 +68,8 @@ export default async function RootLayout({
                 <ConditionalFooter />
                 {/* Inter Splash Screen for page transitions */}
                 <InterSplashWrapper />
-                {/* Navigation manager to hide splash when navigation completes */}
-                <NavigationManager />
+                {/* Smart Navigation manager to hide splash when navigation completes */}
+                <SmartNavigationManager />
                 {/* Global navigation tracker for all clicks */}
                 <GlobalNavigationTracker />
               </InterSplashProvider>

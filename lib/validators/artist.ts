@@ -71,6 +71,8 @@ export const UpdateCourseSchema = CreateCourseSchema.partial().extend({
 
 export const CourseFiltersSchema = z.object({
     search: z.string().trim().max(100, "Търсенето е твърде дълго.").optional(),
+    sortBy: z.enum(["createdAt", "updatedAt", "title", "price"]).optional(),
+    sortOrder: z.enum(["asc", "desc"]).optional(),
     page: z.number().int().min(1, "Страницата трябва да е положителна.").default(1),
     limit: z.number().int().min(1).max(50, "Лимитът е твърде голям.").default(20),
 }).strict();

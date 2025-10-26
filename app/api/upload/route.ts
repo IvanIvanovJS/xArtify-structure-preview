@@ -6,7 +6,7 @@ import sharp from 'sharp';
 
 
 import { authOptions } from '@/lib/authOptions';
-import { limiterPublic, rateKey } from '@/lib/rateLimit';
+import { limiterHeavy, rateKey } from '@/lib/rateLimit';
 import { prisma } from '@/lib/prisma';
 
 export const runtime = 'nodejs';
@@ -64,7 +64,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     try {
         // Rate limiting
         const key = rateKey(request);
-        const { success, remaining, reset } = await limiterPublic.limit(key);
+        const { success, remaining, reset } = await limiterHeavy.limit(key);
         if (!success) {
             return new NextResponse('Too Many Requests', {
                 status: 429,

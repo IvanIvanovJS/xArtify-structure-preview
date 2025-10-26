@@ -1,5 +1,13 @@
 /* components/artist/ArtistAnalytics/styles/artist-analytics.css */
 
+/* Chart color variables */
+:root {
+    --color-promotion: #ff7016;
+    --color-promotion-20: rgba(255, 112, 22, 0.2);
+    --color-accent: #ff16e4;
+    --color-accent-20: rgba(255, 22, 228, 0.2);
+}
+
 .analytics {
     max-width: 1200px;
     margin: 0 auto;

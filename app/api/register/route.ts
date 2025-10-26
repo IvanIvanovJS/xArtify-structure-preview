@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { hash } from "bcryptjs";
 import { generateToken, storeVerificationToken } from "@/lib/verify";
 import { sendVerificationEmail } from "@/lib/email";
+import { limiterAuth, rateKey } from "@/lib/rateLimit";
 
 export const runtime = "nodejs";
 
@@ -31,6 +32,13 @@ function json<T>(payload: T, init?: ResponseInit): NextResponse<T> {
 const TOKEN_TTL_SECONDS = 60 * 60 * 24; // 24ч
 
 export async function POST(req: Request): Promise<NextResponse> {
+  // Rate limiting
+  const key = rateKey(req);
+  const { success } = await limiterAuth.limit(key);
+  if (!success) {
+    return json({ message: "Твърде много заявки. Моля опитайте отново по-късно." }, { status: 429 });
+  }
+
   let bodyUnknown: unknown;
   try {
     bodyUnknown = await req.json();

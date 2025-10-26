@@ -40,7 +40,6 @@ export default async function SubscriptionManagementPage() {
             <SubscriptionManagementClient
                 currentSubscription={artistProfile.subscription}
                 availablePlans={availablePlans}
-                userId={session.user.id}
             />
         </div>
     );

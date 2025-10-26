@@ -3,6 +3,7 @@ import { Suspense } from 'react';
 import { Metadata } from 'next';
 import { getBaseUrl } from '@/lib/url';
 import GalleryClient from '../../components/gallery/GalleryClient';
+import SkeletonLoader from '@/components/ui/SkeletonLoader';
 
 
 // Types
@@ -112,8 +113,46 @@ export default async function GalleryPage(): Promise<React.JSX.Element> {
         getFilterOptions()
     ]);
 
+    // Gallery Loading Skeleton
+    const GalleryLoadingSkeleton = () => (
+        <div className="gallery-page">
+            {/* Header Skeleton */}
+            <div className="gallery-header">
+                <SkeletonLoader className="h-12 w-48 mb-4" />
+                <SkeletonLoader className="h-6 w-96" />
+            </div>
+
+            {/* Main Content Skeleton */}
+            <div className="gallery-main">
+                {/* Sidebar Skeleton */}
+                <div className="gallery-sidebar">
+                    <div className="space-y-6">
+                        <SkeletonLoader className="h-8 w-32" />
+                        <SkeletonLoader className="h-64 w-full" />
+                        <SkeletonLoader className="h-8 w-24" />
+                        <SkeletonLoader className="h-32 w-full" />
+                    </div>
+                </div>
+
+                {/* Gallery Grid Skeleton */}
+                <div className="gallery-content">
+                    <div className="gallery-grid">
+                        {Array.from({ length: 12 }).map((_, index) => (
+                            <div key={index} className="gallery-painting-card">
+                                <SkeletonLoader className="h-64 w-full rounded-lg mb-4" />
+                                <SkeletonLoader className="h-6 w-3/4 mb-2" />
+                                <SkeletonLoader className="h-4 w-1/2 mb-2" />
+                                <SkeletonLoader className="h-5 w-1/3" />
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+
     return (
-        <Suspense fallback={<div>Loading gallery...</div>}>
+        <Suspense fallback={<GalleryLoadingSkeleton />}>
             <GalleryClient
                 initialPaintings={paintings}
                 filterOptions={filterOptions}

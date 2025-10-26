@@ -14,7 +14,7 @@ interface InterSplashScreenProps {
 export default function InterSplashScreen({
     isVisible,
     onComplete,
-    minDuration = 400,
+    minDuration = 300,
 }: InterSplashScreenProps): React.JSX.Element {
     const [show, setShow] = useState(isVisible);
     const showStartTsRef = useRef<number | null>(null);
