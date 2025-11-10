@@ -11,7 +11,22 @@ and security implementations.
 
 **Live Platform**: [https://xartify.com](https://xartify.com) _(Currently in beta testing)_
 
+## 📋 Overview
+
+xArtify is a comprehensive art marketplace and learning platform designed to connect artists with art enthusiasts worldwide. Built with modern web technologies, it provides a seamless experience for discovering, purchasing, and learning about art while empowering artists with professional tools to showcase and monetize their work.
+
+### 🎯 Mission
+
+To democratize art commerce and education by creating a global platform where artists can thrive professionally and art lovers can discover, purchase, and learn from talented creators worldwide.
+
+### 🌍 Market Strategy
+
+- **Phase 1 (Current)**: Beta testing and refinement in the Bulgarian market
+- **Phase 2**: Expansion to European markets
+- **Phase 3**: Global rollout with multi-language support and regional customization
+
 ---
+
 
 ## 🔒 What's Hidden
 
