@@ -259,6 +259,35 @@ xartify/
 
 ---
 
+## 🗺️ Roadmap
+
+### Current Phase (Q3 2025 - Q4 2025)
+
+- ✅ Core marketplace functionality
+- ✅ Artist portal and subscription system
+- ✅ Payment integration with Stripe
+- ✅ Admin dashboard
+- 🔄 Courses and online learning system
+- 🔄 User dashboard with messaging system
+- 🔄 Beta testing in Bulgarian market
+
+### Phase 2 (Q1 2026 - Q4 2026)
+
+- 🔜 Multi-language support (EN, BG, DE, FR)
+- 🔜 Advanced analytics for artists
+- 🔜 Artist collaboration tools
+- 🔜 Auction system for artworks
+- 🔜 Mobile app (iOS/Android)
+
+### Phase 3 (2027 - 2030)
+
+- 🔜 AI-powered art recommendations
+- 🔜 Virtual gallery tours (VR/AR)
+- 🔜 NFT integration
+- 🔜 Worldwide expansion
+
+---
+
 ## 📞 Full Code Review
 
 The complete implementation with all business logic and security features
