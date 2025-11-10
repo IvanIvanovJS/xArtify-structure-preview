@@ -205,7 +205,7 @@ art-platform/
 1. **Clone the repository**
 
 ```bash
-git clone https://github.com/IvanIvanovJS/xartify.git
+git clone https://github.com/IvanIvanovJS/xArtify-art-platform.git
 cd xartify
 ```
 
@@ -435,7 +435,7 @@ We're a small team with a shared passion for creating exceptional digital experi
 
 - **Website**: [https://xartify.com](https://xartify.com)
 - **Email**: xartquote@gmail.com
-- **Issues**: [GitHub Issues](https://github.com/IvanIvanovJS/xartify/issues)
+- **Issues**: [GitHub Issues](https://github.com/IvanIvanovJS/xArtify-art-platform/issues)
 
 ---
 
