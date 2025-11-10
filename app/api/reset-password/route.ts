@@ -1,42 +1,20 @@
-// app/api/auth/reset-password/route.ts
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcrypt';
 import { prisma } from "@/lib/prisma";
-export const runtime = "nodejs";
 
 
-export async function POST(req: Request) {
-    try {
-        const { token, password } = await req.json();
+// ============================================
+// 🔒 API IMPLEMENTATION HIDDEN
+// ============================================
+// Full implementation available upon request
+// ============================================
 
-        // 1. Проверка на токена
-        const passwordResetToken = await prisma.passwordResetToken.findUnique({
-            where: { token },
-            include: { user: true },
-        });
+export async function GET(request) {
+  // Implementation hidden for security
+  return NextResponse.json({ message: "Implementation hidden" });
+}
 
-        if (!passwordResetToken || passwordResetToken.expires < new Date()) {
-            return NextResponse.json({ message: 'Невалиден или изтекъл токен.' }, { status: 400 });
-        }
-
-        // 2. Хеширане на новата парола
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        // 3. Актуализиране на потребителя и изтриване на токена
-        await prisma.$transaction([
-            prisma.user.update({
-                where: { id: passwordResetToken.userId },
-                data: { password: hashedPassword },
-            }),
-            prisma.passwordResetToken.delete({
-                where: { id: passwordResetToken.id },
-            }),
-        ]);
-
-        return NextResponse.json({ message: 'Паролата ви беше успешно сменена.' }, { status: 200 });
-
-    } catch (error) {
-        console.error(error);
-        return NextResponse.json({ message: 'Възникна грешка.' }, { status: 500 });
-    }
+export async function POST(request) {
+  // Implementation hidden for security
+  return NextResponse.json({ message: "Implementation hidden" });
 }
