@@ -1,50 +1,263 @@
 # 🎨 xArtify - Portfolio Showcase
 
-> ⚠️ **Note**: This is a sanitized version for portfolio purposes. 
-> Sensitive business logic and implementation details have been removed.
+> ⚠️ **Important**: This is a sanitized version for portfolio purposes.  
+> Sensitive business logic and security implementations have been removed.
 
 ## 📋 About This Repository
 
-This repository showcases the **structure and architecture** of xArtify, 
-a production art marketplace platform, while protecting proprietary code.
+This repository showcases the **architecture and structure** of xArtify,
+a production art marketplace platform, while protecting proprietary code
+and security implementations.
 
-**Live Platform**: [https://xartify.com](https://xartify.com)
-
-## 🔒 What's Hidden
-
-For security and intellectual property protection:
-- API implementation details
-- Authentication logic
-- Payment processing code
-- Database queries and business logic
-- Security middleware implementation
-- Stripe webhook handlers
-
-## ✅ What's Visible
-
-- Project structure and organization
-- Technology stack and dependencies
-- Component architecture
-- Database schema (Prisma models)
-- TypeScript interfaces and types
-- Commit history and development process
-
-## 💼 Full Code Review
-
-Full implementation details available during interviews.
-
-## 📊 Project Stats
-
-- **Commits**: 201+
-- **Files**: 378+
-- **Lines of Code**: ~15,000+ (TypeScript)
-- **Components**: 50+
-- **API Routes**: 30+
-
-## 🛠️ Tech Stack
-
-See main README.md for complete technology stack.
+**Live Platform**: [https://xartify.com](https://xartify.com) _(Currently in beta testing)_
 
 ---
 
-**For inquiries**: Contact via portfolio website
+## 🔒 What's Hidden
+
+For security and intellectual property protection, the following have been removed or sanitized:
+
+### Security & Authentication
+
+- ✅ Authentication logic and session management
+- ✅ Authorization and role-based access control
+- ✅ Security middleware implementations
+- ✅ Rate limiting configurations
+- ✅ Admin authentication utilities
+- ✅ API security middleware
+
+### Business Logic
+
+- ✅ API endpoint implementations
+- ✅ Database query logic
+- ✅ Payment processing code
+- ✅ Subscription management logic
+- ✅ Email service implementations
+- ✅ Webhook handlers
+
+### Sensitive Data
+
+- ✅ Environment variables and credentials
+- ✅ Database connection strings
+- ✅ API keys and secrets
+- ✅ Row Level Security (RLS) policies
+- ✅ Admin setup procedures
+- ✅ Internal documentation
+
+---
+
+## ✅ What's Visible
+
+The following elements are preserved to demonstrate technical capabilities:
+
+### Project Structure
+
+- ✅ Complete file and folder organization
+- ✅ Component architecture
+- ✅ API route structure
+- ✅ Page routing system
+- ✅ Database schema (Prisma models)
+
+### Technology Stack
+
+- ✅ Full package.json with dependencies
+- ✅ TypeScript configuration
+- ✅ Next.js configuration
+- ✅ Tailwind CSS setup
+- ✅ ESLint configuration
+
+### Code Quality Indicators
+
+- ✅ TypeScript interfaces and types
+- ✅ Import statements and dependencies
+- ✅ File naming conventions
+- ✅ Code organization patterns
+
+### Development Process
+
+- ✅ Commit history (200+ commits)
+- ✅ Git workflow
+- ✅ Development timeline
+
+---
+
+## 📊 Project Statistics
+
+```
+Total Commits:        200+
+Total Files:          200+
+Lines of Code:        ~65,000+ (TypeScript)
+Components:           50+
+API Routes:           30+
+Database Models:      20+
+Development Time:     6 months (ongoing)
+```
+
+---
+
+## 🛠️ Technology Stack
+
+### Frontend
+
+- **Next.js 15.5.2** - React framework with App Router
+- **TypeScript 5.0** - Strict mode, full type safety
+- **Tailwind CSS 4** - Utility-first CSS framework
+- **Framer Motion** - Animation library
+- **React Hook Form** - Form management
+- **Zod** - Schema validation
+
+### Backend
+
+- **Next.js API Routes** - RESTful API
+- **PostgreSQL** - Relational database
+- **Prisma ORM** - Type-safe database client
+- **NextAuth.js** - Authentication
+- **Stripe** - Payment processing
+
+### Infrastructure
+
+- **Vercel** - Hosting and deployment
+- **Cloudinary** - Image CDN
+- **Upstash Redis** - Rate limiting
+- **Resend** - Email service
+
+---
+
+## 🏗️ Architecture Highlights
+
+### Database Design
+
+- 20+ interconnected models
+- Row Level Security (RLS) policies
+- Optimized indexes for performance
+- Audit trails and timestamps
+
+### Security Implementation
+
+- Content Security Policy (CSP)
+- Rate limiting on all endpoints
+- Role-based access control (RBAC)
+- Input validation with Zod
+- CSRF protection
+- Secure password hashing
+
+### Performance Optimizations
+
+- Server-side rendering (SSR)
+- Image optimization
+- Database query optimization
+- Code splitting and lazy loading
+- Client-side caching with SWR
+
+---
+
+## 📁 Project Structure
+
+```
+xartify/
+├── app/                      # Next.js App Router
+│   ├── (auth)/              # Authentication pages
+│   ├── admin/               # Admin dashboard
+│   ├── api/                 # API routes (sanitized)
+│   ├── artist/              # Artist portal
+│   ├── gallery/             # Public gallery
+│   └── my-profile/          # User dashboard
+├── components/              # React components
+│   ├── ui/                  # Base UI components
+│   ├── admin/               # Admin components (sanitized)
+│   ├── artist/              # Artist components (sanitized)
+│   └── gallery/             # Gallery components
+├── lib/                     # Utilities (sanitized)
+├── prisma/                  # Database schema
+│   └── schema.prisma        # Full schema visible
+├── public/                  # Static assets
+└── scripts/                 # Build scripts
+```
+
+---
+
+## 💼 Key Features Implemented
+
+### 🖼️ Art Marketplace
+
+- Advanced search and filtering system
+- SEO-optimized artwork pages
+- Favorites and wishlist functionality
+- Shopping cart and checkout
+
+### 👨‍🎨 Artist Portal
+
+- Professional artist profiles
+- Artwork management dashboard
+- Analytics and insights
+- Subscription management
+
+### 📚 Online Courses
+
+- Video-based learning platform
+- Course enrollment system
+- Progress tracking
+
+### 💳 E-Commerce
+
+- Stripe payment integration
+- Subscription billing
+- Order management
+- Commission calculation
+
+### 🔐 Security
+
+- Multi-provider authentication
+- Role-based access control
+- Rate limiting
+- Security headers
+
+### 📊 Admin Dashboard
+
+- User management
+- Subscription oversight
+- Platform analytics
+
+---
+
+## 🎯 Skills Demonstrated
+
+### Technical Skills
+
+- ✅ Full-stack development (Next.js, React, Node.js)
+- ✅ TypeScript (strict mode, advanced patterns)
+- ✅ Database design and optimization (PostgreSQL, Prisma)
+- ✅ Authentication and authorization (NextAuth.js)
+- ✅ Payment processing (Stripe)
+- ✅ API design and implementation
+- ✅ Security best practices
+- ✅ Performance optimization
+- ✅ Responsive design (mobile-first)
+
+### Soft Skills
+
+- ✅ Project architecture and planning
+- ✅ Code organization and maintainability
+- ✅ Documentation
+- ✅ Problem-solving
+- ✅ User experience design
+
+---
+
+## 📞 Full Code Review
+
+The complete implementation with all business logic and security features
+is available for review during interviews.
+
+**Contact**: ivanov@webmorphism.com
+
+---
+
+## 📄 License
+
+This is proprietary software. The code structure is shown for portfolio
+purposes only. All rights reserved.
+
+---
+
+**Built for artists and art lovers worldwide** 🎨
