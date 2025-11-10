@@ -1,5 +1,10 @@
 # 🎨 xArtify - Portfolio Showcase
 
+[![Live Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://xartify.com)
+[![Next.js](https://img.shields.io/badge/Next.js-15.5.2-black)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)](https://www.typescriptlang.org/)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 > ⚠️ **Important**: This is a sanitized version for portfolio purposes.  
 > Sensitive business logic and security implementations have been removed.
 
